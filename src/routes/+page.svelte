@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { preventDefault } from 'svelte/legacy';
+
 	import { onMount, onDestroy } from 'svelte';
 	import Chart from 'chart.js/auto';
 	import dayjs from 'dayjs';
@@ -26,10 +28,10 @@
 		lease_commence_date: dayjs().year()
 	};
 
-	let form: FieldType = { ...initialFormValues };
+	let form: FieldType = $state({ ...initialFormValues });
 
 		// persistence + theme + lang
-		let darkMode = false;
+		let darkMode = $state(false);
 
 	onMount(() => {
 		try {
@@ -62,7 +64,7 @@
 	}
 
 		// language helpers (use $lang auto-subscription)
-		$: currentLang = $lang || 'en';
+		let currentLang = $derived($lang || 'en');
 	function toggleLang() {
 		const next = currentLang === 'en' ? 'zh' : 'en';
 		lang.set(next);
@@ -74,7 +76,7 @@
 		}
 
 	// chart
-	let canvas: HTMLCanvasElement | null = null;
+	let canvas: HTMLCanvasElement | null = $state(null);
 	let chart: Chart | null = null;
 
 	function defaultLabels() {
@@ -123,8 +125,8 @@
 	onMount(() => initChart());
 	onDestroy(() => { if (chart) chart.destroy(); });
 
-	let loading = false;
-	let output = 0;
+	let loading = $state(false);
+	let output = $state(0);
 
 	async function handleSubmit(e?: Event) {
 		e?.preventDefault();
@@ -203,19 +205,19 @@
 <main class="container">
 		<div class="top">
 			<div>
-				<button class="ghost" on:click={toggleTheme} aria-label="toggle theme">{darkMode ? '🌙' : '🔆'}</button>
-				<button class="ghost" on:click={toggleLang} style="margin-left:8px">{currentLang === 'en' ? '中文' : 'EN'}</button>
+				<button class="ghost" onclick={toggleTheme} aria-label="toggle theme">{darkMode ? '🌙' : '🔆'}</button>
+				<button class="ghost" onclick={toggleLang} style="margin-left:8px">{currentLang === 'en' ? '中文' : 'EN'}</button>
 			</div>
 			<h2>{t('price_prediction', currentLang)}</h2>
 		</div>
 
 	<section class="card" style="margin-bottom:18px">
 		<h3>{t('prediction_form', currentLang)}</h3>
-		<form on:submit|preventDefault={handleSubmit}>
+		<form onsubmit={preventDefault(handleSubmit)}>
 					<div class="row">
 						<div style="flex:1;min-width:200px">
 							<label for="ml_model">{t('ml_model', currentLang)}</label>
-							<select id="ml_model" bind:value={form.ml_model} on:change={persist}>
+							<select id="ml_model" bind:value={form.ml_model} onchange={persist}>
 								{#each ML_MODELS as m}
 									<option value={m}>{m}</option>
 								{/each}
@@ -223,7 +225,7 @@
 						</div>
 						<div style="flex:1;min-width:200px">
 							<label for="town">{t('town', currentLang)}</label>
-							<select id="town" bind:value={form.town} on:change={persist}>
+							<select id="town" bind:value={form.town} onchange={persist}>
 								{#each TOWNS as twn}
 									<option value={twn}>{twn}</option>
 								{/each}
@@ -234,7 +236,7 @@
 			<div class="row" style="margin-top:12px">
 						<div style="flex:1;min-width:200px">
 							<label for="storey_range">{t('storey_range', currentLang)}</label>
-							<select id="storey_range" bind:value={form.storey_range} on:change={persist}>
+							<select id="storey_range" bind:value={form.storey_range} onchange={persist}>
 								{#each STOREY_RANGES as s}
 									<option value={s}>{s}</option>
 								{/each}
@@ -242,7 +244,7 @@
 						</div>
 						<div style="flex:1;min-width:200px">
 							<label for="flat_model">{t('flat_model', currentLang)}</label>
-							<select id="flat_model" bind:value={form.flat_model} on:change={persist}>
+							<select id="flat_model" bind:value={form.flat_model} onchange={persist}>
 								{#each FLAT_MODELS as f}
 									<option value={f}>{f}</option>
 								{/each}
@@ -253,17 +255,17 @@
 			<div class="row" style="margin-top:12px">
 						<div style="flex:1;min-width:200px">
 							<label for="floor_area">{t('floor_area', currentLang)}</label>
-							<input id="floor_area" type="number" min="20" max="300" bind:value={form.floor_area_sqm} on:input={persist} />
+							<input id="floor_area" type="number" min="20" max="300" bind:value={form.floor_area_sqm} oninput={persist} />
 						</div>
 						<div style="flex:1;min-width:200px">
 							<label for="lease_year">{t('lease_commence_date', currentLang)}</label>
-							<input id="lease_year" type="number" min="1960" max={new Date().getFullYear()} bind:value={form.lease_commence_date} on:input={persist} />
+							<input id="lease_year" type="number" min="1960" max={new Date().getFullYear()} bind:value={form.lease_commence_date} oninput={persist} />
 						</div>
 			</div>
 
 					<div style="display:flex;gap:12px;margin-top:16px">
 						<button class="primary" type="submit" disabled={loading}>{loading ? '...' : t('get_prediction', currentLang)}</button>
-						<button class="ghost" type="button" on:click={handleReset}>{t('reset_form', currentLang)}</button>
+						<button class="ghost" type="button" onclick={handleReset}>{t('reset_form', currentLang)}</button>
 					</div>
 		</form>
 	</section>
