@@ -3,10 +3,9 @@
 	import Chart from 'chart.js/auto';
 	import dayjs from 'dayjs';
 	import utc from 'dayjs/plugin/utc';
-	import { ML_MODELS, TOWNS, STOREY_RANGES, FLAT_MODELS } from '$lib/lists';
-	import { lang, t } from '$lib/i18n';
-	import { get } from 'svelte/store';
-
+		import { ML_MODELS, TOWNS, STOREY_RANGES, FLAT_MODELS } from '$lib/lists';
+		import { lang, t } from '$lib/i18n';
+		import { formatCurrency } from '$lib/format';
 	dayjs.extend(utc);
 
 	type FieldType = {
@@ -29,7 +28,9 @@
 
 	let form: FieldType = { ...initialFormValues };
 
-	// persistence
+		// persistence + theme + lang
+		let darkMode = false;
+
 	onMount(() => {
 		try {
 			const saved = typeof window !== 'undefined' && localStorage.getItem('form');
@@ -39,6 +40,7 @@
 			}
 			const savedTheme = typeof window !== 'undefined' && localStorage.getItem('theme');
 			if (savedTheme) {
+				darkMode = savedTheme === 'dark';
 				document.body.setAttribute('data-theme', savedTheme);
 			}
 		} catch (e) {
@@ -52,36 +54,38 @@
 		} catch {}
 	}
 
-	// theme
-	let darkMode = false;
 	function toggleTheme() {
 		darkMode = !darkMode;
-		document.body.setAttribute('data-theme', darkMode ? 'dark' : 'light');
-		localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+		const theme = darkMode ? 'dark' : 'light';
+		document.body.setAttribute('data-theme', theme);
+		localStorage.setItem('theme', theme);
 	}
 
-	// language
-	$: currentLang = get(lang) || 'en';
+		// language helpers (use $lang auto-subscription)
+		$: currentLang = $lang || 'en';
 	function toggleLang() {
 		const next = currentLang === 'en' ? 'zh' : 'en';
 		lang.set(next);
 		localStorage.setItem('lang', next);
 	}
 
+		function tr(k: Parameters<typeof t>[0]) {
+			return t(k, currentLang as 'en' | 'zh');
+		}
+
 	// chart
 	let canvas: HTMLCanvasElement | null = null;
 	let chart: Chart | null = null;
 
-	function defaultLabels(startYear = form.lease_commence_date) {
+	function defaultLabels() {
 		const end = dayjs().utc();
 		return [...Array(13).keys()].reverse().map((i) => end.subtract(i, 'month').format('YYYY-MM'));
 	}
 
-	let labels = defaultLabels();
+	let labels: string[] = defaultLabels();
 
-	function buildChart(data: number[] = []) {
+	function initChart() {
 		if (!canvas) return;
-		if (chart) chart.destroy();
 		chart = new Chart(canvas, {
 			type: 'line',
 			data: {
@@ -89,28 +93,35 @@
 				datasets: [
 					{
 						label: 'Trends',
-						data: data.length ? data : labels.map(() => 0),
+						data: labels.map(() => 0),
 						borderColor: 'rgb(53, 162, 235)',
-						backgroundColor: 'rgba(53, 162, 235, 0.5)'
+						backgroundColor: 'rgba(53, 162, 235, 0.2)',
+						tension: 0.3
 					}
 				]
 			},
 			options: {
 				responsive: true,
+				maintainAspectRatio: false,
 				plugins: {
 					legend: { position: 'top' }
+				},
+				scales: {
+					x: { grid: { display: false } }
 				}
 			}
 		});
 	}
 
-	onMount(() => {
-		buildChart();
-	});
+	function updateChart(data: number[]) {
+		if (!chart) return;
+		chart.data.labels = labels;
+		chart.data.datasets![0].data = data;
+		chart.update();
+	}
 
-	onDestroy(() => {
-		if (chart) chart.destroy();
-	});
+	onMount(() => initChart());
+	onDestroy(() => { if (chart) chart.destroy(); });
 
 	let loading = false;
 	let output = 0;
@@ -119,7 +130,6 @@
 		e?.preventDefault();
 		persist();
 		loading = true;
-		// mirror the original app's API shape
 		try {
 			const formData = new FormData();
 			formData.append('ml_model', form.ml_model);
@@ -141,11 +151,10 @@
 			labels = server_data.map((s) => s.labels);
 			const data = server_data.map((s) => s.data);
 			output = data[data.length - 1] ?? 0;
-			buildChart(data);
+			updateChart(data);
 		} catch (err) {
 			console.error('fetch error', err);
-			// fallback: show zeros
-			buildChart();
+			updateChart(labels.map(() => 0));
 		} finally {
 			loading = false;
 		}
@@ -155,101 +164,119 @@
 		form = { ...initialFormValues };
 		output = 0;
 		labels = defaultLabels();
-		buildChart();
+		updateChart(labels.map(() => 0));
 		persist();
 	}
 </script>
 
 <style>
-	:global(body[data-theme='dark']) {
-		background: linear-gradient(135deg,#232946 0%,#16161a 100%);
-		color: #fff;
+	:root{
+		--bg-light: linear-gradient(135deg,#e0e7ff 0%,#f5f7fa 100%);
+		--bg-dark: linear-gradient(135deg,#232946 0%,#16161a 100%);
+		--card-light: rgba(255,255,255,0.9);
+		--card-dark: rgba(24,25,32,0.9);
+		--accent: #6366f1;
 	}
-	:global(body[data-theme='light']) {
-		background: linear-gradient(135deg,#e0e7ff 0%,#f5f7fa 100%);
-		color: #0f172a;
+	:global(body){
+		font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+		margin:0; padding:0;
 	}
-	.container { max-width: 980px; margin: 24px auto; padding: 16px; }
-	.card { background: rgba(255,255,255,0.85); padding: 16px; border-radius: 12px; }
-	:global(body[data-theme='dark']) .card { background: rgba(36,37,46,0.9); }
-	.row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+	:global(body[data-theme='dark']){ background: var(--bg-dark); color: #fff }
+	:global(body[data-theme='light']){ background: var(--bg-light); color: #0f172a }
+
+	.container { max-width: 1080px; margin: 28px auto; padding: 20px; }
+	.top { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px }
+	h2 { margin:0; font-size:1.6rem }
+	.card { padding:18px; border-radius:14px; box-shadow: 0 8px 30px rgba(15,23,42,0.06); background:var(--card-light) }
+	:global(body[data-theme='dark']) .card { background: var(--card-dark); box-shadow: 0 8px 30px rgba(0,0,0,0.6) }
+
+	label { display:block; font-size:0.9rem; margin-bottom:6px; color:inherit }
+	select, input[type=number] { width:100%; padding:10px 12px; border-radius:8px; border:1px solid rgba(15,23,42,0.06); background:transparent }
+	button { padding:10px 14px; border-radius:10px; border:none; cursor:pointer }
+	button.primary { background:linear-gradient(90deg,var(--accent),#60a5fa); color:#fff; font-weight:700 }
+	button.ghost { background:transparent; border:1.2px solid rgba(15,23,42,0.08) }
+
+	.value { font-weight:800; font-size:1.4rem }
+	.chart-wrap{ height:320px; }
 </style>
 
 <main class="container">
-	<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-		<div>
-			<button on:click={toggleTheme} aria-label="toggle theme">{darkMode ? '🌙' : '🔆'}</button>
-			<button on:click={toggleLang} style="margin-left:8px">{currentLang === 'en' ? '中文' : 'EN'}</button>
+		<div class="top">
+			<div>
+				<button class="ghost" on:click={toggleTheme} aria-label="toggle theme">{darkMode ? '🌙' : '🔆'}</button>
+				<button class="ghost" on:click={toggleLang} style="margin-left:8px">{currentLang === 'en' ? '中文' : 'EN'}</button>
+			</div>
+			<h2>{t('price_prediction', currentLang)}</h2>
 		</div>
-		<h2>{t('price_prediction', currentLang)}</h2>
-	</div>
 
 	<section class="card" style="margin-bottom:18px">
 		<h3>{t('prediction_form', currentLang)}</h3>
 		<form on:submit|preventDefault={handleSubmit}>
-			<div class="row">
-				<div style="flex:1;min-width:200px">
-					<label>{t('ml_model', currentLang)}</label>
-					<select bind:value={form.ml_model} on:change={persist}>
-						{#each ML_MODELS as m}
-							<option value={m}>{m}</option>
-						{/each}
-					</select>
-				</div>
-				<div style="flex:1;min-width:200px">
-					<label>{t('town', currentLang)}</label>
-					<select bind:value={form.town} on:change={persist}>
-						{#each TOWNS as twn}
-							<option value={twn}>{twn}</option>
-						{/each}
-					</select>
-				</div>
+					<div class="row">
+						<div style="flex:1;min-width:200px">
+							<label for="ml_model">{t('ml_model', currentLang)}</label>
+							<select id="ml_model" bind:value={form.ml_model} on:change={persist}>
+								{#each ML_MODELS as m}
+									<option value={m}>{m}</option>
+								{/each}
+							</select>
+						</div>
+						<div style="flex:1;min-width:200px">
+							<label for="town">{t('town', currentLang)}</label>
+							<select id="town" bind:value={form.town} on:change={persist}>
+								{#each TOWNS as twn}
+									<option value={twn}>{twn}</option>
+								{/each}
+							</select>
+						</div>
+					</div>
+
+			<div class="row" style="margin-top:12px">
+						<div style="flex:1;min-width:200px">
+							<label for="storey_range">{t('storey_range', currentLang)}</label>
+							<select id="storey_range" bind:value={form.storey_range} on:change={persist}>
+								{#each STOREY_RANGES as s}
+									<option value={s}>{s}</option>
+								{/each}
+							</select>
+						</div>
+						<div style="flex:1;min-width:200px">
+							<label for="flat_model">{t('flat_model', currentLang)}</label>
+							<select id="flat_model" bind:value={form.flat_model} on:change={persist}>
+								{#each FLAT_MODELS as f}
+									<option value={f}>{f}</option>
+								{/each}
+							</select>
+						</div>
 			</div>
 
 			<div class="row" style="margin-top:12px">
-				<div style="flex:1;min-width:200px">
-					<label>{t('storey_range', currentLang)}</label>
-					<select bind:value={form.storey_range} on:change={persist}>
-						{#each STOREY_RANGES as s}
-							<option value={s}>{s}</option>
-						{/each}
-					</select>
-				</div>
-				<div style="flex:1;min-width:200px">
-					<label>{t('flat_model', currentLang)}</label>
-					<select bind:value={form.flat_model} on:change={persist}>
-						{#each FLAT_MODELS as f}
-							<option value={f}>{f}</option>
-						{/each}
-					</select>
-				</div>
+						<div style="flex:1;min-width:200px">
+							<label for="floor_area">{t('floor_area', currentLang)}</label>
+							<input id="floor_area" type="number" min="20" max="300" bind:value={form.floor_area_sqm} on:input={persist} />
+						</div>
+						<div style="flex:1;min-width:200px">
+							<label for="lease_year">{t('lease_commence_date', currentLang)}</label>
+							<input id="lease_year" type="number" min="1960" max={new Date().getFullYear()} bind:value={form.lease_commence_date} on:input={persist} />
+						</div>
 			</div>
 
-			<div class="row" style="margin-top:12px">
-				<div style="flex:1;min-width:200px">
-					<label>{t('floor_area', currentLang)}</label>
-					<input type="number" min="20" max="300" bind:value={form.floor_area_sqm} on:input={persist} />
-				</div>
-				<div style="flex:1;min-width:200px">
-					<label>{t('lease_commence_date', currentLang)}</label>
-					<input type="number" min="1960" max={new Date().getFullYear()} bind:value={form.lease_commence_date} on:input={persist} />
-				</div>
-			</div>
-
-			<div style="display:flex;gap:12px;margin-top:16px">
-				<button type="submit" disabled={loading}>{loading ? '...' : t('get_prediction', currentLang)}</button>
-				<button type="button" on:click={handleReset}>{t('reset_form', currentLang)}</button>
-			</div>
+					<div style="display:flex;gap:12px;margin-top:16px">
+						<button class="primary" type="submit" disabled={loading}>{loading ? '...' : t('get_prediction', currentLang)}</button>
+						<button class="ghost" type="button" on:click={handleReset}>{t('reset_form', currentLang)}</button>
+					</div>
 		</form>
 	</section>
 
 	<section class="card">
 		<div style="display:flex;justify-content:space-between;align-items:center">
-			<h3>{t('predicted_price', currentLang)}</h3>
-			<div style="font-weight:800;font-size:20px">${output}</div>
+					<h3>{t('predicted_price', currentLang)}</h3>
+					<div class="value">{formatCurrency(output)}</div>
 		</div>
 		<div style="margin-top:12px">
-			<canvas bind:this={canvas}></canvas>
+					<div class="chart-wrap">
+						<canvas bind:this={canvas}></canvas>
+					</div>
 		</div>
 	</section>
 </main>
