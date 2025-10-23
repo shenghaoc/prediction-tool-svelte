@@ -3,11 +3,13 @@
 
 	import { onMount, onDestroy } from 'svelte';
 	import Chart from 'chart.js/auto';
-	import dayjs from 'dayjs';
+	import dayjs, { type Dayjs } from 'dayjs';
+	import customParseFormat from 'dayjs/plugin/customParseFormat';
 	import utc from 'dayjs/plugin/utc';
 		import { ML_MODELS, TOWNS, STOREY_RANGES, FLAT_MODELS } from '$lib/lists';
 		import { lang, t } from '$lib/i18n';
 		import { formatCurrency } from '$lib/format';
+	dayjs.extend(customParseFormat);
 	dayjs.extend(utc);
 
 	type FieldType = {
@@ -16,16 +18,18 @@
 		storey_range: string;
 		flat_model: string;
 		floor_area_sqm: number;
-		lease_commence_date: number; // year
+		lease_commence_date: number;
 	};
+
+	let curr = dayjs.utc('2022-02', 'YYYY-MM');
 
 	const initialFormValues: FieldType = {
 		ml_model: ML_MODELS[0],
 		town: TOWNS[0],
 		storey_range: STOREY_RANGES[0],
 		flat_model: FLAT_MODELS[0],
-		floor_area_sqm: 50,
-		lease_commence_date: dayjs().year()
+		floor_area_sqm: 20,
+		lease_commence_date: curr.year()
 	};
 
 	let form: FieldType = $state({ ...initialFormValues });
@@ -34,12 +38,12 @@
 		let darkMode = $state(false);
 
 	onMount(() => {
-		try {
-			const saved = typeof window !== 'undefined' && localStorage.getItem('form');
-			if (saved) {
-				const parsed = JSON.parse(saved);
-				form = { ...form, ...parsed };
-			}
+			try {
+				const saved = typeof window !== 'undefined' && localStorage.getItem('form');
+				if (saved) {
+					const parsed = JSON.parse(saved);
+					form = { ...form, ...parsed };
+				}
 			const savedTheme = typeof window !== 'undefined' && localStorage.getItem('theme');
 			if (savedTheme) {
 				darkMode = savedTheme === 'dark';
@@ -51,9 +55,9 @@
 	});
 
 	function persist() {
-		try {
+			try {
 			localStorage.setItem('form', JSON.stringify(form));
-		} catch {}
+			} catch {}
 	}
 
 	function toggleTheme() {
@@ -135,7 +139,6 @@
 		try {
 			const formData = new FormData();
 			formData.append('ml_model', form.ml_model);
-			const curr = dayjs();
 			formData.append('month_start', curr.subtract(12, 'month').format('YYYY-MM'));
 			formData.append('month_end', curr.format('YYYY-MM'));
 			formData.append('town', form.town);
@@ -258,8 +261,8 @@
 							<input id="floor_area" type="number" min="20" max="300" bind:value={form.floor_area_sqm} oninput={persist} />
 						</div>
 						<div style="flex:1;min-width:200px">
-							<label for="lease_year">{t('lease_commence_date', currentLang)}</label>
-							<input id="lease_year" type="number" min="1960" max={new Date().getFullYear()} bind:value={form.lease_commence_date} oninput={persist} />
+							<label for="lease_commence_date">{t('lease_commence_date', currentLang)}</label>
+							<input id="lease_commence_date" type="number" min={ 1960 } max={ 2022 } bind:value={form.lease_commence_date} oninput={persist} />
 						</div>
 			</div>
 
