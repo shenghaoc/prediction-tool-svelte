@@ -1,170 +1,194 @@
 <script lang="ts">
-	import { onDestroy, onMount, tick } from 'svelte';
-	import type { Chart as ChartInstance } from 'chart.js';
-
 	import { formatCurrency } from '$lib/format';
-	import {
-		formatCurrencyTick,
-		normalizePrice,
-		type PredictionTheme,
-		type TrendPoint
-	} from '$lib/prediction';
+	import { formatCurrencyTick, type PredictionTheme, type TrendPoint } from '$lib/prediction';
 
 	export let data: TrendPoint[];
 	export let theme: PredictionTheme;
 	export let isMobile: boolean;
 
-	let canvas: HTMLCanvasElement | null = null;
-	let chart: ChartInstance<'line'> | null = null;
-	let ChartCtor: (typeof import('chart.js/auto'))['default'] | null = null;
+	type ChartPoint = TrendPoint & {
+		x: number;
+		y: number;
+	};
 
-	$: labels = data.map((entry) => entry.label);
+	const width = 760;
+	let svg: SVGSVGElement | null = null;
+	let activeIndex = -1;
+
+	$: height = isMobile ? 280 : 360;
+	$: margin = {
+		top: 18,
+		right: isMobile ? 10 : 18,
+		bottom: 34,
+		left: isMobile ? 50 : 68
+	};
+	$: innerWidth = width - margin.left - margin.right;
+	$: innerHeight = height - margin.top - margin.bottom;
 	$: values = data.map((entry) => entry.value);
-
-	function buildGradient() {
-		if (!chart) return undefined;
-		const { ctx, chartArea } = chart;
-		if (!chartArea) return undefined;
-
-		const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-		gradient.addColorStop(0, `${theme.chartLine}66`);
-		gradient.addColorStop(0.65, `${theme.chartLine}1f`);
-		gradient.addColorStop(1, `${theme.chartLine}00`);
-		return gradient;
-	}
-
-	function syncChart() {
-		if (!chart) return;
-
-		chart.data.labels = labels;
-		chart.data.datasets[0].data = values;
-		chart.data.datasets[0].borderColor = theme.chartLine;
-		chart.data.datasets[0].backgroundColor = buildGradient() ?? `${theme.chartLine}26`;
-		chart.options.scales = {
-			x: {
-				grid: { display: false },
-				border: { display: false },
-				ticks: {
-					color: theme.textMuted,
-					maxRotation: 0,
-					autoSkipPadding: 18,
-					font: {
-						family: '"Avenir Next", "Segoe UI", sans-serif',
-						size: isMobile ? 11 : 12
-					}
-				}
-			},
-			y: {
-				grid: {
-					color: theme.chartGrid,
-					tickBorderDash: [3, 10]
-				},
-				border: { display: false },
-				ticks: {
-					color: theme.textMuted,
-					callback: (value) => formatCurrencyTick(Number(value)),
-					font: {
-						family: '"Avenir Next", "Segoe UI", sans-serif',
-						size: isMobile ? 11 : 12
-					}
-				}
-			}
+	$: maxValue = Math.max(...values, 0);
+	$: minPositiveValue = values.reduce(
+		(lowest, value) => (value > 0 ? Math.min(lowest, value) : lowest),
+		Number.POSITIVE_INFINITY
+	);
+	$: minValue = Number.isFinite(minPositiveValue) ? Math.min(0, minPositiveValue) : 0;
+	$: range = Math.max(maxValue - minValue, 1);
+	$: yTicks = [0, 0.33, 0.66, 1].map((ratio) => {
+		const value = Math.round(maxValue - range * ratio);
+		return {
+			value,
+			y: margin.top + innerHeight * ratio
 		};
-		chart.options.plugins = {
-			legend: { display: false },
-			tooltip: {
-				displayColors: false,
-				backgroundColor: theme.panelStrong,
-				borderColor: theme.lineSoft,
-				borderWidth: 1,
-				padding: 12,
-				titleColor: theme.textMuted,
-				bodyColor: theme.text,
-				titleFont: { size: 11, weight: 'bold' },
-				bodyFont: { size: 13, weight: 'bold' },
-				callbacks: {
-					label: (context) =>
-						`Estimated Price: ${formatCurrency(normalizePrice(Number(context.raw)))}`
-				}
-			}
+	});
+	$: points = data.map((entry, index) => {
+		const x = margin.left + (data.length === 1 ? innerWidth / 2 : (innerWidth * index) / (data.length - 1));
+		const y = margin.top + innerHeight - ((entry.value - minValue) / range) * innerHeight;
+		return {
+			...entry,
+			x,
+			y
 		};
-		chart.update();
-	}
+	});
+	$: linePath = points
+		.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`)
+		.join(' ');
+	$: areaPath =
+		points.length === 0
+			? ''
+			: `${linePath} L ${points[points.length - 1].x} ${margin.top + innerHeight} L ${points[0].x} ${margin.top + innerHeight} Z`;
+	$: activePoint = activeIndex >= 0 ? points[activeIndex] : null;
+	$: activeTooltipStyle = activePoint
+		? `left:${((activePoint.x / width) * 100).toFixed(2)}%;top:${activePoint.y}px;`
+		: '';
+	$: visibleXAxisLabels = points.filter((_, index) => {
+		if (points.length <= 6) return true;
+		if (index === 0 || index === points.length - 1) return true;
+		return isMobile ? index % 3 === 0 : index % 2 === 0;
+	});
 
-	async function initChart() {
-		if (!canvas || typeof window === 'undefined') return;
+	function setActiveIndexFromPointer(event: PointerEvent) {
+		if (!svg || points.length === 0) return;
 
-		if (!ChartCtor) {
-			const chartModule = await import('chart.js/auto');
-			ChartCtor = chartModule.default;
-		}
+		const rect = svg.getBoundingClientRect();
+		const x = ((event.clientX - rect.left) / rect.width) * width;
 
-		chart?.destroy();
+		let nearestIndex = 0;
+		let nearestDistance = Number.POSITIVE_INFINITY;
 
-		if (!ChartCtor || !canvas) return;
-
-		chart = new ChartCtor(canvas, {
-			type: 'line',
-			data: {
-				labels,
-				datasets: [
-					{
-						data: values,
-						fill: true,
-						tension: 0.32,
-						borderWidth: 2.75,
-						pointRadius: 0,
-						pointHoverRadius: 4,
-						pointHoverBorderWidth: 2
-					}
-				]
-			},
-			options: {
-				responsive: true,
-				maintainAspectRatio: false,
-				interaction: {
-					mode: 'index',
-					intersect: false
-				},
-				animation: {
-					duration: 600
-				}
-			}
-		});
-		syncChart();
-	}
-
-	onMount(() => {
-		let disposed = false;
-
-		async function setup() {
-			await tick();
-
-			if (!disposed) {
-				await initChart();
+		for (let index = 0; index < points.length; index += 1) {
+			const distance = Math.abs(points[index].x - x);
+			if (distance < nearestDistance) {
+				nearestDistance = distance;
+				nearestIndex = index;
 			}
 		}
 
-		setup();
+		activeIndex = nearestIndex;
+	}
 
-		return () => {
-			disposed = true;
-		};
-	});
-
-	onDestroy(() => {
-		chart?.destroy();
-	});
-
-	$: if (chart) {
-		labels;
-		values;
-		theme;
-		isMobile;
-		syncChart();
+	function clearActiveIndex() {
+		activeIndex = -1;
 	}
 </script>
 
 <div class="prediction-chart-frame">
-	<canvas bind:this={canvas}></canvas>
+	<svg
+		bind:this={svg}
+		class="prediction-chart-svg"
+		viewBox={`0 0 ${width} ${height}`}
+		role="img"
+		aria-label="Prediction trend chart"
+		on:pointermove={setActiveIndexFromPointer}
+		on:pointerleave={clearActiveIndex}
+	>
+		<defs>
+			<linearGradient id="prediction-area-gradient" x1="0" y1="0" x2="0" y2="1">
+				<stop offset="0%" stop-color={theme.chartLine} stop-opacity="0.38" />
+				<stop offset="65%" stop-color={theme.chartLine} stop-opacity="0.12" />
+				<stop offset="100%" stop-color={theme.chartLine} stop-opacity="0" />
+			</linearGradient>
+		</defs>
+
+		{#each yTicks as tick}
+			<line
+				x1={margin.left}
+				y1={tick.y}
+				x2={width - margin.right}
+				y2={tick.y}
+				stroke={theme.chartGrid}
+				stroke-dasharray="3 10"
+			/>
+			<text
+				x={margin.left - 12}
+				y={tick.y + 4}
+				text-anchor="end"
+				fill={theme.textMuted}
+				font-size={isMobile ? 11 : 12}
+				font-family='"Avenir Next", "Segoe UI", sans-serif'
+			>
+				{formatCurrencyTick(tick.value)}
+			</text>
+		{/each}
+
+		{#if areaPath}
+			<path d={areaPath} fill="url(#prediction-area-gradient)" />
+			<path
+				d={linePath}
+				fill="none"
+				stroke={theme.chartLine}
+				stroke-width="2.75"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			/>
+		{/if}
+
+		{#if activePoint}
+			<line
+				x1={activePoint.x}
+				y1={margin.top}
+				x2={activePoint.x}
+				y2={margin.top + innerHeight}
+				stroke={theme.chartLine}
+				stroke-opacity="0.22"
+				stroke-dasharray="4 8"
+			/>
+			<circle
+				cx={activePoint.x}
+				cy={activePoint.y}
+				r="4.5"
+				fill={theme.panelStrong}
+				stroke={theme.chartLine}
+				stroke-width="2"
+			/>
+		{/if}
+
+		{#each visibleXAxisLabels as point}
+			<text
+				x={point.x}
+				y={height - 8}
+				text-anchor="middle"
+				fill={theme.textMuted}
+				font-size={isMobile ? 11 : 12}
+				font-family='"Avenir Next", "Segoe UI", sans-serif'
+			>
+				{point.label}
+			</text>
+		{/each}
+
+		<rect
+			x={margin.left}
+			y={margin.top}
+			width={innerWidth}
+			height={innerHeight}
+			fill="transparent"
+		/>
+	</svg>
+
+	{#if activePoint}
+		<div class="prediction-chart-tooltip" style={activeTooltipStyle}>
+			<div class="prediction-chart-tooltip-label">{activePoint.label}</div>
+			<div class="prediction-chart-tooltip-value">
+				Estimated Price: {formatCurrency(activePoint.value)}
+			</div>
+		</div>
+	{/if}
 </div>

@@ -270,6 +270,112 @@
 	box-shadow: 0 0 0 3px var(--focus-ring, rgba(35, 75, 97, 0.12));
 }
 
+.prediction-listbox {
+	position: relative;
+}
+
+.prediction-listbox-trigger {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 14px 16px;
+	border: 1px solid var(--line-soft, rgba(116, 92, 68, 0.14));
+	border-radius: 16px;
+	background: var(--field-bg, rgba(255, 255, 255, 0.54));
+	color: var(--text-color, #1f2328);
+	font: inherit;
+	font-weight: 600;
+	text-align: left;
+	cursor: pointer;
+	transition:
+		border-color 160ms ease,
+		box-shadow 160ms ease,
+		transform 160ms ease,
+		background 160ms ease;
+}
+
+.prediction-listbox-trigger:focus-visible,
+.prediction-listbox-open {
+	outline: none;
+	border-color: var(--primary-color, #234b61);
+	box-shadow: 0 0 0 3px var(--focus-ring, rgba(35, 75, 97, 0.12));
+}
+
+.prediction-listbox-value {
+	color: var(--text-muted, #72695f);
+}
+
+.prediction-listbox-value.selected {
+	color: var(--text-color, #1f2328);
+}
+
+.prediction-listbox-chevron {
+	color: var(--text-muted, #72695f);
+	font-size: 0.95rem;
+	transition: transform 160ms ease;
+}
+
+.prediction-listbox-open .prediction-listbox-chevron {
+	transform: rotate(180deg);
+}
+
+.prediction-listbox-panel {
+	position: absolute;
+	top: calc(100% + 8px);
+	left: 0;
+	right: 0;
+	z-index: 5;
+	display: grid;
+	gap: 6px;
+	max-height: 280px;
+	padding: 8px;
+	overflow: auto;
+	border: 1px solid var(--line-soft, rgba(116, 92, 68, 0.14));
+	border-radius: 18px;
+	background: color-mix(in srgb, var(--panel-strong, rgba(255, 253, 250, 0.92)) 94%, white);
+	box-shadow: 0 18px 40px var(--panel-shadow, rgba(110, 84, 63, 0.12));
+	backdrop-filter: blur(16px);
+	transform-origin: top center;
+}
+
+.prediction-listbox-option {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 11px 12px;
+	border: 1px solid transparent;
+	border-radius: 14px;
+	background: transparent;
+	color: var(--text-color, #1f2328);
+	font: inherit;
+	font-weight: 600;
+	text-align: left;
+	cursor: pointer;
+	transition:
+		background 140ms ease,
+		border-color 140ms ease,
+		transform 140ms ease;
+}
+
+.prediction-listbox-option.active,
+.prediction-listbox-option:hover {
+	background: color-mix(in srgb, var(--primary-color, #234b61) 8%, white);
+	transform: translateY(-1px);
+}
+
+.prediction-listbox-option.selected {
+	border-color: var(--line-soft, rgba(116, 92, 68, 0.14));
+	background: color-mix(in srgb, var(--accent-color, #af6542) 10%, white);
+}
+
+.prediction-listbox-check {
+	color: var(--accent-color, #af6542);
+	font-size: 0.8rem;
+}
+
 .prediction-unit-wrap {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) auto;
@@ -292,6 +398,84 @@
 	color: var(--text-muted, #72695f);
 	font-size: 0.88rem;
 	font-weight: 700;
+}
+
+.prediction-year-control {
+	padding: 14px 16px 12px;
+	border: 1px solid var(--line-soft, rgba(116, 92, 68, 0.14));
+	border-radius: 18px;
+	background: var(--field-bg, rgba(255, 255, 255, 0.54));
+}
+
+.prediction-year-header,
+.prediction-year-markers {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.prediction-year-header strong {
+	font-size: 1.4rem;
+	font-weight: 800;
+	letter-spacing: -0.03em;
+	color: var(--primary-color, #234b61);
+}
+
+.prediction-year-header span,
+.prediction-year-markers span {
+	color: var(--text-muted, #72695f);
+	font-size: 0.82rem;
+	font-weight: 700;
+}
+
+.prediction-year-slider {
+	padding: 0;
+	margin: 14px 0 10px;
+	border: none;
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none;
+	appearance: none;
+}
+
+.prediction-year-slider:focus {
+	box-shadow: none;
+}
+
+.prediction-year-slider::-webkit-slider-runnable-track {
+	height: 8px;
+	border-radius: 999px;
+	background:
+		linear-gradient(90deg, var(--primary-color, #234b61) 0%, var(--accent-color, #af6542) 100%);
+}
+
+.prediction-year-slider::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	margin-top: -6px;
+	width: 20px;
+	height: 20px;
+	border: 2px solid var(--panel-strong, rgba(255, 253, 250, 0.92));
+	border-radius: 50%;
+	background: var(--accent-color, #af6542);
+	box-shadow: 0 6px 18px var(--accent-shadow, rgba(175, 101, 66, 0.24));
+}
+
+.prediction-year-slider::-moz-range-track {
+	height: 8px;
+	border: none;
+	border-radius: 999px;
+	background:
+		linear-gradient(90deg, var(--primary-color, #234b61) 0%, var(--accent-color, #af6542) 100%);
+}
+
+.prediction-year-slider::-moz-range-thumb {
+	width: 20px;
+	height: 20px;
+	border: 2px solid var(--panel-strong, rgba(255, 253, 250, 0.92));
+	border-radius: 50%;
+	background: var(--accent-color, #af6542);
+	box-shadow: 0 6px 18px var(--accent-shadow, rgba(175, 101, 66, 0.24));
 }
 
 .prediction-button-row {
@@ -386,6 +570,10 @@
 	max-width: 34rem;
 }
 
+.prediction-chart-summary-grid {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .prediction-chart-title {
 	margin: 6px 0 0;
 	color: var(--text-color, #1f2328);
@@ -411,10 +599,46 @@
 }
 
 .prediction-chart-frame {
+	position: relative;
 	min-height: 320px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+}
+
+.prediction-chart-svg {
+	display: block;
+	width: 100%;
+	height: auto;
+	overflow: visible;
+}
+
+.prediction-chart-tooltip {
+	position: absolute;
+	z-index: 2;
+	transform: translate(-50%, calc(-100% - 14px));
+	padding: 10px 12px;
+	border-radius: 18px;
+	border: 1px solid var(--line-soft, rgba(116, 92, 68, 0.14));
+	background: var(--panel-strong, rgba(255, 253, 250, 0.92));
+	box-shadow: 0 18px 40px var(--panel-shadow, rgba(110, 84, 63, 0.12));
+	pointer-events: none;
+	white-space: nowrap;
+}
+
+.prediction-chart-tooltip-label {
+	color: var(--text-muted, #72695f);
+	font-size: 11px;
+	font-weight: 800;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+}
+
+.prediction-chart-tooltip-value {
+	margin-top: 4px;
+	color: var(--text-color, #1f2328);
+	font-size: 13px;
+	font-weight: 700;
 }
 
 @keyframes prediction-settle {
@@ -464,12 +688,26 @@
 		flex: 1;
 	}
 
+	.prediction-card-inner,
+	.prediction-form-shell,
+	.prediction-results-card {
+		padding: 18px;
+	}
+
 	.prediction-form-grid,
 	.prediction-figure-row,
 	.prediction-results-grid,
 	.prediction-button-row,
 	.prediction-chart-summary-grid {
 		grid-template-columns: 1fr;
+	}
+
+	.prediction-listbox-panel {
+		max-height: 220px;
+	}
+
+	.prediction-year-control {
+		padding: 12px 14px 10px;
 	}
 
 	.prediction-results-header {
