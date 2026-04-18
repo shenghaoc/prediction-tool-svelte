@@ -362,13 +362,29 @@
 
 .prediction-listbox-option.active,
 .prediction-listbox-option:hover {
-	background: color-mix(in srgb, var(--primary-color, #234b61) 8%, white);
+	background:
+		color-mix(
+			in srgb,
+			var(--primary-color, #234b61) 14%,
+			var(--panel-strong, rgba(255, 253, 250, 0.82)) 86%
+		);
 	transform: translateY(-1px);
 }
 
 .prediction-listbox-option.selected {
-	border-color: var(--line-soft, rgba(116, 92, 68, 0.14));
-	background: color-mix(in srgb, var(--accent-color, #af6542) 10%, white);
+	border-color:
+		color-mix(
+			in srgb,
+			var(--accent-color, #af6542) 34%,
+			var(--line-soft, rgba(116, 92, 68, 0.14)) 66%
+		);
+	background:
+		color-mix(
+			in srgb,
+			var(--accent-color, #af6542) 18%,
+			var(--panel-strong, rgba(255, 253, 250, 0.82)) 82%
+		);
+	color: var(--text-color, #1f2328);
 }
 
 .prediction-listbox-check {
