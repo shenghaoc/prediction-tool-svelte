@@ -2,11 +2,37 @@ import { writable } from 'svelte/store';
 
 export type Language = 'en' | 'zh';
 
-export const lang = writable<Language>(
-	typeof window !== 'undefined' && localStorage.getItem('lang') === 'zh' ? 'zh' : 'en'
-);
+export function getStoredLanguage(): Language {
+	if (typeof window === 'undefined') {
+		return 'en';
+	}
+
+	return localStorage.getItem('lang') === 'zh' ? 'zh' : 'en';
+}
+
+export const lang = writable<Language>(getStoredLanguage());
+
+export function persistLanguage(language: Language) {
+	if (typeof window === 'undefined') {
+		return;
+	}
+
+	localStorage.setItem('lang', language);
+	document.cookie = `lang=${language}; Path=/; Max-Age=31536000; SameSite=Lax`;
+}
+
+export function applyDocumentLanguage(language: Language) {
+	if (typeof document === 'undefined') {
+		return;
+	}
+
+	document.documentElement.lang = language;
+}
 
 const en = {
+	page_title: 'Singapore HDB Resale Price Prediction',
+	page_description:
+		'Estimate Singapore HDB resale prices from flat attributes and review the predicted 12-month price path.',
 	price_prediction: 'Price Prediction',
 	intro_eyebrow: 'Singapore HDB resale estimator',
 	intro_blurb:
@@ -120,10 +146,11 @@ const en = {
 } as const;
 
 const zh = {
+	page_title: '新加坡组屋转售价预测',
+	page_description: '根据房屋属性估算新加坡组屋转售价，并查看过去12个月的预测价格走势。',
 	price_prediction: '价格预测',
 	intro_eyebrow: '新加坡组屋转售价估算器',
-	intro_blurb:
-		'比较房屋属性，提交一个情境，并快速查看估算转售价与过去12个月趋势。',
+	intro_blurb: '比较房屋属性，提交一个情境，并快速查看估算转售价与过去12个月趋势。',
 	intro_caption: '快速测试不同城镇、户型、楼层与租约组合。',
 	prediction_form: '预测表单',
 	ml_model: '机器学习模型',

@@ -2,12 +2,7 @@
 	import { createEventDispatcher } from 'svelte';
 
 	import { lang, t, type Language } from '$lib/i18n';
-	import {
-		FLAT_MODELS,
-		ML_MODELS,
-		STOREY_RANGES,
-		TOWNS
-	} from '$lib/lists';
+	import { FLAT_MODELS, ML_MODELS, STOREY_RANGES, TOWNS } from '$lib/lists';
 	import type { FieldType } from '$lib/prediction';
 	import FormField from './FormField.svelte';
 	import Listbox from './Listbox.svelte';
@@ -30,24 +25,22 @@
 		};
 	}>();
 
-	$: currentLang = $lang;
-	$: headlineClass = currentLang === 'zh' ? 'prediction-headline-cjk' : '';
-
-	function tr(key: string) {
-		return t(key, currentLang);
-	}
-
-	function optionLabel(group: 'ml_models' | 'towns' | 'storey_ranges' | 'flat_models', value: string) {
-		return t(`${group}.${value}`, currentLang as Language);
+	function optionLabel(
+		group: 'ml_models' | 'towns' | 'storey_ranges' | 'flat_models',
+		value: string,
+		language: Language
+	) {
+		return t(`${group}.${value}`, language);
 	}
 
 	function toOptions(
 		values: readonly string[],
-		group: 'ml_models' | 'towns' | 'storey_ranges' | 'flat_models'
+		group: 'ml_models' | 'towns' | 'storey_ranges' | 'flat_models',
+		language: Language
 	): ListboxOption[] {
 		return values.map((entry) => ({
 			value: entry,
-			label: optionLabel(group, entry)
+			label: optionLabel(group, entry, language)
 		}));
 	}
 
@@ -66,77 +59,87 @@
 
 	const leaseYearMin = 1960;
 	const leaseYearMax = 2022;
-	$: modelOptions = toOptions(ML_MODELS, 'ml_models');
-	$: townOptions = toOptions(TOWNS, 'towns');
-	$: storeyOptions = toOptions(STOREY_RANGES, 'storey_ranges');
-	$: flatModelOptions = toOptions(FLAT_MODELS, 'flat_models');
+	$: modelOptions = toOptions(ML_MODELS, 'ml_models', $lang);
+	$: townOptions = toOptions(TOWNS, 'towns', $lang);
+	$: storeyOptions = toOptions(STOREY_RANGES, 'storey_ranges', $lang);
+	$: flatModelOptions = toOptions(FLAT_MODELS, 'flat_models', $lang);
 </script>
 
 <section class="prediction-card">
 	<div class="prediction-card-inner">
 		<div class="prediction-intro-block">
-			<h1 class={`prediction-headline ${headlineClass}`}>{tr('price_prediction')}</h1>
-			<p class="prediction-lead">{tr('intro_blurb')}</p>
+			<h1 class={`prediction-headline ${$lang === 'zh' ? 'prediction-headline-cjk' : ''}`}>
+				{t('price_prediction', $lang)}
+			</h1>
+			<p class="prediction-lead">{t('intro_blurb', $lang)}</p>
 
 			<div class="prediction-figure-row">
-				<StatCard variant="figure" label={tr('ml_model')} value={String(ML_MODELS.length).padStart(2, '0')} />
-				<StatCard variant="figure" label={tr('town')} value={String(TOWNS.length).padStart(2, '0')} />
 				<StatCard
 					variant="figure"
-					label={tr('storey_range')}
+					label={t('ml_model', $lang)}
+					value={String(ML_MODELS.length).padStart(2, '0')}
+				/>
+				<StatCard
+					variant="figure"
+					label={t('town', $lang)}
+					value={String(TOWNS.length).padStart(2, '0')}
+				/>
+				<StatCard
+					variant="figure"
+					label={t('storey_range', $lang)}
 					value={String(STOREY_RANGES.length).padStart(2, '0')}
 				/>
 			</div>
 
-			<p class="prediction-caption">{tr('intro_caption')}</p>
+			<p class="prediction-caption">{t('intro_caption', $lang)}</p>
 		</div>
 
 		<form class="prediction-form-shell" onsubmit={submitForm} novalidate>
-			<h2 class="prediction-section-title">{tr('prediction_form')}</h2>
+			<h2 class="prediction-section-title">{t('prediction_form', $lang)}</h2>
 
 			<div class="prediction-form-grid">
-				<FormField forId="ml_model" label={tr('ml_model')} error={fieldErrors.ml_model}>
+				<FormField forId="ml_model" label={t('ml_model', $lang)} error={fieldErrors.ml_model}>
 					<Listbox
 						id="ml_model"
 						value={form.ml_model}
 						options={modelOptions}
-						placeholder={tr('select_ml_model')}
+						placeholder={t('select_ml_model', $lang)}
 						on:change={(event) =>
 							updateField('ml_model', event.detail.value as FieldType['ml_model'])}
 					/>
 				</FormField>
 
-				<FormField forId="town" label={tr('town')} error={fieldErrors.town}>
+				<FormField forId="town" label={t('town', $lang)} error={fieldErrors.town}>
 					<Listbox
 						id="town"
 						value={form.town}
 						options={townOptions}
-						placeholder={tr('select_town')}
+						placeholder={t('select_town', $lang)}
 						on:change={(event) => updateField('town', event.detail.value as FieldType['town'])}
 					/>
 				</FormField>
 
 				<FormField
 					forId="storey_range"
-					label={tr('storey_range')}
+					label={t('storey_range', $lang)}
 					error={fieldErrors.storey_range}
 				>
 					<Listbox
 						id="storey_range"
 						value={form.storey_range}
 						options={storeyOptions}
-						placeholder={tr('select_storey_range')}
+						placeholder={t('select_storey_range', $lang)}
 						on:change={(event) =>
 							updateField('storey_range', event.detail.value as FieldType['storey_range'])}
 					/>
 				</FormField>
 
-				<FormField forId="flat_model" label={tr('flat_model')} error={fieldErrors.flat_model}>
+				<FormField forId="flat_model" label={t('flat_model', $lang)} error={fieldErrors.flat_model}>
 					<Listbox
 						id="flat_model"
 						value={form.flat_model}
 						options={flatModelOptions}
-						placeholder={tr('select_flat_model')}
+						placeholder={t('select_flat_model', $lang)}
 						on:change={(event) =>
 							updateField('flat_model', event.detail.value as FieldType['flat_model'])}
 					/>
@@ -144,7 +147,7 @@
 
 				<FormField
 					forId="floor_area_sqm"
-					label={tr('floor_area')}
+					label={t('floor_area', $lang)}
 					error={fieldErrors.floor_area_sqm}
 					fullWidth
 				>
@@ -157,7 +160,7 @@
 							step="1"
 							bind:value={form.floor_area_sqm}
 							oninput={() => updateField('floor_area_sqm', Number(form.floor_area_sqm))}
-							placeholder={tr('enter_floor_area')}
+							placeholder={t('enter_floor_area', $lang)}
 						/>
 						<div class="prediction-unit-tag">m²</div>
 					</div>
@@ -165,7 +168,7 @@
 
 				<FormField
 					forId="lease_commence_date"
-					label={tr('lease_commence_date')}
+					label={t('lease_commence_date', $lang)}
 					error={fieldErrors.lease_commence_date}
 					fullWidth
 				>
@@ -199,10 +202,15 @@
 
 			<div class="prediction-button-row">
 				<button class="prediction-primary-button" type="submit" disabled={loading}>
-					{loading ? '...' : tr('get_prediction')}
+					{loading ? '...' : t('get_prediction', $lang)}
 				</button>
-				<button class="prediction-reset-button" type="button" onclick={resetForm} disabled={loading}>
-					{tr('reset_form')}
+				<button
+					class="prediction-reset-button"
+					type="button"
+					onclick={resetForm}
+					disabled={loading}
+				>
+					{t('reset_form', $lang)}
 				</button>
 			</div>
 		</form>

@@ -246,9 +246,7 @@ function createPredictionStore() {
 					...current,
 					loading: false,
 					errorMessage:
-						error instanceof Error && error.message
-							? error.message
-							: t('error_fetch', currentLang)
+						error instanceof Error && error.message ? error.message : t('error_fetch', currentLang)
 				}));
 			}
 		}

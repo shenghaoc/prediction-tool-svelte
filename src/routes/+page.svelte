@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	import { lang, t, type Language } from '$lib/i18n';
+	import { applyDocumentLanguage, lang, persistLanguage, t, type Language } from '$lib/i18n';
 	import { getPredictionTheme, type FieldType } from '$lib/prediction';
 	import PredictionForm from '$lib/components/prediction/PredictionForm.svelte';
 	import PredictionResults from '$lib/components/prediction/PredictionResults.svelte';
@@ -9,9 +9,8 @@
 	import '$lib/components/prediction/prediction.css';
 
 	type FieldName = keyof FieldType;
-	let currentLang: Language = 'en';
 
-	$: currentLang = $lang;
+	$: applyDocumentLanguage($lang);
 	$: theme = getPredictionTheme($prediction.darkMode);
 	$: pageStyle = `
 		--page-bg:${theme.pageBg};
@@ -34,20 +33,15 @@
 		--orb-color:${theme.orbColor};
 		background:${theme.background};
 	`;
-	function tr(key: string) {
-		return t(key, currentLang);
-	}
 
 	function toggleTheme() {
 		prediction.toggleTheme();
 	}
 
 	function toggleLang() {
-		const next = currentLang === 'en' ? 'zh' : 'en';
+		const next: Language = $lang === 'en' ? 'zh' : 'en';
 		lang.set(next);
-		if (typeof window !== 'undefined') {
-			localStorage.setItem('lang', next);
-		}
+		persistLanguage(next);
 	}
 
 	function updateField<K extends FieldName>(key: K, value: FieldType[K]) {
@@ -64,19 +58,20 @@
 </script>
 
 <svelte:head>
-	<title>{tr('price_prediction')}</title>
+	<title>{t('page_title', $lang)}</title>
+	<meta name="description" content={t('page_description', $lang)} />
 </svelte:head>
 
 <main class="prediction-shell" style={pageStyle}>
 	<div class="prediction-surface">
 		<div class="prediction-topbar">
-			<div class="prediction-pill">{tr('intro_eyebrow')}</div>
+			<div class="prediction-pill">{t('intro_eyebrow', $lang)}</div>
 			<div class="prediction-actions">
 				<button class="prediction-ghost-button" type="button" onclick={toggleTheme}>
 					{$prediction.darkMode ? 'Light' : 'Dark'}
 				</button>
 				<button class="prediction-ghost-button" type="button" onclick={toggleLang}>
-					{tr('switch_language')}
+					{t('switch_language', $lang)}
 				</button>
 			</div>
 		</div>
@@ -89,10 +84,7 @@
 				on:submit={handleSubmit}
 				on:reset={() => prediction.reset()}
 				on:update={(event) =>
-					updateField(
-						event.detail.key as FieldName,
-						event.detail.value as FieldType[FieldName]
-					)}
+					updateField(event.detail.key as FieldName, event.detail.value as FieldType[FieldName])}
 			/>
 
 			<div>

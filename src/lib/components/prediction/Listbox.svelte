@@ -54,7 +54,10 @@
 	async function openListbox() {
 		if (disabled) return;
 		open = true;
-		activeIndex = Math.max(options.findIndex((option) => option.value === value), 0);
+		activeIndex = Math.max(
+			options.findIndex((option) => option.value === value),
+			0
+		);
 		await tick();
 		panel?.focus();
 	}
@@ -138,14 +141,14 @@
 
 <div bind:this={root} class="prediction-listbox" use:clickOutside>
 	<button
-		id={id}
+		{id}
 		type="button"
 		class:prediction-listbox-open={open}
 		class="prediction-listbox-trigger"
 		aria-haspopup="listbox"
 		aria-expanded={open}
 		aria-controls={`${id}-options`}
-		disabled={disabled}
+		{disabled}
 		onclick={() => (open ? closeListbox() : openListbox())}
 		onkeydown={handleTriggerKeydown}
 	>

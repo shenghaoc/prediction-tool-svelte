@@ -13,7 +13,6 @@
 	export let theme: PredictionTheme;
 	export let isMobile: boolean;
 
-	$: currentLang = $lang;
 	$: latestValue = trendData[trendData.length - 1]?.value ?? 0;
 	$: firstValue = trendData[0]?.value ?? 0;
 	$: peakValue = Math.max(...trendData.map((point) => point.value), 0);
@@ -25,23 +24,28 @@
 	$: deltaValue = latestValue - firstValue;
 	$: normalizedLowValue = Number.isFinite(lowValue) ? lowValue : 0;
 
-	function tr(key: string) {
-		return t(key, currentLang as Language);
-	}
-
-	function optionLabel(group: 'ml_models' | 'towns' | 'storey_ranges' | 'flat_models', value: string) {
-		return t(`${group}.${value}`, currentLang as Language);
+	function optionLabel(
+		group: 'ml_models' | 'towns' | 'storey_ranges' | 'flat_models',
+		value: string,
+		language: Language
+	) {
+		return t(`${group}.${value}`, language);
 	}
 </script>
 
 <section class="prediction-results-card">
 	<div class="prediction-results-header">
 		<div>
-			<span class="prediction-results-label">{tr('predicted_trends')}</span>
-			<h2 class="prediction-results-title">{tr('predicted_price')}</h2>
+			<span class="prediction-results-label">{t('predicted_trends', $lang)}</span>
+			<h2 class="prediction-results-title">{t('predicted_price', $lang)}</h2>
 		</div>
-		<div class:prediction-pulse={loading} class="prediction-price-panel">
-			<span class="prediction-results-label">{tr('prediction')}</span>
+		<div
+			class:prediction-pulse={loading}
+			class="prediction-price-panel"
+			aria-live="polite"
+			aria-busy={loading}
+		>
+			<span class="prediction-results-label">{t('prediction', $lang)}</span>
 			{#key output}
 				<strong transition:scale={{ duration: 180, start: 0.92 }}>{formatCurrency(output)}</strong>
 			{/key}
@@ -49,34 +53,55 @@
 	</div>
 
 	<div class="prediction-results-grid">
-		<StatCard variant="metric" label={tr('ml_model')} value={optionLabel('ml_models', summaryValues.ml_model)} />
-		<StatCard variant="metric" label={tr('town')} value={optionLabel('towns', summaryValues.town)} />
-		<StatCard variant="metric" label={tr('lease_commence_date')} value={String(summaryValues.lease_commence_date)} />
+		<StatCard
+			variant="metric"
+			label={t('ml_model', $lang)}
+			value={optionLabel('ml_models', summaryValues.ml_model, $lang)}
+		/>
+		<StatCard
+			variant="metric"
+			label={t('town', $lang)}
+			value={optionLabel('towns', summaryValues.town, $lang)}
+		/>
+		<StatCard
+			variant="metric"
+			label={t('lease_commence_date', $lang)}
+			value={String(summaryValues.lease_commence_date)}
+		/>
 	</div>
 
 	<div class="prediction-chart-shell">
 		<div class="prediction-chart-header">
 			<div class="prediction-chart-copy">
-				<span class="prediction-chart-kicker">{tr('predicted_trends')}</span>
-				<h3 class="prediction-chart-title">{tr('chart_story_title')}</h3>
+				<span class="prediction-chart-kicker">{t('predicted_trends', $lang)}</span>
+				<h3 class="prediction-chart-title">{t('chart_story_title', $lang)}</h3>
 			</div>
 
 			<div class="prediction-chart-summary-grid">
-				<StatCard variant="summary" label={tr('chart_latest')} value={`$${latestValue.toLocaleString()}`} />
 				<StatCard
 					variant="summary"
-					label={tr('chart_range')}
+					label={t('chart_latest', $lang)}
+					value={`$${latestValue.toLocaleString()}`}
+				/>
+				<StatCard
+					variant="summary"
+					label={t('chart_range', $lang)}
 					value={`$${normalizedLowValue.toLocaleString()} - $${peakValue.toLocaleString()}`}
 				/>
 				<StatCard
 					variant="summary"
-					label={tr('chart_delta')}
+					label={t('chart_delta', $lang)}
 					value={`${deltaValue >= 0 ? '+' : '-'}$${Math.abs(deltaValue).toLocaleString()}`}
-					note={tr('vs_12m_ago')}
+					note={t('vs_12m_ago', $lang)}
 				/>
 			</div>
 		</div>
 
-		<PriceTrendChart data={trendData} {theme} {isMobile} />
+		<PriceTrendChart
+			data={trendData}
+			ariaLabel={`${t('predicted_trends', $lang)}: ${t('chart_story_title', $lang)}`}
+			{theme}
+			{isMobile}
+		/>
 	</div>
 </section>

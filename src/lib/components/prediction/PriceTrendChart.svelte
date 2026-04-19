@@ -3,13 +3,9 @@
 	import { formatCurrencyTick, type PredictionTheme, type TrendPoint } from '$lib/prediction';
 
 	export let data: TrendPoint[];
+	export let ariaLabel: string;
 	export let theme: PredictionTheme;
 	export let isMobile: boolean;
-
-	type ChartPoint = TrendPoint & {
-		x: number;
-		y: number;
-	};
 
 	const width = 760;
 	let svg: SVGSVGElement | null = null;
@@ -40,7 +36,8 @@
 		};
 	});
 	$: points = data.map((entry, index) => {
-		const x = margin.left + (data.length === 1 ? innerWidth / 2 : (innerWidth * index) / (data.length - 1));
+		const x =
+			margin.left + (data.length === 1 ? innerWidth / 2 : (innerWidth * index) / (data.length - 1));
 		const y = margin.top + innerHeight - ((entry.value - minValue) / range) * innerHeight;
 		return {
 			...entry,
@@ -96,7 +93,7 @@
 		class="prediction-chart-svg"
 		viewBox={`0 0 ${width} ${height}`}
 		role="img"
-		aria-label="Prediction trend chart"
+		aria-label={ariaLabel}
 		on:pointermove={setActiveIndexFromPointer}
 		on:pointerleave={clearActiveIndex}
 	>
@@ -123,7 +120,7 @@
 				text-anchor="end"
 				fill={theme.textMuted}
 				font-size={isMobile ? 11 : 12}
-				font-family='"Avenir Next", "Segoe UI", sans-serif'
+				font-family={'"Avenir Next", "Segoe UI", sans-serif'}
 			>
 				{formatCurrencyTick(tick.value)}
 			</text>
@@ -168,7 +165,7 @@
 				text-anchor="middle"
 				fill={theme.textMuted}
 				font-size={isMobile ? 11 : 12}
-				font-family='"Avenir Next", "Segoe UI", sans-serif'
+				font-family={'"Avenir Next", "Segoe UI", sans-serif'}
 			>
 				{point.label}
 			</text>

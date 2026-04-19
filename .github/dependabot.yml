@@ -1,9 +1,9 @@
 version: 2
 updates:
   # Enable version updates for bun
-  - package-ecosystem: "bun"
+  - package-ecosystem: 'bun'
     # Look for `package.json` and `lock` files in the `root` directory
-    directory: "/"
+    directory: '/'
     # Check for updates once a month
     schedule:
-      interval: "monthly"
+      interval: 'monthly'
