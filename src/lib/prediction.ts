@@ -39,7 +39,7 @@ export type PredictionApiResponse = {
 };
 
 export const predictionMonth = dayjs.utc('2022-02', 'YYYY-MM');
-export const MAX_LEASE_COMMENCE_YEAR = new Date().getUTCFullYear();
+export const MAX_LEASE_COMMENCE_YEAR = predictionMonth.year();
 
 export const initialFormValues: FieldType = {
 	ml_model: ML_MODELS[0],
