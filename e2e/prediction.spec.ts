@@ -1,20 +1,22 @@
 import { expect, test } from '@playwright/test';
 
-const mockTrendData = [
-	{ labels: '2021-02', data: 580000 },
-	{ labels: '2021-03', data: 586000 },
-	{ labels: '2021-04', data: 592000 },
-	{ labels: '2021-05', data: 599000 },
-	{ labels: '2021-06', data: 603000 },
-	{ labels: '2021-07', data: 610000 },
-	{ labels: '2021-08', data: 616000 },
-	{ labels: '2021-09', data: 621000 },
-	{ labels: '2021-10', data: 628000 },
-	{ labels: '2021-11', data: 634000 },
-	{ labels: '2021-12', data: 641000 },
-	{ labels: '2022-01', data: 647000 },
-	{ labels: '2022-02', data: 654321 }
-];
+const mockTrendData = {
+	predictions: [
+		{ month: '2021-02', predictedPrice: 580000 },
+		{ month: '2021-03', predictedPrice: 586000 },
+		{ month: '2021-04', predictedPrice: 592000 },
+		{ month: '2021-05', predictedPrice: 599000 },
+		{ month: '2021-06', predictedPrice: 603000 },
+		{ month: '2021-07', predictedPrice: 610000 },
+		{ month: '2021-08', predictedPrice: 616000 },
+		{ month: '2021-09', predictedPrice: 621000 },
+		{ month: '2021-10', predictedPrice: 628000 },
+		{ month: '2021-11', predictedPrice: 634000 },
+		{ month: '2021-12', predictedPrice: 641000 },
+		{ month: '2022-01', predictedPrice: 647000 },
+		{ month: '2022-02', predictedPrice: 654321 }
+	]
+};
 
 test.beforeEach(async ({ page }) => {
 	await page.route('https://ee4802-g20-tool.shenghaoc.workers.dev/api/prices', async (route) => {

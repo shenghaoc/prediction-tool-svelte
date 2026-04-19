@@ -31,8 +31,15 @@ export type TrendPoint = {
 export type SummaryValues = Pick<FieldType, 'ml_model' | 'town' | 'lease_commence_date'>;
 
 export type PredictionTheme = ReturnType<typeof getPredictionTheme>;
+export type PredictionApiResponse = {
+	predictions: Array<{
+		month: string;
+		predictedPrice: number;
+	}>;
+};
 
 export const predictionMonth = dayjs.utc('2022-02', 'YYYY-MM');
+export const MAX_LEASE_COMMENCE_YEAR = new Date().getUTCFullYear();
 
 export const initialFormValues: FieldType = {
 	ml_model: ML_MODELS[0],
@@ -40,7 +47,7 @@ export const initialFormValues: FieldType = {
 	storey_range: STOREY_RANGES[0],
 	flat_model: FLAT_MODELS[0],
 	floor_area_sqm: 20,
-	lease_commence_date: predictionMonth.year()
+	lease_commence_date: MAX_LEASE_COMMENCE_YEAR
 };
 
 export function defaultTrendData(): TrendPoint[] {
@@ -58,10 +65,10 @@ export function normalizePrice(value: number) {
 	return Math.max(0, Math.round(value));
 }
 
-export function normalizeTrendData(data: Array<{ labels: string; data: number }>): TrendPoint[] {
-	return data.map((entry) => ({
-		label: entry.labels,
-		value: normalizePrice(entry.data)
+export function normalizeTrendData(data: PredictionApiResponse): TrendPoint[] {
+	return data.predictions.map((entry) => ({
+		label: entry.month,
+		value: normalizePrice(entry.predictedPrice)
 	}));
 }
 

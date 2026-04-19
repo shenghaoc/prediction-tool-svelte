@@ -25,10 +25,12 @@ describe('prediction helpers', () => {
 
 	it('normalizes trend payloads from the API', () => {
 		expect(
-			normalizeTrendData([
-				{ labels: '2022-01', data: 101_234.9 },
-				{ labels: '2022-02', data: -50 }
-			])
+			normalizeTrendData({
+				predictions: [
+					{ month: '2022-01', predictedPrice: 101_234.9 },
+					{ month: '2022-02', predictedPrice: -50 }
+				]
+			})
 		).toEqual([
 			{ label: '2022-01', value: 101_235 },
 			{ label: '2022-02', value: 0 }

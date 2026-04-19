@@ -74,6 +74,7 @@ bun run test:e2e
 - The prediction request is sent to `https://ee4802-g20-tool.shenghaoc.workers.dev/api/prices` (see `src/lib/stores/prediction.ts`).
 - Theme, language, and form values are persisted locally in the browser.
 - The chart is rendered as SVG to avoid client-only canvas/chart bootstrapping issues in SvelteKit.
+- This variant intentionally keeps a lightweight custom SVG chart (instead of a heavier chart framework) to match Svelte's minimal runtime style.
 
 ## Testing
 

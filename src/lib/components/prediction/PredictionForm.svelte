@@ -3,7 +3,7 @@
 
 	import { lang, t, type Language } from '$lib/i18n';
 	import { FLAT_MODELS, ML_MODELS, STOREY_RANGES, TOWNS } from '$lib/lists';
-	import type { FieldType } from '$lib/prediction';
+	import { MAX_LEASE_COMMENCE_YEAR, type FieldType } from '$lib/prediction';
 	import FormField from './FormField.svelte';
 	import Listbox from './Listbox.svelte';
 	import StatCard from './StatCard.svelte';
@@ -58,7 +58,7 @@
 	}
 
 	const leaseYearMin = 1960;
-	const leaseYearMax = 2022;
+	const leaseYearMax = MAX_LEASE_COMMENCE_YEAR;
 	$: modelOptions = toOptions(ML_MODELS, 'ml_models', $lang);
 	$: townOptions = toOptions(TOWNS, 'towns', $lang);
 	$: storeyOptions = toOptions(STOREY_RANGES, 'storey_ranges', $lang);
