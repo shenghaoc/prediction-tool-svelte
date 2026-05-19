@@ -30,7 +30,7 @@
 	$: range = Math.max(maxValue * 1.04 - minValue, 1);
 
 	$: yTicks = [0, 0.25, 0.5, 0.75, 1].map((ratio) => {
-		const value = Math.round(minValue + (maxValue * 1.04 - minValue) * ratio);
+		const value = Math.round(minValue + range * ratio);
 		return {
 			value,
 			y: margin.top + innerHeight * (1 - ratio)
@@ -77,7 +77,7 @@
 		? `left:${((activePoint.x / width) * 100).toFixed(2)}%;top:${activePoint.y}px;`
 		: '';
 
-	$: peakIdx = values.indexOf(Math.max(...values));
+	$: peakIdx = values.indexOf(maxValue);
 	$: lastIdx = values.length - 1;
 
 	$: visibleXAxisLabels = points.filter((_, index) => {
