@@ -31,6 +31,7 @@
 		--accent-shadow:${theme.accentShadow};
 		--mesh-line:${theme.meshLine};
 		--orb-color:${theme.orbColor};
+		--chart-fill:${theme.chartFill};
 		background:${theme.background};
 	`;
 

@@ -103,8 +103,9 @@ export function getPredictionTheme(darkMode: boolean) {
 			accentShadow: 'rgba(207, 139, 96, 0.26)',
 			meshLine: 'rgba(255, 255, 255, 0.06)',
 			orbColor: 'rgba(207, 139, 96, 0.18)',
-			chartGrid: 'rgba(255,255,255,0.08)',
+			chartGrid: 'rgba(255, 255, 255, 0.08)',
 			chartLine: '#cf8b60',
+			chartFill: 'rgba(207, 139, 96, 0.16)',
 			background: 'linear-gradient(155deg, #091017 0%, #101821 52%, #1a2430 100%)',
 			pageBg: '#091017',
 			pillBg: 'rgba(255, 255, 255, 0.04)'
@@ -130,6 +131,7 @@ export function getPredictionTheme(darkMode: boolean) {
 		orbColor: 'rgba(175, 101, 66, 0.14)',
 		chartGrid: 'rgba(31, 35, 40, 0.08)',
 		chartLine: '#af6542',
+		chartFill: 'rgba(175, 101, 66, 0.12)',
 		background: 'linear-gradient(155deg, #f5eee5 0%, #eee4d8 50%, #ece6de 100%)',
 		pageBg: '#f5eee5',
 		pillBg: 'rgba(255, 251, 246, 0.56)'
