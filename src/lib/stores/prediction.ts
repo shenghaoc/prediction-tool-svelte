@@ -18,6 +18,7 @@ export type PredictionState = {
 	summaryValues: SummaryValues;
 	trendData: ReturnType<typeof defaultTrendData>;
 	output: number;
+	hasPrediction: boolean;
 	loading: boolean;
 	darkMode: boolean;
 	errorMessage: string;
@@ -89,6 +90,7 @@ const initialState: PredictionState = {
 	summaryValues: createSummary(initialFormValues),
 	trendData: defaultTrendData(),
 	output: 0,
+	hasPrediction: false,
 	loading: false,
 	darkMode: false,
 	errorMessage: '',
@@ -168,6 +170,7 @@ function createPredictionStore() {
 				summaryValues: createSummary(initialFormValues),
 				trendData: defaultTrendData(),
 				output: 0,
+				hasPrediction: false,
 				errorMessage: '',
 				fieldErrors: blankFieldErrors()
 			}));
@@ -241,6 +244,7 @@ function createPredictionStore() {
 					...current,
 					trendData,
 					output: normalizePrice(trendData[trendData.length - 1]?.value ?? 0),
+					hasPrediction: true,
 					loading: false
 				}));
 				} catch (error) {

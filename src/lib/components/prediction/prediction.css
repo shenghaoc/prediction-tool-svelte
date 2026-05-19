@@ -270,6 +270,8 @@
 }
 
 /* --- Listbox Styles (Custom Select) --- */
+.prediction-listbox { position: relative; }
+
 .prediction-listbox-trigger {
 	width: 100%;
 	display: flex;

@@ -7,6 +7,7 @@
 	import StatCard from './StatCard.svelte';
 
 	export let output: number;
+	export let hasPrediction: boolean;
 	export let loading: boolean;
 	export let summaryValues: SummaryValues;
 	export let trendData: TrendPoint[];
@@ -46,7 +47,7 @@
 			aria-busy={loading}
 		>
 			<span class="prediction-results-label">{t('prediction', $lang)}</span>
-			{#if output > 0}
+			{#if hasPrediction}
 				{#key output}
 					<strong transition:scale={{ duration: 550, start: 0.96 }}>{formatCurrency(output)}</strong>
 				{/key}
@@ -75,7 +76,7 @@
 	</div>
 
 	<div class="prediction-chart-shell">
-		{#if output > 0}
+		{#if hasPrediction}
 			<div class="prediction-chart-header">
 				<div class="prediction-chart-copy">
 					<span class="prediction-chart-kicker">{t('predicted_trends', $lang)}</span>

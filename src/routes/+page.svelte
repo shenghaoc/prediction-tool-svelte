@@ -91,6 +91,7 @@
 			<div>
 				<PredictionResults
 					output={$prediction.output}
+					hasPrediction={$prediction.hasPrediction}
 					loading={$prediction.loading}
 					summaryValues={$prediction.summaryValues}
 					trendData={$prediction.trendData}
@@ -111,7 +112,7 @@
 		margin: 0;
 		background: var(--page-bg, #f5eee5);
 		color: var(--text-color, #1f2328);
-		font-family: 'Avenir Next', Avenir, 'Segoe UI', sans-serif;
+		font-family: 'DM Sans', 'Avenir Next', Avenir, 'Segoe UI', sans-serif;
 		transition:
 			background 180ms ease,
 			color 180ms ease;
