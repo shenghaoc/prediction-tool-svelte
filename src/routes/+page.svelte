@@ -13,8 +13,6 @@
 	$: applyDocumentLanguage($lang);
 	$: theme = getPredictionTheme($prediction.darkMode);
 	$: pageStyle = `
-		--font-body:'DM Sans','Avenir Next',Avenir,'Segoe UI',system-ui,sans-serif;
-		--font-body-cjk:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;
 		--page-bg:${theme.pageBg};
 		--text-color:${theme.text};
 		--text-muted:${theme.textMuted};
@@ -33,7 +31,6 @@
 		--accent-shadow:${theme.accentShadow};
 		--mesh-line:${theme.meshLine};
 		--orb-color:${theme.orbColor};
-		--chart-fill:${theme.chartFill};
 		background:${theme.background};
 	`;
 
@@ -93,7 +90,6 @@
 			<div>
 				<PredictionResults
 					output={$prediction.output}
-					hasPrediction={$prediction.hasPrediction}
 					loading={$prediction.loading}
 					summaryValues={$prediction.summaryValues}
 					trendData={$prediction.trendData}
@@ -102,7 +98,7 @@
 				/>
 
 				{#if $prediction.errorMessage}
-					<p class="prediction-error">{$prediction.errorMessage}</p>
+					<p class="prediction-error" style="margin-top: 12px;">{$prediction.errorMessage}</p>
 				{/if}
 			</div>
 		</div>
@@ -114,13 +110,7 @@
 		margin: 0;
 		background: var(--page-bg, #f5eee5);
 		color: var(--text-color, #1f2328);
-		font-family:
-			'DM Sans',
-			'Avenir Next',
-			Avenir,
-			'Segoe UI',
-			system-ui,
-			sans-serif;
+		font-family: 'Avenir Next', Avenir, 'Segoe UI', sans-serif;
 		transition:
 			background 180ms ease,
 			color 180ms ease;

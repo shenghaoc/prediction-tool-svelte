@@ -7,7 +7,6 @@
 	import StatCard from './StatCard.svelte';
 
 	export let output: number;
-	export let hasPrediction: boolean;
 	export let loading: boolean;
 	export let summaryValues: SummaryValues;
 	export let trendData: TrendPoint[];
@@ -47,13 +46,9 @@
 			aria-busy={loading}
 		>
 			<span class="prediction-results-label">{t('prediction', $lang)}</span>
-			{#if hasPrediction}
-				{#key output}
-					<strong transition:scale={{ duration: 550, start: 0.96 }}>{formatCurrency(output)}</strong>
-				{/key}
-			{:else}
-				<span class="prediction-price-value-awaiting">{t('awaiting_prediction', $lang)}</span>
-			{/if}
+			{#key output}
+				<strong transition:scale={{ duration: 180, start: 0.92 }}>{formatCurrency(output)}</strong>
+			{/key}
 		</div>
 	</div>
 
@@ -76,44 +71,37 @@
 	</div>
 
 	<div class="prediction-chart-shell">
-		{#if hasPrediction}
-			<div class="prediction-chart-header">
-				<div class="prediction-chart-copy">
-					<span class="prediction-chart-kicker">{t('predicted_trends', $lang)}</span>
-					<h3 class="prediction-chart-title">{t('chart_story_title', $lang)}</h3>
-				</div>
-
-				<div class="prediction-chart-summary-grid">
-					<StatCard
-						variant="summary"
-						label={t('chart_latest', $lang)}
-						value={`$${latestValue.toLocaleString()}`}
-					/>
-					<StatCard
-						variant="summary"
-						label={t('chart_range', $lang)}
-						value={`$${normalizedLowValue.toLocaleString()} - $${peakValue.toLocaleString()}`}
-					/>
-					<StatCard
-						variant="summary"
-						label={t('chart_delta', $lang)}
-						value={`${deltaValue >= 0 ? '+' : '-'}$${Math.abs(deltaValue).toLocaleString()}`}
-						note={t('vs_12m_ago', $lang)}
-					/>
-				</div>
+		<div class="prediction-chart-header">
+			<div class="prediction-chart-copy">
+				<span class="prediction-chart-kicker">{t('predicted_trends', $lang)}</span>
+				<h3 class="prediction-chart-title">{t('chart_story_title', $lang)}</h3>
 			</div>
 
-			<PriceTrendChart
-				data={trendData}
-				ariaLabel={`${t('predicted_trends', $lang)}: ${t('chart_story_title', $lang)}`}
-				{theme}
-				{isMobile}
-			/>
-		{:else}
-			<div class="prediction-placeholder">
-				<h3 class="prediction-placeholder-title">{t('awaiting_prediction', $lang)}</h3>
-				<p class="prediction-placeholder-body">{t('placeholder_body', $lang)}</p>
+			<div class="prediction-chart-summary-grid">
+				<StatCard
+					variant="summary"
+					label={t('chart_latest', $lang)}
+					value={`$${latestValue.toLocaleString()}`}
+				/>
+				<StatCard
+					variant="summary"
+					label={t('chart_range', $lang)}
+					value={`$${normalizedLowValue.toLocaleString()} - $${peakValue.toLocaleString()}`}
+				/>
+				<StatCard
+					variant="summary"
+					label={t('chart_delta', $lang)}
+					value={`${deltaValue >= 0 ? '+' : '-'}$${Math.abs(deltaValue).toLocaleString()}`}
+					note={t('vs_12m_ago', $lang)}
+				/>
 			</div>
-		{/if}
+		</div>
+
+		<PriceTrendChart
+			data={trendData}
+			ariaLabel={`${t('predicted_trends', $lang)}: ${t('chart_story_title', $lang)}`}
+			{theme}
+			{isMobile}
+		/>
 	</div>
 </section>

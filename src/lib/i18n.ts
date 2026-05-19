@@ -68,8 +68,6 @@ const en = {
 	vs_12m_ago: 'vs 12 months ago',
 	prediction: 'Prediction',
 	predicted_price: 'Predicted Price',
-	awaiting_prediction: 'Awaiting prediction',
-	placeholder_body: 'Enter flat attributes on the left to generate a 12-month price estimation and trend chart.',
 	error_fetch: 'Failed to fetch prediction. Please try again.',
 	switch_language: '中文/English',
 	ml_models: {
@@ -184,8 +182,6 @@ const zh = {
 	vs_12m_ago: '对比12个月前',
 	prediction: '预测',
 	predicted_price: '预测价格',
-	awaiting_prediction: '等待预测',
-	placeholder_body: '在左侧输入房屋属性，以生成12个月的价格估算和趋势图。',
 	error_fetch: '获取预测失败，请重试。',
 	switch_language: '中文/English',
 	ml_models: {

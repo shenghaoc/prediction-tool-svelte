@@ -22,7 +22,6 @@ export type PredictionState = {
 	darkMode: boolean;
 	errorMessage: string;
 	isMobile: boolean;
-	hasPrediction: boolean;
 	fieldErrors: Record<FieldName, string>;
 };
 
@@ -94,7 +93,6 @@ const initialState: PredictionState = {
 	darkMode: false,
 	errorMessage: '',
 	isMobile: false,
-	hasPrediction: false,
 	fieldErrors: blankFieldErrors()
 };
 
@@ -170,7 +168,6 @@ function createPredictionStore() {
 				summaryValues: createSummary(initialFormValues),
 				trendData: defaultTrendData(),
 				output: 0,
-				hasPrediction: false,
 				errorMessage: '',
 				fieldErrors: blankFieldErrors()
 			}));
@@ -191,10 +188,10 @@ function createPredictionStore() {
 				};
 			});
 		},
-		async submit() {
-			const state = get({ subscribe });
-			const currentLang = get(lang);
-			persistForm(state.form);
+			async submit() {
+				const state = get({ subscribe });
+				const currentLang = get(lang);
+				persistForm(state.form);
 
 			const validation = validateForm(state.form);
 			if (!validation.valid) {
@@ -215,42 +212,41 @@ function createPredictionStore() {
 				summaryValues: createSummary(current.form)
 			}));
 
-			try {
-				const latest = get({ subscribe });
-				const floorArea = Math.max(20, Math.min(300, Math.round(latest.form.floor_area_sqm)));
-				const formData = new FormData();
-				formData.append('model', latest.form.ml_model);
-				formData.append('monthStart', '2021-02');
-				formData.append('monthEnd', '2022-02');
-				formData.append('town', latest.form.town);
-				formData.append('storeyRange', latest.form.storey_range);
-				formData.append('flatModel', latest.form.flat_model);
-				formData.append('floorAreaSqm', String(floorArea));
-				formData.append('leaseCommenceYear', String(latest.form.lease_commence_date));
+				try {
+					const latest = get({ subscribe });
+					const floorArea = Math.max(20, Math.min(300, Math.round(latest.form.floor_area_sqm)));
+					const formData = new FormData();
+					formData.append('model', latest.form.ml_model);
+					formData.append('monthStart', '2021-02');
+					formData.append('monthEnd', '2022-02');
+					formData.append('town', latest.form.town);
+					formData.append('storeyRange', latest.form.storey_range);
+					formData.append('flatModel', latest.form.flat_model);
+					formData.append('floorAreaSqm', String(floorArea));
+					formData.append('leaseCommenceYear', String(latest.form.lease_commence_date));
 
-				const response = await fetch('https://ee4802-g20-tool.shenghaoc.workers.dev/api/prices', {
-					method: 'POST',
-					body: formData
-				});
+					const response = await fetch('https://ee4802-g20-tool.shenghaoc.workers.dev/api/prices', {
+						method: 'POST',
+						body: formData
+					});
 
-				if (!response.ok) {
-					throw new Error(await getApiErrorMessage(response, currentLang));
-				}
+					if (!response.ok) {
+						throw new Error(await getApiErrorMessage(response, currentLang));
+					}
 
-				const serverData = await response.json();
-				const trendData = normalizeTrendData(serverData);
+					const serverData = await response.json();
+					const trendData = normalizeTrendData(serverData);
 
 				update((current) => ({
 					...current,
 					trendData,
 					output: normalizePrice(trendData[trendData.length - 1]?.value ?? 0),
-					hasPrediction: true,
 					loading: false
 				}));
-			} catch (error) {
-				update((current) => ({
-					...current,
-					loading: false,
+				} catch (error) {
+					update((current) => ({
+						...current,
+						loading: false,
 					errorMessage:
 						error instanceof Error && error.message ? error.message : t('error_fetch', currentLang)
 				}));
