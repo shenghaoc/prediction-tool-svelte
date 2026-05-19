@@ -143,7 +143,7 @@
 	margin: 0;
 	max-width: 10ch;
 	color: var(--text-color);
-	font-family: 'Lora', 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+	font-family: var(--font-display);
 	font-size: clamp(3rem, 6vw, 5.3rem);
 	line-height: 0.9;
 	font-weight: 700;
@@ -403,7 +403,7 @@
 .prediction-results-title {
 	margin: 6px 0 0;
 	color: var(--text-color);
-	font-family: 'Lora', 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+	font-family: var(--font-display);
 	font-size: clamp(2.2rem, 4vw, 3.4rem);
 	line-height: 0.95;
 	font-weight: 700;
@@ -503,8 +503,8 @@
 	margin-top: 16px;
 	padding: 12px 14px;
 	border-radius: 14px;
-	border: 1px solid rgba(175, 101, 66, 0.24);
-	background: rgba(175, 101, 66, 0.1);
+	border: 1px solid var(--accent-shadow);
+	background: color-mix(in srgb, var(--accent-color) 10%, transparent);
 	color: var(--text-color);
 	font-size: 0.92rem;
 	line-height: 1.5;
