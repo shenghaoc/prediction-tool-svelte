@@ -22,6 +22,7 @@ export type PredictionState = {
 	darkMode: boolean;
 	errorMessage: string;
 	isMobile: boolean;
+	hasPrediction: boolean;
 	fieldErrors: Record<FieldName, string>;
 };
 
@@ -93,6 +94,7 @@ const initialState: PredictionState = {
 	darkMode: false,
 	errorMessage: '',
 	isMobile: false,
+	hasPrediction: false,
 	fieldErrors: blankFieldErrors()
 };
 
@@ -168,6 +170,7 @@ function createPredictionStore() {
 				summaryValues: createSummary(initialFormValues),
 				trendData: defaultTrendData(),
 				output: 0,
+				hasPrediction: false,
 				errorMessage: '',
 				fieldErrors: blankFieldErrors()
 			}));
@@ -241,6 +244,7 @@ function createPredictionStore() {
 					...current,
 					trendData,
 					output: normalizePrice(trendData[trendData.length - 1]?.value ?? 0),
+					hasPrediction: true,
 					loading: false
 				}));
 			} catch (error) {

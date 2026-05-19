@@ -13,7 +13,7 @@
 
 	$: height = isMobile ? 280 : 360;
 	$: margin = {
-		top: 18,
+		top: 24,
 		right: isMobile ? 10 : 18,
 		bottom: 34,
 		left: isMobile ? 50 : 68
@@ -26,15 +26,17 @@
 		(lowest, value) => (value > 0 ? Math.min(lowest, value) : lowest),
 		Number.POSITIVE_INFINITY
 	);
-	$: minValue = Number.isFinite(minPositiveValue) ? Math.min(0, minPositiveValue) : 0;
-	$: range = Math.max(maxValue - minValue, 1);
-	$: yTicks = [0, 0.33, 0.66, 1].map((ratio) => {
-		const value = Math.round(maxValue - range * ratio);
+	$: minValue = (Number.isFinite(minPositiveValue) ? Math.min(0, minPositiveValue) : 0) * 0.92;
+	$: range = Math.max(maxValue * 1.04 - minValue, 1);
+
+	$: yTicks = [0, 0.25, 0.5, 0.75, 1].map((ratio) => {
+		const value = Math.round(minValue + (maxValue * 1.04 - minValue) * ratio);
 		return {
 			value,
-			y: margin.top + innerHeight * ratio
+			y: margin.top + innerHeight * (1 - ratio)
 		};
 	});
+
 	$: points = data.map((entry, index) => {
 		const x =
 			margin.left + (data.length === 1 ? innerWidth / 2 : (innerWidth * index) / (data.length - 1));
@@ -45,17 +47,39 @@
 			y
 		};
 	});
-	$: linePath = points
-		.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`)
-		.join(' ');
+
+	// Smooth curve via cardinal spline (Catmull-Rom)
+	function catmullRom(p: typeof points, t = 0.35) {
+		if (p.length < 2) return '';
+		let d = `M${p[0].x},${p[0].y}`;
+		for (let i = 0; i < p.length - 1; i++) {
+			const p0 = p[Math.max(i - 1, 0)];
+			const p1 = p[i];
+			const p2 = p[i + 1];
+			const p3 = p[Math.min(i + 2, p.length - 1)];
+			const cp1x = p1.x + ((p2.x - p0.x) * t) / 3;
+			const cp1y = p1.y + ((p2.y - p0.y) * t) / 3;
+			const cp2x = p2.x - ((p3.x - p1.x) * t) / 3;
+			const cp2y = p2.y - ((p3.y - p1.y) * t) / 3;
+			d += ` C${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
+		}
+		return d;
+	}
+
+	$: linePath = catmullRom(points);
 	$: areaPath =
 		points.length === 0
 			? ''
 			: `${linePath} L ${points[points.length - 1].x} ${margin.top + innerHeight} L ${points[0].x} ${margin.top + innerHeight} Z`;
+
 	$: activePoint = activeIndex >= 0 ? points[activeIndex] : null;
 	$: activeTooltipStyle = activePoint
 		? `left:${((activePoint.x / width) * 100).toFixed(2)}%;top:${activePoint.y}px;`
 		: '';
+
+	$: peakIdx = values.indexOf(Math.max(...values));
+	$: lastIdx = values.length - 1;
+
 	$: visibleXAxisLabels = points.filter((_, index) => {
 		if (points.length <= 6) return true;
 		if (index === 0 || index === points.length - 1) return true;
@@ -96,12 +120,14 @@
 		aria-label={ariaLabel}
 		on:pointermove={setActiveIndexFromPointer}
 		on:pointerleave={clearActiveIndex}
+		style="cursor: crosshair"
 	>
 		<defs>
+			<!-- `stop-color` from `--chart-fill` (opaque); alpha comes only from `stop-opacity`. -->
 			<linearGradient id="prediction-area-gradient" x1="0" y1="0" x2="0" y2="1">
-				<stop offset="0%" stop-color={theme.chartLine} stop-opacity="0.38" />
-				<stop offset="65%" stop-color={theme.chartLine} stop-opacity="0.12" />
-				<stop offset="100%" stop-color={theme.chartLine} stop-opacity="0" />
+				<stop offset="0%" stop-color="var(--chart-fill)" stop-opacity="0.42" />
+				<stop offset="55%" stop-color="var(--chart-fill)" stop-opacity="0.14" />
+				<stop offset="100%" stop-color="var(--chart-fill)" stop-opacity="0" />
 			</linearGradient>
 		</defs>
 
@@ -119,8 +145,9 @@
 				y={tick.y + 4}
 				text-anchor="end"
 				fill={theme.textMuted}
-				font-size={isMobile ? 11 : 12}
-				font-family={'"Avenir Next", "Segoe UI", sans-serif'}
+				font-size={11}
+				font-family="var(--font-body)"
+				font-weight="600"
 			>
 				{formatCurrencyTick(tick.value)}
 			</text>
@@ -132,9 +159,30 @@
 				d={linePath}
 				fill="none"
 				stroke={theme.chartLine}
-				stroke-width="2.75"
+				stroke-width="3"
 				stroke-linecap="round"
 				stroke-linejoin="round"
+			/>
+		{/if}
+
+		{#if points.length > 0}
+			<!-- Peak dot -->
+			<circle
+				cx={points[peakIdx].x}
+				cy={points[peakIdx].y}
+				r="5"
+				fill={theme.primary}
+				stroke={theme.panelStrong}
+				stroke-width="2"
+			/>
+			<!-- Latest dot -->
+			<circle
+				cx={points[lastIdx].x}
+				cy={points[lastIdx].y}
+				r="6"
+				fill={theme.accent}
+				stroke={theme.panelStrong}
+				stroke-width="2.5"
 			/>
 		{/if}
 
@@ -151,7 +199,7 @@
 			<circle
 				cx={activePoint.x}
 				cy={activePoint.y}
-				r="4.5"
+				r="5"
 				fill={theme.panelStrong}
 				stroke={theme.chartLine}
 				stroke-width="2"
@@ -164,8 +212,9 @@
 				y={height - 8}
 				text-anchor="middle"
 				fill={theme.textMuted}
-				font-size={isMobile ? 11 : 12}
-				font-family={'"Avenir Next", "Segoe UI", sans-serif'}
+				font-size={11}
+				font-family="var(--font-body)"
+				font-weight="600"
 			>
 				{point.label}
 			</text>
@@ -181,10 +230,10 @@
 	</svg>
 
 	{#if activePoint}
-		<div class="prediction-chart-tooltip" style={activeTooltipStyle}>
+		<div class="prediction-chart-tooltip visible" style={activeTooltipStyle}>
 			<div class="prediction-chart-tooltip-label">{activePoint.label}</div>
 			<div class="prediction-chart-tooltip-value">
-				Estimated Price: {formatCurrency(activePoint.value)}
+				{formatCurrency(activePoint.value)}
 			</div>
 		</div>
 	{/if}
