@@ -1,9 +1,84 @@
 version: 2
 updates:
-  # Enable version updates for bun
-  - package-ecosystem: 'bun'
-    # Look for `package.json` and `lock` files in the `root` directory
+  - package-ecosystem: 'npm'
     directory: '/'
-    # Check for updates once a month
     schedule:
       interval: 'monthly'
+      day: 'monday'
+      time: '09:00'
+      timezone: 'Asia/Singapore'
+    open-pull-requests-limit: 10
+    labels:
+      - 'dependencies'
+    commit-message:
+      prefix: 'deps'
+    groups:
+      svelte:
+        patterns:
+          - 'svelte'
+          - '@sveltejs/*'
+          - 'eslint-plugin-svelte'
+          - 'prettier-plugin-svelte'
+        update-types:
+          - 'minor'
+          - 'patch'
+      typescript:
+        patterns:
+          - 'typescript'
+          - '@typescript-eslint/*'
+        update-types:
+          - 'minor'
+          - 'patch'
+      types:
+        patterns:
+          - '@types/*'
+        update-types:
+          - 'minor'
+          - 'patch'
+      eslint:
+        patterns:
+          - 'eslint'
+          - 'eslint-*'
+          - '@eslint/*'
+        update-types:
+          - 'minor'
+          - 'patch'
+      testing:
+        patterns:
+          - 'vitest'
+          - '@vitest/*'
+          - '@playwright/test'
+        update-types:
+          - 'minor'
+          - 'patch'
+      build:
+        patterns:
+          - 'vite'
+          - 'prettier'
+        update-types:
+          - 'minor'
+          - 'patch'
+      miscellaneous:
+        patterns:
+          - '*'
+        update-types:
+          - 'minor'
+          - 'patch'
+
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'monthly'
+    open-pull-requests-limit: 2
+    labels:
+      - 'dependencies'
+      - 'github-actions'
+    commit-message:
+      prefix: 'ci'
+    groups:
+      actions-minor-and-patch:
+        patterns:
+          - '*'
+        update-types:
+          - 'minor'
+          - 'patch'
