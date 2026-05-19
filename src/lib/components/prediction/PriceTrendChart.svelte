@@ -124,9 +124,9 @@
 	>
 		<defs>
 			<linearGradient id="prediction-area-gradient" x1="0" y1="0" x2="0" y2="1">
-				<stop offset="0%" stop-color={theme.chartLine} stop-opacity="0.42" />
-				<stop offset="55%" stop-color={theme.chartLine} stop-opacity="0.14" />
-				<stop offset="100%" stop-color={theme.chartLine} stop-opacity="0" />
+				<stop offset="0%" stop-color={theme.chartFill} stop-opacity="0.92" />
+				<stop offset="55%" stop-color={theme.chartFill} stop-opacity="0.45" />
+				<stop offset="100%" stop-color={theme.chartFill} stop-opacity="0" />
 			</linearGradient>
 		</defs>
 
@@ -145,7 +145,7 @@
 				text-anchor="end"
 				fill={theme.textMuted}
 				font-size={11}
-				font-family="'DM Sans', sans-serif"
+				font-family="var(--font-body)"
 				font-weight="600"
 			>
 				{formatCurrencyTick(tick.value)}
@@ -212,7 +212,7 @@
 				text-anchor="middle"
 				fill={theme.textMuted}
 				font-size={11}
-				font-family="'DM Sans', sans-serif"
+				font-family="var(--font-body)"
 				font-weight="600"
 			>
 				{point.label}

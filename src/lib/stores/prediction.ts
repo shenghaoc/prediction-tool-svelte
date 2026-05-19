@@ -18,11 +18,11 @@ export type PredictionState = {
 	summaryValues: SummaryValues;
 	trendData: ReturnType<typeof defaultTrendData>;
 	output: number;
-	hasPrediction: boolean;
 	loading: boolean;
 	darkMode: boolean;
 	errorMessage: string;
 	isMobile: boolean;
+	hasPrediction: boolean;
 	fieldErrors: Record<FieldName, string>;
 };
 
@@ -90,11 +90,11 @@ const initialState: PredictionState = {
 	summaryValues: createSummary(initialFormValues),
 	trendData: defaultTrendData(),
 	output: 0,
-	hasPrediction: false,
 	loading: false,
 	darkMode: false,
 	errorMessage: '',
 	isMobile: false,
+	hasPrediction: false,
 	fieldErrors: blankFieldErrors()
 };
 

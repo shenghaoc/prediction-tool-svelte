@@ -270,8 +270,9 @@
 }
 
 /* --- Listbox Styles (Custom Select) --- */
-.prediction-listbox { position: relative; }
-
+.prediction-listbox {
+	position: relative;
+}
 .prediction-listbox-trigger {
 	width: 100%;
 	display: flex;
@@ -452,6 +453,14 @@
 
 /* --- Chart Section --- */
 .prediction-chart-shell { padding-top: 16px; border-top: 1px solid var(--line-soft); transition: border-color 0.3s ease; }
+.prediction-chart-header {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: start;
+	gap: 14px 20px;
+	margin-bottom: 4px;
+}
+.prediction-chart-copy { min-width: 0; }
 .prediction-chart-kicker { display: block; color: var(--text-muted); font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.3px; transition: color 0.3s ease; }
 .prediction-chart-title { margin: 6px 0 14px; color: var(--text-color); font-size: 1.2rem; font-weight: 800; letter-spacing: -0.03em; transition: color 0.3s ease; }
 
@@ -468,6 +477,11 @@
 .prediction-chart-summary-card small { display: block; margin-top: 4px; color: var(--text-muted); font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; transition: color 0.3s ease; }
 
 .prediction-chart-frame { position: relative; min-height: 300px; }
+.prediction-chart-svg {
+	display: block;
+	width: 100%;
+	height: auto;
+}
 
 /* --- Placeholder State --- */
 .prediction-placeholder {
@@ -628,4 +642,6 @@
 	.prediction-form-grid, .prediction-figure-row, .prediction-results-grid, .prediction-button-row, .prediction-chart-summary-grid { grid-template-columns: 1fr; }
 	.prediction-results-header { flex-direction: column; }
 	.prediction-price-panel { width: 100%; }
+	.prediction-chart-header { grid-template-columns: 1fr; }
 }
+
