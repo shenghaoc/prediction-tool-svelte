@@ -15,6 +15,7 @@
 	$: pageStyle = `
 		--font-body:'DM Sans','Avenir Next',Avenir,'Segoe UI',system-ui,sans-serif;
 		--font-body-cjk:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;
+		--font-display:'Lora','Iowan Old Style','Palatino Linotype','Book Antiqua',Georgia,serif;
 		--page-bg:${theme.pageBg};
 		--text-color:${theme.text};
 		--text-muted:${theme.textMuted};
