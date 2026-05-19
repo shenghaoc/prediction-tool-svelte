@@ -228,6 +228,7 @@
 
 .prediction-field select, .prediction-field input {
 	width: 100%;
+	box-sizing: border-box;
 	padding: 14px 16px;
 	min-height: 52px;
 	border: 1px solid var(--line-soft);
