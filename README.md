@@ -38,16 +38,16 @@ Because of the way the original project data/model pipeline works, the tool does
 
 ## Development
 
-Install dependencies with Bun:
+Install dependencies:
 
 ```bash
-bun install
+npm install
 ```
 
 Start the development server:
 
 ```bash
-bun run dev
+npm run dev
 ```
 
 The default local URL is usually:
@@ -59,14 +59,14 @@ http://localhost:5173
 ## Scripts
 
 ```bash
-bun run dev
-bun run build
-bun run preview
-bun run check
-bun run lint
-bun run format
-bun run test:unit
-bun run test:e2e
+npm run dev
+npm run build
+npm run preview
+npm run check
+npm run lint
+npm run format
+npm run test:unit
+npm run test:e2e
 ```
 
 ## Notes
