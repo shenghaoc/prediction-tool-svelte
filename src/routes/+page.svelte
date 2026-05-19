@@ -102,7 +102,7 @@
 				/>
 
 				{#if $prediction.errorMessage}
-					<p class="prediction-error" style="margin-top: 12px;">{$prediction.errorMessage}</p>
+					<p class="prediction-error">{$prediction.errorMessage}</p>
 				{/if}
 			</div>
 		</div>

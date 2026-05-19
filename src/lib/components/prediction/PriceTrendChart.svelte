@@ -123,10 +123,11 @@
 		style="cursor: crosshair"
 	>
 		<defs>
+			<!-- `stop-color` from `--chart-fill` (opaque); alpha comes only from `stop-opacity`. -->
 			<linearGradient id="prediction-area-gradient" x1="0" y1="0" x2="0" y2="1">
-				<stop offset="0%" stop-color={theme.chartFill} stop-opacity="0.92" />
-				<stop offset="55%" stop-color={theme.chartFill} stop-opacity="0.45" />
-				<stop offset="100%" stop-color={theme.chartFill} stop-opacity="0" />
+				<stop offset="0%" stop-color="var(--chart-fill)" stop-opacity="0.42" />
+				<stop offset="55%" stop-color="var(--chart-fill)" stop-opacity="0.14" />
+				<stop offset="100%" stop-color="var(--chart-fill)" stop-opacity="0" />
 			</linearGradient>
 		</defs>
 
