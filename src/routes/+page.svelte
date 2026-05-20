@@ -115,13 +115,7 @@
 		margin: 0;
 		background: var(--page-bg, #f5eee5);
 		color: var(--text-color, #1f2328);
-		font-family:
-			'DM Sans',
-			'Avenir Next',
-			Avenir,
-			'Segoe UI',
-			system-ui,
-			sans-serif;
+		font-family: 'DM Sans', 'Avenir Next', Avenir, 'Segoe UI', system-ui, sans-serif;
 		transition:
 			background 180ms ease,
 			color 180ms ease;

@@ -131,7 +131,7 @@
 			</linearGradient>
 		</defs>
 
-		{#each yTicks as tick}
+		{#each yTicks as tick (tick.value)}
 			<line
 				x1={margin.left}
 				y1={tick.y}
@@ -206,7 +206,7 @@
 			/>
 		{/if}
 
-		{#each visibleXAxisLabels as point}
+		{#each visibleXAxisLabels as point (point.label)}
 			<text
 				x={point.x}
 				y={height - 8}

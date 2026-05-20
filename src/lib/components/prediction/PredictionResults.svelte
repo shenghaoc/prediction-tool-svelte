@@ -49,7 +49,8 @@
 			<span class="prediction-results-label">{t('prediction', $lang)}</span>
 			{#if hasPrediction}
 				{#key output}
-					<strong transition:scale={{ duration: 550, start: 0.96 }}>{formatCurrency(output)}</strong>
+					<strong transition:scale={{ duration: 550, start: 0.96 }}>{formatCurrency(output)}</strong
+					>
 				{/key}
 			{:else}
 				<span class="prediction-price-value-awaiting">{t('awaiting_prediction', $lang)}</span>

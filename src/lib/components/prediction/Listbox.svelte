@@ -169,7 +169,7 @@
 			transition:scale={{ duration: 140, start: 0.96 }}
 			onkeydown={handleListKeydown}
 		>
-			{#each options as option, index}
+			{#each options as option, index (option.value)}
 				<button
 					bind:this={optionRefs[index]}
 					id={`${id}-option-${index}`}
