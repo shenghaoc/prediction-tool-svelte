@@ -69,7 +69,8 @@ const en = {
 	prediction: 'Prediction',
 	predicted_price: 'Predicted Price',
 	awaiting_prediction: 'Awaiting prediction',
-	placeholder_body: 'Enter flat attributes on the left to generate a 12-month price estimation and trend chart.',
+	placeholder_body:
+		'Enter flat attributes on the left to generate a 12-month price estimation and trend chart.',
 	error_fetch: 'Failed to fetch prediction. Please try again.',
 	switch_language: '中文/English',
 	ml_models: {
