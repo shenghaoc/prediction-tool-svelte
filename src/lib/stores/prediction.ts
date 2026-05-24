@@ -56,6 +56,7 @@ function persistForm(form: FieldType) {
 function applyTheme(darkMode: boolean) {
 	if (typeof window === 'undefined') return;
 	localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+	document.documentElement.classList.toggle('dark', darkMode);
 	document.body.setAttribute('data-theme', darkMode ? 'dark' : 'light');
 }
 
@@ -88,6 +89,11 @@ function validateForm(form: FieldType) {
 	};
 }
 
+function readInitialDarkMode() {
+	if (typeof window === 'undefined') return false;
+	return localStorage.getItem('theme') === 'dark';
+}
+
 const initialState: PredictionState = {
 	form: { ...initialFormValues },
 	summaryValues: createSummary(initialFormValues),
@@ -102,7 +108,14 @@ const initialState: PredictionState = {
 };
 
 function createPredictionStore() {
-	const { subscribe, set, update } = writable<PredictionState>(initialState);
+	const { subscribe, set, update } = writable<PredictionState>({
+		...initialState,
+		darkMode: readInitialDarkMode()
+	});
+
+	if (typeof window !== 'undefined') {
+		applyTheme(readInitialDarkMode());
+	}
 
 	function setViewportFlags() {
 		if (typeof window === 'undefined') return;
@@ -215,12 +228,18 @@ function createPredictionStore() {
 				loading: true,
 				errorMessage: '',
 				fieldErrors: blankFieldErrors(),
-				summaryValues: createSummary(current.form)
+				summaryValues: createSummary(current.form),
+				output: 0,
+				hasPrediction: false,
+				trendData: defaultTrendData()
 			}));
 
 			try {
 				const latest = get({ subscribe });
-				const floorArea = Math.max(MIN_FLOOR_AREA_SQM, Math.min(MAX_FLOOR_AREA_SQM, Math.round(latest.form.floor_area_sqm)));
+				const floorArea = Math.max(
+					MIN_FLOOR_AREA_SQM,
+					Math.min(MAX_FLOOR_AREA_SQM, Math.round(latest.form.floor_area_sqm))
+				);
 
 				const response = await fetch('/api/prices', {
 					method: 'POST',
@@ -242,12 +261,17 @@ function createPredictionStore() {
 				const serverData = await response.json();
 				const trendData = normalizeTrendData(serverData);
 
+				if (trendData.length === 0 || !trendData.some((point) => point.value > 0)) {
+					throw new Error(t('error_invalid_prediction', currentLang));
+				}
+
 				update((current) => ({
 					...current,
 					trendData,
 					output: normalizePrice(trendData[trendData.length - 1]?.value ?? 0),
 					hasPrediction: true,
-					loading: false
+					loading: false,
+					errorMessage: ''
 				}));
 			} catch (error) {
 				console.error('Price prediction fetch failed', {
@@ -257,6 +281,9 @@ function createPredictionStore() {
 				update((current) => ({
 					...current,
 					loading: false,
+					output: 0,
+					hasPrediction: false,
+					trendData: defaultTrendData(),
 					errorMessage:
 						error instanceof Error && error.message ? error.message : t('error_fetch', currentLang)
 				}));

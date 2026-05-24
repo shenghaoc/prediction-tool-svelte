@@ -1,54 +1,75 @@
 <script lang="ts">
 	import { formatCurrency } from '$lib/format';
-	import { formatCurrencyTick, type PredictionTheme, type TrendPoint } from '$lib/prediction';
+	import { formatCurrencyTick, type TrendPoint } from '$lib/prediction';
+	import type { Language } from '$lib/i18n';
 
-	export let data: TrendPoint[];
-	export let ariaLabel: string;
-	export let theme: PredictionTheme;
-	export let isMobile: boolean;
+	type Props = {
+		data: TrendPoint[];
+		ariaLabel: string;
+		locale?: Language;
+	};
+
+	let { data, ariaLabel, locale = 'en' }: Props = $props();
+
+	const currencyLocale = $derived(locale === 'zh' ? 'zh-SG' : 'en-SG');
 
 	const width = 760;
-	let svg: SVGSVGElement | null = null;
-	let activeIndex = -1;
+	let svg: SVGSVGElement | null = $state(null);
+	let activeIndex = $state(-1);
+	let isMobile = $state(false);
 
-	$: height = isMobile ? 280 : 360;
-	$: margin = {
+	$effect(() => {
+		if (typeof window === 'undefined') return;
+		const update = () => {
+			isMobile = window.innerWidth < 900;
+		};
+		update();
+		window.addEventListener('resize', update);
+		return () => window.removeEventListener('resize', update);
+	});
+
+	const height = $derived(isMobile ? 280 : 360);
+	const margin = $derived({
 		top: 24,
 		right: isMobile ? 10 : 18,
 		bottom: 34,
 		left: isMobile ? 50 : 68
-	};
-	$: innerWidth = width - margin.left - margin.right;
-	$: innerHeight = height - margin.top - margin.bottom;
-	$: values = data.map((entry) => entry.value);
-	$: maxValue = Math.max(...values, 0);
-	$: minPositiveValue = values.reduce(
-		(lowest, value) => (value > 0 ? Math.min(lowest, value) : lowest),
-		Number.POSITIVE_INFINITY
+	});
+	const innerWidth = $derived(width - margin.left - margin.right);
+	const innerHeight = $derived(height - margin.top - margin.bottom);
+	const values = $derived(data.map((entry) => entry.value));
+	const maxValue = $derived(Math.max(...values, 0));
+	const minPositiveValue = $derived(
+		values.reduce(
+			(lowest, value) => (value > 0 ? Math.min(lowest, value) : lowest),
+			Number.POSITIVE_INFINITY
+		)
 	);
-	$: minValue = (Number.isFinite(minPositiveValue) ? Math.min(0, minPositiveValue) : 0) * 0.92;
-	$: range = Math.max(maxValue * 1.04 - minValue, 1);
+	const minValue = $derived(
+		(Number.isFinite(minPositiveValue) ? Math.min(0, minPositiveValue) : 0) * 0.92
+	);
+	const range = $derived(Math.max(maxValue * 1.04 - minValue, 1));
 
-	$: yTicks = [0, 0.25, 0.5, 0.75, 1].map((ratio) => {
-		const value = Math.round(minValue + range * ratio);
-		return {
-			value,
-			y: margin.top + innerHeight * (1 - ratio)
-		};
-	});
+	const yTicks = $derived(
+		[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
+			const value = Math.round(minValue + range * ratio);
+			return {
+				value,
+				y: margin.top + innerHeight * (1 - ratio)
+			};
+		})
+	);
 
-	$: points = data.map((entry, index) => {
-		const x =
-			margin.left + (data.length === 1 ? innerWidth / 2 : (innerWidth * index) / (data.length - 1));
-		const y = margin.top + innerHeight - ((entry.value - minValue) / range) * innerHeight;
-		return {
-			...entry,
-			x,
-			y
-		};
-	});
+	const points = $derived(
+		data.map((entry, index) => {
+			const x =
+				margin.left +
+				(data.length === 1 ? innerWidth / 2 : (innerWidth * index) / (data.length - 1));
+			const y = margin.top + innerHeight - ((entry.value - minValue) / range) * innerHeight;
+			return { ...entry, x, y };
+		})
+	);
 
-	// Smooth curve via cardinal spline (Catmull-Rom)
 	function catmullRom(p: typeof points, t = 0.35) {
 		if (p.length < 2) return '';
 		let d = `M${p[0].x},${p[0].y}`;
@@ -66,25 +87,28 @@
 		return d;
 	}
 
-	$: linePath = catmullRom(points);
-	$: areaPath =
+	const linePath = $derived(catmullRom(points));
+	const areaPath = $derived(
 		points.length === 0
 			? ''
-			: `${linePath} L ${points[points.length - 1].x} ${margin.top + innerHeight} L ${points[0].x} ${margin.top + innerHeight} Z`;
+			: `${linePath} L ${points[points.length - 1].x} ${margin.top + innerHeight} L ${points[0].x} ${margin.top + innerHeight} Z`
+	);
 
-	$: activePoint = activeIndex >= 0 ? points[activeIndex] : null;
-	$: activeTooltipStyle = activePoint
-		? `left:${((activePoint.x / width) * 100).toFixed(2)}%;top:${activePoint.y}px;`
-		: '';
+	const activePoint = $derived(activeIndex >= 0 ? points[activeIndex] : null);
+	const activeTooltipStyle = $derived(
+		activePoint ? `left:${((activePoint.x / width) * 100).toFixed(2)}%;top:${activePoint.y}px;` : ''
+	);
 
-	$: peakIdx = values.indexOf(maxValue);
-	$: lastIdx = values.length - 1;
+	const peakIdx = $derived(values.indexOf(maxValue));
+	const lastIdx = $derived(values.length - 1);
 
-	$: visibleXAxisLabels = points.filter((_, index) => {
-		if (points.length <= 6) return true;
-		if (index === 0 || index === points.length - 1) return true;
-		return isMobile ? index % 3 === 0 : index % 2 === 0;
-	});
+	const visibleXAxisLabels = $derived(
+		points.filter((_, index) => {
+			if (points.length <= 6) return true;
+			if (index === 0 || index === points.length - 1) return true;
+			return isMobile ? index % 3 === 0 : index % 2 === 0;
+		})
+	);
 
 	function setActiveIndexFromPointer(event: PointerEvent) {
 		if (!svg || points.length === 0) return;
@@ -111,19 +135,18 @@
 	}
 </script>
 
-<div class="prediction-chart-frame">
+<div class="relative w-full">
 	<svg
 		bind:this={svg}
-		class="prediction-chart-svg"
+		class="block h-auto w-full"
 		viewBox={`0 0 ${width} ${height}`}
 		role="img"
 		aria-label={ariaLabel}
-		on:pointermove={setActiveIndexFromPointer}
-		on:pointerleave={clearActiveIndex}
+		onpointermove={setActiveIndexFromPointer}
+		onpointerleave={clearActiveIndex}
 		style="cursor: crosshair"
 	>
 		<defs>
-			<!-- `stop-color` from `--chart-fill` (opaque); alpha comes only from `stop-opacity`. -->
 			<linearGradient id="prediction-area-gradient" x1="0" y1="0" x2="0" y2="1">
 				<stop offset="0%" stop-color="var(--chart-fill)" stop-opacity="0.42" />
 				<stop offset="55%" stop-color="var(--chart-fill)" stop-opacity="0.14" />
@@ -137,16 +160,16 @@
 				y1={tick.y}
 				x2={width - margin.right}
 				y2={tick.y}
-				stroke={theme.chartGrid}
+				stroke="color-mix(in oklab, var(--border) 70%, transparent)"
 				stroke-dasharray="3 10"
 			/>
 			<text
 				x={margin.left - 12}
 				y={tick.y + 4}
 				text-anchor="end"
-				fill={theme.textMuted}
-				font-size={11}
-				font-family="var(--font-body)"
+				fill="var(--muted-foreground)"
+				font-size="11"
+				font-family="var(--font-sans)"
 				font-weight="600"
 			>
 				{formatCurrencyTick(tick.value)}
@@ -158,7 +181,7 @@
 			<path
 				d={linePath}
 				fill="none"
-				stroke={theme.chartLine}
+				stroke="var(--primary)"
 				stroke-width="3"
 				stroke-linecap="round"
 				stroke-linejoin="round"
@@ -166,22 +189,20 @@
 		{/if}
 
 		{#if points.length > 0}
-			<!-- Peak dot -->
 			<circle
 				cx={points[peakIdx].x}
 				cy={points[peakIdx].y}
 				r="5"
-				fill={theme.primary}
-				stroke={theme.panelStrong}
+				fill="var(--primary)"
+				stroke="var(--card)"
 				stroke-width="2"
 			/>
-			<!-- Latest dot -->
 			<circle
 				cx={points[lastIdx].x}
 				cy={points[lastIdx].y}
 				r="6"
-				fill={theme.accent}
-				stroke={theme.panelStrong}
+				fill="var(--chart-2)"
+				stroke="var(--card)"
 				stroke-width="2.5"
 			/>
 		{/if}
@@ -192,7 +213,7 @@
 				y1={margin.top}
 				x2={activePoint.x}
 				y2={margin.top + innerHeight}
-				stroke={theme.chartLine}
+				stroke="var(--primary)"
 				stroke-opacity="0.22"
 				stroke-dasharray="4 8"
 			/>
@@ -200,8 +221,8 @@
 				cx={activePoint.x}
 				cy={activePoint.y}
 				r="5"
-				fill={theme.panelStrong}
-				stroke={theme.chartLine}
+				fill="var(--card)"
+				stroke="var(--primary)"
 				stroke-width="2"
 			/>
 		{/if}
@@ -211,9 +232,9 @@
 				x={point.x}
 				y={height - 8}
 				text-anchor="middle"
-				fill={theme.textMuted}
-				font-size={11}
-				font-family="var(--font-body)"
+				fill="var(--muted-foreground)"
+				font-size="11"
+				font-family="var(--font-sans)"
 				font-weight="600"
 			>
 				{point.label}
@@ -230,10 +251,12 @@
 	</svg>
 
 	{#if activePoint}
-		<div class="prediction-chart-tooltip visible" style={activeTooltipStyle}>
-			<div class="prediction-chart-tooltip-label">{activePoint.label}</div>
-			<div class="prediction-chart-tooltip-value">
-				{formatCurrency(activePoint.value)}
+		<div class="chart-tooltip visible" style={activeTooltipStyle}>
+			<div class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+				{activePoint.label}
+			</div>
+			<div class="text-sm font-semibold text-foreground tabular-nums">
+				{formatCurrency(activePoint.value, currencyLocale)}
 			</div>
 		</div>
 	{/if}

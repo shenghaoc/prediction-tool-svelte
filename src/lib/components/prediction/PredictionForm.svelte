@@ -1,218 +1,198 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	import Loader2 from '@lucide/svelte/icons/loader-2';
 
 	import { lang, t, type Language } from '$lib/i18n';
 	import { FLAT_MODELS, ML_MODELS, STOREY_RANGES, TOWNS } from '$lib/lists';
-	import { MAX_LEASE_COMMENCE_YEAR, type FieldType } from '$lib/prediction';
-	import FormField from './FormField.svelte';
-	import Listbox from './Listbox.svelte';
-	import StatCard from './StatCard.svelte';
+	import {
+		MAX_FLOOR_AREA_SQM,
+		MAX_LEASE_COMMENCE_YEAR,
+		MIN_FLOOR_AREA_SQM,
+		MIN_LEASE_COMMENCE_YEAR,
+		type FieldType
+	} from '$lib/prediction';
 
-	type ListboxOption = {
-		value: string;
-		label: string;
+	type FieldName = keyof FieldType;
+	import FormSelect, { type FormSelectOption } from '$lib/components/ui/form-select.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import * as Field from '$lib/components/ui/field/index.js';
+
+	type Props = {
+		form: FieldType;
+		fieldErrors: Record<FieldName, string>;
+		loading: boolean;
+		onsubmit?: () => void;
+		onreset?: () => void;
+		onchange?: (patch: Partial<FieldType>) => void;
 	};
 
-	export let form: FieldType;
-	export let fieldErrors: Record<keyof FieldType, string>;
-	export let loading: boolean;
-	const dispatch = createEventDispatcher<{
-		submit: undefined;
-		reset: undefined;
-		update: {
-			key: keyof FieldType;
-			value: FieldType[keyof FieldType];
-		};
-	}>();
+	let { form, fieldErrors, loading, onsubmit, onreset, onchange }: Props = $props();
 
-	function optionLabel(
-		group: 'ml_models' | 'towns' | 'storey_ranges' | 'flat_models',
-		value: string,
-		language: Language
-	) {
-		return t(`${group}.${value}`, language);
+	function errorFor(message: string) {
+		return message ? [{ message }] : undefined;
 	}
 
-	function toOptions(
-		values: readonly string[],
+	function labeledOptions<T extends string>(
+		values: readonly T[],
 		group: 'ml_models' | 'towns' | 'storey_ranges' | 'flat_models',
 		language: Language
-	): ListboxOption[] {
-		return values.map((entry) => ({
-			value: entry,
-			label: optionLabel(group, entry, language)
+	): FormSelectOption<T>[] {
+		return values.map((value) => ({
+			value,
+			label: t(`${group}.${value}`, language)
 		}));
+	}
+
+	function handleChange<K extends keyof FieldType>(key: K, value: FieldType[K]) {
+		onchange?.({ [key]: value } as Partial<FieldType>);
 	}
 
 	function submitForm(event: SubmitEvent) {
 		event.preventDefault();
-		dispatch('submit');
+		onsubmit?.();
 	}
 
-	function resetForm() {
-		dispatch('reset');
-	}
-
-	function updateField<K extends keyof FieldType>(key: K, value: FieldType[K]) {
-		dispatch('update', { key, value });
-	}
-
-	const leaseYearMin = 1960;
-	const leaseYearMax = MAX_LEASE_COMMENCE_YEAR;
-	$: modelOptions = toOptions(ML_MODELS, 'ml_models', $lang);
-	$: townOptions = toOptions(TOWNS, 'towns', $lang);
-	$: storeyOptions = toOptions(STOREY_RANGES, 'storey_ranges', $lang);
-	$: flatModelOptions = toOptions(FLAT_MODELS, 'flat_models', $lang);
+	const leaseYearOptions = $derived(
+		Array.from({ length: MAX_LEASE_COMMENCE_YEAR - MIN_LEASE_COMMENCE_YEAR + 1 }, (_, index) => {
+			const year = MIN_LEASE_COMMENCE_YEAR + index;
+			return { value: String(year), label: String(year) };
+		})
+	);
 </script>
 
-<section class="prediction-card">
-	<div class="prediction-card-inner">
-		<div class="prediction-intro-block">
-			<h1 class={`prediction-headline ${$lang === 'zh' ? 'prediction-headline-cjk' : ''}`}>
-				{t('price_prediction', $lang)}
-			</h1>
-			<p class="prediction-lead">{t('intro_blurb', $lang)}</p>
+<form onsubmit={submitForm}>
+	<Field.Group class="gap-6">
+		<Field.Field>
+			<Field.Label for="input-ml_model">{t('ml_model', $lang)}</Field.Label>
+			<Field.Content>
+				<FormSelect
+					id="input-ml_model"
+					value={form.ml_model}
+					options={labeledOptions(ML_MODELS, 'ml_models', $lang)}
+					placeholder={t('select_ml_model', $lang)}
+					onchange={(value) => handleChange('ml_model', value as FieldType['ml_model'])}
+				/>
+			</Field.Content>
+			<Field.Error errors={errorFor(fieldErrors.ml_model)} />
+		</Field.Field>
 
-			<div class="prediction-figure-row">
-				<StatCard
-					variant="figure"
-					label={t('ml_model', $lang)}
-					value={String(ML_MODELS.length).padStart(2, '0')}
-				/>
-				<StatCard
-					variant="figure"
-					label={t('town', $lang)}
-					value={String(TOWNS.length).padStart(2, '0')}
-				/>
-				<StatCard
-					variant="figure"
-					label={t('storey_range', $lang)}
-					value={String(STOREY_RANGES.length).padStart(2, '0')}
-				/>
-			</div>
+		<div class="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
+			<Field.Field>
+				<Field.Label for="input-town">{t('town', $lang)}</Field.Label>
+				<Field.Content>
+					<FormSelect
+						id="input-town"
+						value={form.town}
+						options={labeledOptions(TOWNS, 'towns', $lang)}
+						placeholder={t('select_town', $lang)}
+						onchange={(value) => handleChange('town', value as FieldType['town'])}
+					/>
+				</Field.Content>
+				<Field.Error errors={errorFor(fieldErrors.town)} />
+			</Field.Field>
 
-			<p class="prediction-caption">{t('intro_caption', $lang)}</p>
+			<Field.Field>
+				<Field.Label for="input-storey_range">{t('storey_range', $lang)}</Field.Label>
+				<Field.Content>
+					<FormSelect
+						id="input-storey_range"
+						value={form.storey_range}
+						options={labeledOptions(STOREY_RANGES, 'storey_ranges', $lang)}
+						placeholder={t('select_storey_range', $lang)}
+						onchange={(value) => handleChange('storey_range', value as FieldType['storey_range'])}
+					/>
+				</Field.Content>
+				<Field.Error errors={errorFor(fieldErrors.storey_range)} />
+			</Field.Field>
+
+			<Field.Field>
+				<Field.Label for="input-flat_model">{t('flat_model', $lang)}</Field.Label>
+				<Field.Content>
+					<FormSelect
+						id="input-flat_model"
+						value={form.flat_model}
+						options={labeledOptions(FLAT_MODELS, 'flat_models', $lang)}
+						placeholder={t('select_flat_model', $lang)}
+						onchange={(value) => handleChange('flat_model', value as FieldType['flat_model'])}
+					/>
+				</Field.Content>
+				<Field.Error errors={errorFor(fieldErrors.flat_model)} />
+			</Field.Field>
+
+			<Field.Field>
+				<Field.Label for="input-floor_area">{t('floor_area', $lang)}</Field.Label>
+				<Field.Content>
+					<div
+						class="flex rounded-lg shadow-sm transition-shadow duration-200 focus-within:shadow-md focus-within:shadow-primary/10"
+					>
+						<Input
+							id="input-floor_area"
+							type="number"
+							inputmode="numeric"
+							data-no-spinner="true"
+							aria-describedby="floor-area-unit"
+							class="h-10 rounded-r-none rounded-l-lg border border-border/60 bg-card px-3 shadow-none transition-colors duration-200 focus-visible:border-primary/40"
+							min={MIN_FLOOR_AREA_SQM}
+							max={MAX_FLOOR_AREA_SQM}
+							value={Number.isFinite(form.floor_area_sqm) ? form.floor_area_sqm : ''}
+							placeholder={t('enter_floor_area', $lang)}
+							oninput={(event) =>
+								handleChange(
+									'floor_area_sqm',
+									event.currentTarget.value ? Number(event.currentTarget.value) : Number.NaN
+								)}
+							required
+						/>
+						<span
+							id="floor-area-unit"
+							class="inline-flex h-10 items-center rounded-r-lg border border-l-0 border-border/60 bg-muted px-3 text-xs font-semibold text-muted-foreground"
+						>
+							<span class="sr-only">{t('floor_area_unit', $lang)}</span>
+							<span aria-hidden="true">m²</span>
+						</span>
+					</div>
+				</Field.Content>
+				<Field.Error errors={errorFor(fieldErrors.floor_area_sqm)} />
+			</Field.Field>
 		</div>
 
-		<form class="prediction-form-shell" onsubmit={submitForm} novalidate>
-			<h2 class="prediction-section-title">{t('prediction_form', $lang)}</h2>
+		<Field.Field>
+			<Field.Label for="input-lease_commence_date">{t('lease_commence_date', $lang)}</Field.Label>
+			<Field.Content>
+				<FormSelect
+					id="input-lease_commence_date"
+					value={String(form.lease_commence_date)}
+					options={leaseYearOptions}
+					placeholder={t('select_year', $lang)}
+					onchange={(year) => handleChange('lease_commence_date', Number(year))}
+				/>
+			</Field.Content>
+			<Field.Error errors={errorFor(fieldErrors.lease_commence_date)} />
+		</Field.Field>
 
-			<div class="prediction-form-grid">
-				<FormField forId="ml_model" label={t('ml_model', $lang)} error={fieldErrors.ml_model}>
-					<Listbox
-						id="ml_model"
-						value={form.ml_model}
-						options={modelOptions}
-						placeholder={t('select_ml_model', $lang)}
-						on:change={(event) =>
-							updateField('ml_model', event.detail.value as FieldType['ml_model'])}
-					/>
-				</FormField>
-
-				<FormField forId="town" label={t('town', $lang)} error={fieldErrors.town}>
-					<Listbox
-						id="town"
-						value={form.town}
-						options={townOptions}
-						placeholder={t('select_town', $lang)}
-						on:change={(event) => updateField('town', event.detail.value as FieldType['town'])}
-					/>
-				</FormField>
-
-				<FormField
-					forId="storey_range"
-					label={t('storey_range', $lang)}
-					error={fieldErrors.storey_range}
-				>
-					<Listbox
-						id="storey_range"
-						value={form.storey_range}
-						options={storeyOptions}
-						placeholder={t('select_storey_range', $lang)}
-						on:change={(event) =>
-							updateField('storey_range', event.detail.value as FieldType['storey_range'])}
-					/>
-				</FormField>
-
-				<FormField forId="flat_model" label={t('flat_model', $lang)} error={fieldErrors.flat_model}>
-					<Listbox
-						id="flat_model"
-						value={form.flat_model}
-						options={flatModelOptions}
-						placeholder={t('select_flat_model', $lang)}
-						on:change={(event) =>
-							updateField('flat_model', event.detail.value as FieldType['flat_model'])}
-					/>
-				</FormField>
-
-				<FormField
-					forId="floor_area_sqm"
-					label={t('floor_area', $lang)}
-					error={fieldErrors.floor_area_sqm}
-					fullWidth
-				>
-					<div class="prediction-unit-wrap">
-						<input
-							id="floor_area_sqm"
-							type="number"
-							min="20"
-							max="300"
-							step="1"
-							bind:value={form.floor_area_sqm}
-							oninput={() => updateField('floor_area_sqm', Number(form.floor_area_sqm))}
-							placeholder={t('enter_floor_area', $lang)}
-						/>
-						<div class="prediction-unit-tag">m²</div>
-					</div>
-				</FormField>
-
-				<FormField
-					forId="lease_commence_date"
-					label={t('lease_commence_date', $lang)}
-					error={fieldErrors.lease_commence_date}
-					fullWidth
-				>
-					<div class="prediction-year-control">
-						<div class="prediction-year-header">
-							<strong>{form.lease_commence_date}</strong>
-							<span>{leaseYearMin} - {leaseYearMax}</span>
-						</div>
-						<input
-							id="lease_commence_date"
-							class="prediction-year-slider"
-							type="range"
-							min={leaseYearMin}
-							max={leaseYearMax}
-							step="1"
-							bind:value={form.lease_commence_date}
-							oninput={() => updateField('lease_commence_date', Number(form.lease_commence_date))}
-							aria-valuemin={leaseYearMin}
-							aria-valuemax={leaseYearMax}
-							aria-valuenow={form.lease_commence_date}
-						/>
-						<div class="prediction-year-markers" aria-hidden="true">
-							<span>{leaseYearMin}</span>
-							<span>1980</span>
-							<span>2000</span>
-							<span>{leaseYearMax}</span>
-						</div>
-					</div>
-				</FormField>
-			</div>
-
-			<div class="prediction-button-row">
-				<button class="prediction-primary-button" type="submit" disabled={loading}>
-					{loading ? '...' : t('get_prediction', $lang)}
-				</button>
-				<button
-					class="prediction-reset-button"
-					type="button"
-					onclick={resetForm}
-					disabled={loading}
-				>
-					{t('reset_form', $lang)}
-				</button>
-			</div>
-		</form>
-	</div>
-</section>
+		<div class="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
+			<Button
+				type="submit"
+				size="lg"
+				class="w-full tracking-normal normal-case shadow-md shadow-primary/20 transition-all duration-200 hover:shadow-lg hover:shadow-primary/25 hover:brightness-110"
+				disabled={loading}
+			>
+				{#if loading}
+					<Loader2 class="size-4 animate-spin" aria-hidden="true" />
+					{t('predicting', $lang)}
+				{:else}
+					{t('get_prediction', $lang)}
+				{/if}
+			</Button>
+			<Button
+				type="button"
+				variant="outline"
+				size="lg"
+				class="w-full tracking-normal normal-case transition-all duration-200 hover:bg-muted/80"
+				onclick={() => onreset?.()}
+			>
+				{t('reset_form', $lang)}
+			</Button>
+		</div>
+	</Field.Group>
+</form>

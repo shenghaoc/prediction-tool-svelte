@@ -132,10 +132,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 
 		const [first] = results;
 		if (!first) {
-			return json(
-				{ error: 'No prediction data found for the given parameters.' },
-				{ status: 404 }
-			);
+			return json({ error: 'No prediction data found for the given parameters.' }, { status: 404 });
 		}
 
 		const baseValue =
@@ -151,8 +148,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 
 		const predictions = results.map((row: PriceQueryRow) => {
 			const predictedRaw =
-				baseValue +
-				readNumericField(row.month_multiplier, 'month_multiplier') * monthCoefficient;
+				baseValue + readNumericField(row.month_multiplier, 'month_multiplier') * monthCoefficient;
 
 			if (!Number.isFinite(predictedRaw)) {
 				throw new Error(
@@ -171,14 +167,8 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 		console.error({
 			message: 'Price prediction query failed',
 			queryParams: { mlModel, town, flatModel, storeyRange, floorAreaSqm, leaseCommenceYear },
-			error:
-				error instanceof Error
-					? { message: error.message, name: error.name }
-					: error
+			error: error instanceof Error ? { message: error.message, name: error.name } : error
 		});
-		return json(
-			{ error: 'Prediction service unavailable.' },
-			{ status: 500 }
-		);
+		return json({ error: 'Prediction service unavailable.' }, { status: 500 });
 	}
 };
