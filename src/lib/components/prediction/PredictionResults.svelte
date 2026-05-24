@@ -17,15 +17,15 @@
 
 	type Props = {
 		output: number;
+		hasPrediction: boolean;
 		summaryValues: SummaryValues;
 		trendData: TrendPoint[];
 		loading?: boolean;
 	};
 
-	let { output, summaryValues, trendData, loading = false }: Props = $props();
+	let { output, hasPrediction, summaryValues, trendData, loading = false }: Props = $props();
 
-	const hasOutput = $derived(output > 0);
-	const showSkeleton = $derived(loading && !hasOutput);
+	const showSkeleton = $derived(loading && !hasPrediction);
 
 	const chartStats = $derived.by(() => {
 		const latestValue = trendData[trendData.length - 1]?.value ?? 0;
@@ -105,7 +105,7 @@
 			<div
 				class={cn(
 					'relative min-w-[200px] overflow-hidden rounded-xl border px-5 py-4 transition-all duration-500 max-sm:w-full',
-					hasOutput
+					hasPrediction
 						? 'animate-glow border-primary/25 bg-gradient-to-br from-primary/12 via-accent/60 to-card'
 						: 'border-border/60 bg-gradient-to-br from-secondary/40 to-card',
 					'shadow-[inset_0_1px_0_0_color-mix(in_oklab,var(--primary-foreground)_12%,transparent)]'
@@ -125,11 +125,11 @@
 					<p
 						class={cn(
 							'relative mt-1 font-heading text-3xl font-extrabold tracking-tight tabular-nums transition-all duration-500',
-							!hasOutput && 'text-base font-semibold text-muted-foreground',
-							hasOutput && 'animate-settle text-primary'
+							!hasPrediction && 'text-base font-semibold text-muted-foreground',
+							hasPrediction && 'animate-settle text-primary'
 						)}
 					>
-						{hasOutput ? fmt.format(Math.round(output)) : t('awaiting', $lang)}
+						{hasPrediction ? fmt.format(Math.round(output)) : t('awaiting', $lang)}
 					</p>
 				{/if}
 			</div>
@@ -162,7 +162,7 @@
 					{/each}
 				</div>
 
-				{#if hasOutput}
+				{#if hasPrediction}
 					<Separator />
 					<div class="animate-fade-in">
 						<Card.Description class="mb-1 tracking-wider uppercase">

@@ -10,6 +10,8 @@
 		MIN_LEASE_COMMENCE_YEAR,
 		type FieldType
 	} from '$lib/prediction';
+
+	type FieldName = keyof FieldType;
 	import FormSelect, { type FormSelectOption } from '$lib/components/ui/form-select.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
@@ -17,13 +19,18 @@
 
 	type Props = {
 		form: FieldType;
+		fieldErrors: Record<FieldName, string>;
 		loading: boolean;
 		onsubmit?: () => void;
 		onreset?: () => void;
 		onchange?: (patch: Partial<FieldType>) => void;
 	};
 
-	let { form, loading, onsubmit, onreset, onchange }: Props = $props();
+	let { form, fieldErrors, loading, onsubmit, onreset, onchange }: Props = $props();
+
+	function errorFor(message: string) {
+		return message ? [{ message }] : undefined;
+	}
 
 	function labeledOptions<T extends string>(
 		values: readonly T[],
@@ -66,6 +73,7 @@
 					onchange={(value) => handleChange('ml_model', value as FieldType['ml_model'])}
 				/>
 			</Field.Content>
+			<Field.Error errors={errorFor(fieldErrors.ml_model)} />
 		</Field.Field>
 
 		<div class="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
@@ -80,6 +88,7 @@
 						onchange={(value) => handleChange('town', value as FieldType['town'])}
 					/>
 				</Field.Content>
+				<Field.Error errors={errorFor(fieldErrors.town)} />
 			</Field.Field>
 
 			<Field.Field>
@@ -93,6 +102,7 @@
 						onchange={(value) => handleChange('storey_range', value as FieldType['storey_range'])}
 					/>
 				</Field.Content>
+				<Field.Error errors={errorFor(fieldErrors.storey_range)} />
 			</Field.Field>
 
 			<Field.Field>
@@ -106,6 +116,7 @@
 						onchange={(value) => handleChange('flat_model', value as FieldType['flat_model'])}
 					/>
 				</Field.Content>
+				<Field.Error errors={errorFor(fieldErrors.flat_model)} />
 			</Field.Field>
 
 			<Field.Field>
@@ -123,7 +134,7 @@
 							class="h-10 rounded-r-none rounded-l-lg border border-border/60 bg-card px-3 shadow-none transition-colors duration-200 focus-visible:border-primary/40"
 							min={MIN_FLOOR_AREA_SQM}
 							max={MAX_FLOOR_AREA_SQM}
-							value={form.floor_area_sqm || ''}
+							value={form.floor_area_sqm ?? ''}
 							placeholder={t('enter_floor_area', $lang)}
 							oninput={(event) =>
 								handleChange(
@@ -141,6 +152,7 @@
 						</span>
 					</div>
 				</Field.Content>
+				<Field.Error errors={errorFor(fieldErrors.floor_area_sqm)} />
 			</Field.Field>
 		</div>
 
@@ -155,6 +167,7 @@
 					onchange={(year) => handleChange('lease_commence_date', Number(year))}
 				/>
 			</Field.Content>
+			<Field.Error errors={errorFor(fieldErrors.lease_commence_date)} />
 		</Field.Field>
 
 		<div class="grid grid-cols-2 gap-3 max-sm:grid-cols-1">

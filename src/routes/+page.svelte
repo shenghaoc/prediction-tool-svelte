@@ -54,7 +54,7 @@
 
 	$effect(() => {
 		if (!mounted) return;
-		if ($prediction.output > 0) {
+		if ($prediction.hasPrediction) {
 			resultsEl?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 		}
 	});
@@ -222,6 +222,7 @@
 							{/if}
 							<PredictionForm
 								form={$prediction.form}
+								fieldErrors={$prediction.fieldErrors}
 								loading={$prediction.loading}
 								onsubmit={handleSubmit}
 								onreset={() => prediction.reset()}
@@ -234,6 +235,7 @@
 				<div bind:this={resultsEl}>
 					<PredictionResults
 						output={$prediction.output}
+						hasPrediction={$prediction.hasPrediction}
 						summaryValues={$prediction.summaryValues}
 						trendData={$prediction.trendData}
 						loading={$prediction.loading}
