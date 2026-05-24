@@ -8,18 +8,18 @@ This is a SvelteKit / Svelte 5 app (Singapore HDB resale price prediction tool).
 
 All commands use **npm** (lockfile: `package-lock.json`). See `package.json` `"scripts"` for the full list.
 
-| Task         | Command                                                 |
-| ------------ | ------------------------------------------------------- |
-| Install deps | `npm install`                                           |
-| Dev server   | `npm run dev` (serves at `http://localhost:5173`)       |
-| Lint         | `npm run lint` (Prettier + ESLint)                      |
-| Format       | `npm run format`                                        |
-| Type check   | `npm run check`                                         |
-| Unit tests   | `npm run test:unit` (Vitest)                            |
-| E2E tests    | `npm run test:e2e` (Playwright, mocks the API route)    |
-| Build        | `npm run build`                                         |
-| Deploy       | `npm run deploy`                                        |
-| Wrangler dev | `npm run wrangler:dev`                                  |
+| Task         | Command                                              |
+| ------------ | ---------------------------------------------------- |
+| Install deps | `npm install`                                        |
+| Dev server   | `npm run dev` (serves at `http://localhost:5173`)    |
+| Lint         | `npm run lint` (Prettier + ESLint)                   |
+| Format       | `npm run format`                                     |
+| Type check   | `npm run check`                                      |
+| Unit tests   | `npm run test:unit` (Vitest)                         |
+| E2E tests    | `npm run test:e2e` (Playwright, mocks the API route) |
+| Build        | `npm run build`                                      |
+| Deploy       | `npm run deploy`                                     |
+| Wrangler dev | `npm run wrangler:dev`                               |
 
 ### Non-obvious caveats
 

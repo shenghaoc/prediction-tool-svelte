@@ -72,7 +72,11 @@ export function normalizePrice(value: number) {
 }
 
 export function normalizeTrendData(data: unknown): TrendPoint[] {
-	if (!data || typeof data !== 'object' || !Array.isArray((data as Record<string, unknown>).predictions)) {
+	if (
+		!data ||
+		typeof data !== 'object' ||
+		!Array.isArray((data as Record<string, unknown>).predictions)
+	) {
 		console.error('normalizeTrendData received unexpected data shape', data);
 		return [];
 	}
