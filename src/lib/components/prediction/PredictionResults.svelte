@@ -14,6 +14,7 @@
 	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
 	import PriceTrendChart from './PriceTrendChart.svelte';
 	import ResultsSkeleton from './ResultsSkeleton.svelte';
+	import { formatCurrency } from '$lib/format';
 
 	type Props = {
 		output: number;
@@ -44,13 +45,9 @@
 		};
 	});
 
-	const fmt = $derived(
-		new Intl.NumberFormat($lang === 'zh' ? 'zh-SG' : 'en-SG', {
-			style: 'currency',
-			currency: 'SGD',
-			maximumFractionDigits: 0
-		})
-	);
+	const fmt = $derived({
+		format: (n: number) => formatCurrency(n, $lang === 'zh' ? 'zh-SG' : 'en-SG')
+	});
 
 	function optionLabel(
 		group: 'ml_models' | 'towns' | 'storey_ranges' | 'flat_models',
