@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { defaultTrendData, formatCurrencyTick, normalizePrice, normalizeTrendData } from '$lib/prediction';
+import {
+	defaultTrendData,
+	formatCurrencyTick,
+	normalizePrice,
+	normalizeTrendData
+} from '$lib/prediction';
 
 describe('prediction helpers', () => {
 	it('builds a 13-point default trend ending at the base prediction month', () => {

@@ -10,14 +10,19 @@ describe('hooks.server handle', () => {
 					get: () => 'zh'
 				}
 			} as never,
-			resolve: (_event, options) =>
-				options?.transformPageChunk?.({
+			resolve: async (_event, options) => {
+				const html = options?.transformPageChunk?.({
 					html: '<html lang="%lang%"></html>',
 					done: true
-				}) as never
+				});
+				return {
+					headers: new Headers(),
+					text: async () => html
+				} as never;
+			}
 		});
 
-		expect(response).toBe('<html lang="zh"></html>');
+		expect(await response.text()).toBe('<html lang="zh"></html>');
 	});
 
 	it('falls back to english for unsupported languages', async () => {
@@ -27,13 +32,18 @@ describe('hooks.server handle', () => {
 					get: () => 'fr'
 				}
 			} as never,
-			resolve: (_event, options) =>
-				options?.transformPageChunk?.({
+			resolve: async (_event, options) => {
+				const html = options?.transformPageChunk?.({
 					html: '<html lang="%lang%"></html>',
 					done: true
-				}) as never
+				});
+				return {
+					headers: new Headers(),
+					text: async () => html
+				} as never;
+			}
 		});
 
-		expect(response).toBe('<html lang="en"></html>');
+		expect(await response.text()).toBe('<html lang="en"></html>');
 	});
 });
