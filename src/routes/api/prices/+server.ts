@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
+import { FLAT_MODELS, ML_MODELS, STOREY_RANGES, TOWNS } from '$lib/lists';
 import {
 	DEFAULT_PREDICTION_MONTH_END,
 	DEFAULT_PREDICTION_MONTH_START
@@ -69,6 +70,15 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 		return json({ error: 'Missing or invalid request fields.' }, { status: 400 });
 	}
 
+	if (
+		!(ML_MODELS as readonly string[]).includes(mlModel) ||
+		!(TOWNS as readonly string[]).includes(town) ||
+		!(FLAT_MODELS as readonly string[]).includes(flatModel) ||
+		!(STOREY_RANGES as readonly string[]).includes(storeyRange)
+	) {
+		return json({ error: 'Missing or invalid request fields.' }, { status: 400 });
+	}
+
 	const db = platform?.env?.DB;
 	if (!db) {
 		console.error('D1 database binding "DB" not available in platform.env');
@@ -120,7 +130,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 		if (!first) {
 			return json(
 				{ error: 'No prediction data found for the given parameters.' },
-				{ status: 500 }
+				{ status: 404 }
 			);
 		}
 
