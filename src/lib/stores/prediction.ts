@@ -218,19 +218,18 @@ function createPredictionStore() {
 			try {
 				const latest = get({ subscribe });
 				const floorArea = Math.max(20, Math.min(300, Math.round(latest.form.floor_area_sqm)));
-				const formData = new FormData();
-				formData.append('model', latest.form.ml_model);
-				formData.append('monthStart', '2021-02');
-				formData.append('monthEnd', '2022-02');
-				formData.append('town', latest.form.town);
-				formData.append('storeyRange', latest.form.storey_range);
-				formData.append('flatModel', latest.form.flat_model);
-				formData.append('floorAreaSqm', String(floorArea));
-				formData.append('leaseCommenceYear', String(latest.form.lease_commence_date));
 
-				const response = await fetch('https://ee4802-g20-tool.shenghaoc.workers.dev/api/prices', {
+				const response = await fetch('/api/prices', {
 					method: 'POST',
-					body: formData
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						mlModel: latest.form.ml_model,
+						town: latest.form.town,
+						storeyRange: latest.form.storey_range,
+						flatModel: latest.form.flat_model,
+						floorAreaSqm: floorArea,
+						leaseCommenceYear: latest.form.lease_commence_date
+					})
 				});
 
 				if (!response.ok) {
@@ -268,8 +267,21 @@ async function getApiErrorMessage(response: Response, currentLang: 'en' | 'zh') 
 	}
 
 	try {
-		const parsed = JSON.parse(text) as { error?: unknown };
-		if (typeof parsed.error === 'string') {
+		const parsed = JSON.parse(text) as {
+			error?: string | { message?: string };
+			statusMessage?: string;
+			message?: string;
+		};
+
+		if (typeof parsed.statusMessage === 'string' && parsed.statusMessage.trim()) {
+			return parsed.statusMessage;
+		}
+
+		if (typeof parsed.message === 'string' && parsed.message.trim()) {
+			return parsed.message;
+		}
+
+		if (typeof parsed.error === 'string' && parsed.error.trim()) {
 			return parsed.error;
 		}
 

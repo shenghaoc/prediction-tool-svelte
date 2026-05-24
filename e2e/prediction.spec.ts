@@ -19,7 +19,7 @@ const mockTrendData = {
 };
 
 test.beforeEach(async ({ page }) => {
-	await page.route('https://ee4802-g20-tool.shenghaoc.workers.dev/api/prices', async (route) => {
+	await page.route('**/api/prices', async (route) => {
 		await route.fulfill({
 			status: 200,
 			contentType: 'application/json',
@@ -34,7 +34,7 @@ test('renders the prediction flow and updates the chart summary', async ({ page 
 
 	await expect(page.getByRole('heading', { level: 1, name: 'Price Prediction' })).toBeVisible();
 	await Promise.all([
-		page.waitForResponse('https://ee4802-g20-tool.shenghaoc.workers.dev/api/prices'),
+		page.waitForResponse('**/api/prices'),
 		page.getByRole('button', { name: 'Get prediction' }).click()
 	]);
 

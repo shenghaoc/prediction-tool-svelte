@@ -38,6 +38,9 @@ export type PredictionApiResponse = {
 	}>;
 };
 
+export const DEFAULT_PREDICTION_MONTH_START = '2021-02';
+export const DEFAULT_PREDICTION_MONTH_END = '2022-02';
+
 export const predictionMonth = dayjs.utc('2022-02', 'YYYY-MM');
 export const MAX_LEASE_COMMENCE_YEAR = predictionMonth.year();
 
