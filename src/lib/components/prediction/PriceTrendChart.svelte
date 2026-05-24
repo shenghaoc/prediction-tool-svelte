@@ -1,14 +1,17 @@
 <script lang="ts">
 	import { formatCurrency } from '$lib/format';
 	import { formatCurrencyTick, type TrendPoint } from '$lib/prediction';
+	import type { Language } from '$lib/i18n';
 
 	type Props = {
 		data: TrendPoint[];
 		ariaLabel: string;
-		locale?: string;
+		locale?: Language;
 	};
 
 	let { data, ariaLabel, locale = 'en' }: Props = $props();
+
+	const currencyLocale = $derived(locale === 'zh' ? 'zh-SG' : 'en-SG');
 
 	const width = 760;
 	let svg: SVGSVGElement | null = $state(null);
@@ -253,7 +256,7 @@
 				{activePoint.label}
 			</div>
 			<div class="text-sm font-semibold text-foreground tabular-nums">
-				{formatCurrency(activePoint.value)}
+				{formatCurrency(activePoint.value, currencyLocale)}
 			</div>
 		</div>
 	{/if}

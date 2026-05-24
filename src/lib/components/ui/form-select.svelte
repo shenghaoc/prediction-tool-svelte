@@ -16,14 +16,7 @@
 		onchange?: (value: T) => void;
 	};
 
-	let {
-		id,
-		value = $bindable(),
-		options,
-		placeholder = '',
-		disabled = false,
-		onchange
-	}: Props = $props();
+	let { id, value, options, placeholder = '', disabled = false, onchange }: Props = $props();
 
 	const triggerClassName =
 		'h-10 w-full rounded-lg border border-border/60 bg-card px-3 shadow-sm transition-all duration-200 hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/15 data-[placeholder]:text-muted-foreground';
@@ -36,7 +29,6 @@
 	{value}
 	onValueChange={(next) => {
 		if (!next) return;
-		value = next as typeof value;
 		onchange?.(next as typeof value);
 	}}
 	{disabled}

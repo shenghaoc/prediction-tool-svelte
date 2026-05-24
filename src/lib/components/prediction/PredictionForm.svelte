@@ -134,12 +134,12 @@
 							class="h-10 rounded-r-none rounded-l-lg border border-border/60 bg-card px-3 shadow-none transition-colors duration-200 focus-visible:border-primary/40"
 							min={MIN_FLOOR_AREA_SQM}
 							max={MAX_FLOOR_AREA_SQM}
-							value={form.floor_area_sqm ?? ''}
+							value={Number.isFinite(form.floor_area_sqm) ? form.floor_area_sqm : ''}
 							placeholder={t('enter_floor_area', $lang)}
 							oninput={(event) =>
 								handleChange(
 									'floor_area_sqm',
-									event.currentTarget.value ? Number(event.currentTarget.value) : 0
+									event.currentTarget.value ? Number(event.currentTarget.value) : Number.NaN
 								)}
 							required
 						/>

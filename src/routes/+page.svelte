@@ -18,6 +18,7 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
+	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
 	import { cn } from '$lib/utils.js';
 
@@ -82,9 +83,8 @@
 	}
 
 	async function handleSubmit() {
-		const hadPrediction = $prediction.hasPrediction;
 		await prediction.submit();
-		if ($prediction.hasPrediction && !$prediction.errorMessage && !hadPrediction) {
+		if ($prediction.hasPrediction && !$prediction.errorMessage) {
 			toast.success(t('prediction_success', $lang), { id: 'prediction' });
 		}
 		if ($prediction.errorMessage) {
@@ -180,16 +180,18 @@
 							</Card.Description>
 						</Card.Header>
 						<Card.Content class="relative px-6 pt-4">
-							<div class="animate-stagger grid grid-cols-3 gap-2.5 max-sm:grid-cols-1">
-								{#each figures as figure (figure.label)}
-									<StatTile
-										icon={figure.icon}
-										label={figure.label}
-										value={figure.value}
-										hint={figure.hint}
-									/>
-								{/each}
-							</div>
+							<Tooltip.Provider>
+								<div class="animate-stagger grid grid-cols-3 gap-2.5 max-sm:grid-cols-1">
+									{#each figures as figure (figure.label)}
+										<StatTile
+											icon={figure.icon}
+											label={figure.label}
+											value={figure.value}
+											hint={figure.hint}
+										/>
+									{/each}
+								</div>
+							</Tooltip.Provider>
 						</Card.Content>
 					</Card.Root>
 

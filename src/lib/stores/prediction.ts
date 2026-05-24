@@ -89,6 +89,11 @@ function validateForm(form: FieldType) {
 	};
 }
 
+function readInitialDarkMode() {
+	if (typeof window === 'undefined') return false;
+	return localStorage.getItem('theme') === 'dark';
+}
+
 const initialState: PredictionState = {
 	form: { ...initialFormValues },
 	summaryValues: createSummary(initialFormValues),
@@ -103,7 +108,14 @@ const initialState: PredictionState = {
 };
 
 function createPredictionStore() {
-	const { subscribe, set, update } = writable<PredictionState>(initialState);
+	const { subscribe, set, update } = writable<PredictionState>({
+		...initialState,
+		darkMode: readInitialDarkMode()
+	});
+
+	if (typeof window !== 'undefined') {
+		applyTheme(readInitialDarkMode());
+	}
 
 	function setViewportFlags() {
 		if (typeof window === 'undefined') return;

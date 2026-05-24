@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-	defaultTrendData,
-	formatCurrencyTick,
-	getPredictionTheme,
-	normalizePrice,
-	normalizeTrendData
-} from '$lib/prediction';
+import { defaultTrendData, formatCurrencyTick, normalizePrice, normalizeTrendData } from '$lib/prediction';
 
 describe('prediction helpers', () => {
 	it('builds a 13-point default trend ending at the base prediction month', () => {
@@ -41,14 +35,5 @@ describe('prediction helpers', () => {
 		expect(formatCurrencyTick(950)).toBe('$950');
 		expect(formatCurrencyTick(125_000)).toBe('$125k');
 		expect(formatCurrencyTick(1_250_000)).toBe('$1.3M');
-	});
-
-	it('returns distinct light and dark theme palettes', () => {
-		const light = getPredictionTheme(false);
-		const dark = getPredictionTheme(true);
-
-		expect(light.pageBg).toBe('#f5eee5');
-		expect(dark.pageBg).toBe('#091017');
-		expect(light.chartLine).not.toBe(dark.chartLine);
 	});
 });

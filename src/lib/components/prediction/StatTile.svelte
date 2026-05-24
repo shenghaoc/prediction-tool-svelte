@@ -43,16 +43,14 @@
 {/snippet}
 
 {#if hint}
-	<Tooltip.Provider>
-		<Tooltip.Root>
-			<Tooltip.Trigger>
-				{@render tile()}
-			</Tooltip.Trigger>
-			<Tooltip.Content side="top" class="max-w-[220px] text-center leading-relaxed">
-				{hint}
-			</Tooltip.Content>
-		</Tooltip.Root>
-	</Tooltip.Provider>
+	<Tooltip.Root>
+		<Tooltip.Trigger>
+			{@render tile()}
+		</Tooltip.Trigger>
+		<Tooltip.Content side="top" class="max-w-[220px] text-center leading-relaxed">
+			{hint}
+		</Tooltip.Content>
+	</Tooltip.Root>
 {:else}
 	{@render tile()}
 {/if}

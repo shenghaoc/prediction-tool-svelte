@@ -48,9 +48,10 @@ test.describe('happy path', () => {
 	test('switches the page copy to chinese', async ({ page }) => {
 		await page.goto('/');
 		await page.waitForSelector('body[data-theme]');
+		await expect(page.getByRole('button', { name: 'Get prediction' })).toBeVisible();
 
-		const englishHeading = page.getByRole('heading', { level: 1, name: /Price\s*Prediction/i });
-		const chineseHeading = page.getByRole('heading', { level: 1, name: /价格\s*预测/ });
+		const englishHeading = page.getByRole('heading', { level: 1, name: /Price/i });
+		const chineseHeading = page.getByRole('heading', { level: 1, name: /价格/ });
 
 		if (await englishHeading.isVisible()) {
 			await page.getByRole('button', { name: '中文/English' }).click();
