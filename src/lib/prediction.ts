@@ -38,6 +38,12 @@ export type PredictionApiResponse = {
 	}>;
 };
 
+export const DEFAULT_PREDICTION_MONTH_START = '2021-02';
+export const DEFAULT_PREDICTION_MONTH_END = '2022-02';
+export const MIN_FLOOR_AREA_SQM = 20;
+export const MAX_FLOOR_AREA_SQM = 300;
+export const MIN_LEASE_COMMENCE_YEAR = 1960;
+
 export const predictionMonth = dayjs.utc('2022-02', 'YYYY-MM');
 export const MAX_LEASE_COMMENCE_YEAR = predictionMonth.year();
 
@@ -65,8 +71,12 @@ export function normalizePrice(value: number) {
 	return Math.max(0, Math.round(value));
 }
 
-export function normalizeTrendData(data: PredictionApiResponse): TrendPoint[] {
-	return data.predictions.map((entry) => ({
+export function normalizeTrendData(data: unknown): TrendPoint[] {
+	if (!data || typeof data !== 'object' || !Array.isArray((data as Record<string, unknown>).predictions)) {
+		console.error('normalizeTrendData received unexpected data shape', data);
+		return [];
+	}
+	return (data as PredictionApiResponse).predictions.map((entry) => ({
 		label: entry.month,
 		value: normalizePrice(entry.predictedPrice)
 	}));

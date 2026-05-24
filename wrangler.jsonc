@@ -1,0 +1,21 @@
+{
+	"$schema": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/config-schema.json",
+	"name": "ee4802-g20-tool-svelte",
+	"main": ".svelte-kit/cloudflare/_worker.js",
+	"compatibility_date": "2025-05-24",
+	"compatibility_flags": ["nodejs_als"],
+	"assets": {
+		"binding": "ASSETS",
+		"directory": ".svelte-kit/cloudflare"
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "ee4802-g20-tool-db",
+			"database_id": "4e17ff7b-2af8-40fe-bb1c-2a6bc5b4199f"
+		}
+	],
+	"observability": {
+		"enabled": true
+	}
+}

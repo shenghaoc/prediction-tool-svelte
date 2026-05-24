@@ -4,7 +4,10 @@ import { lang, t } from '$lib/i18n';
 import {
 	defaultTrendData,
 	initialFormValues,
+	MAX_FLOOR_AREA_SQM,
 	MAX_LEASE_COMMENCE_YEAR,
+	MIN_FLOOR_AREA_SQM,
+	MIN_LEASE_COMMENCE_YEAR,
 	normalizePrice,
 	normalizeTrendData,
 	type FieldType,
@@ -66,14 +69,14 @@ function validateForm(form: FieldType) {
 	if (!form.flat_model) fieldErrors.flat_model = t('missing_flat_model', currentLang);
 	if (!Number.isFinite(form.floor_area_sqm)) {
 		fieldErrors.floor_area_sqm = t('missing_floor_area', currentLang);
-	} else if (form.floor_area_sqm < 20 || form.floor_area_sqm > 300) {
+	} else if (form.floor_area_sqm < MIN_FLOOR_AREA_SQM || form.floor_area_sqm > MAX_FLOOR_AREA_SQM) {
 		fieldErrors.floor_area_sqm = t('floor_area_range', currentLang);
 	}
 
 	if (!Number.isFinite(form.lease_commence_date)) {
 		fieldErrors.lease_commence_date = t('missing_lease_commence_date', currentLang);
 	} else if (
-		form.lease_commence_date < 1960 ||
+		form.lease_commence_date < MIN_LEASE_COMMENCE_YEAR ||
 		form.lease_commence_date > MAX_LEASE_COMMENCE_YEAR
 	) {
 		fieldErrors.lease_commence_date = t('missing_lease_commence_date', currentLang);
@@ -192,8 +195,8 @@ function createPredictionStore() {
 			});
 		},
 		async submit() {
-			const state = get({ subscribe });
 			const currentLang = get(lang);
+			const state = get({ subscribe });
 			persistForm(state.form);
 
 			const validation = validateForm(state.form);
@@ -217,20 +220,19 @@ function createPredictionStore() {
 
 			try {
 				const latest = get({ subscribe });
-				const floorArea = Math.max(20, Math.min(300, Math.round(latest.form.floor_area_sqm)));
-				const formData = new FormData();
-				formData.append('model', latest.form.ml_model);
-				formData.append('monthStart', '2021-02');
-				formData.append('monthEnd', '2022-02');
-				formData.append('town', latest.form.town);
-				formData.append('storeyRange', latest.form.storey_range);
-				formData.append('flatModel', latest.form.flat_model);
-				formData.append('floorAreaSqm', String(floorArea));
-				formData.append('leaseCommenceYear', String(latest.form.lease_commence_date));
+				const floorArea = Math.max(MIN_FLOOR_AREA_SQM, Math.min(MAX_FLOOR_AREA_SQM, Math.round(latest.form.floor_area_sqm)));
 
-				const response = await fetch('https://ee4802-g20-tool.shenghaoc.workers.dev/api/prices', {
+				const response = await fetch('/api/prices', {
 					method: 'POST',
-					body: formData
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						mlModel: latest.form.ml_model,
+						town: latest.form.town,
+						storeyRange: latest.form.storey_range,
+						flatModel: latest.form.flat_model,
+						floorAreaSqm: floorArea,
+						leaseCommenceYear: latest.form.lease_commence_date
+					})
 				});
 
 				if (!response.ok) {
@@ -248,6 +250,10 @@ function createPredictionStore() {
 					loading: false
 				}));
 			} catch (error) {
+				console.error('Price prediction fetch failed', {
+					url: '/api/prices',
+					error: error instanceof Error ? error.message : error
+				});
 				update((current) => ({
 					...current,
 					loading: false,
@@ -268,8 +274,21 @@ async function getApiErrorMessage(response: Response, currentLang: 'en' | 'zh') 
 	}
 
 	try {
-		const parsed = JSON.parse(text) as { error?: unknown };
-		if (typeof parsed.error === 'string') {
+		const parsed = JSON.parse(text) as {
+			error?: string | { message?: string };
+			statusMessage?: string;
+			message?: string;
+		};
+
+		if (typeof parsed.statusMessage === 'string' && parsed.statusMessage.trim()) {
+			return parsed.statusMessage;
+		}
+
+		if (typeof parsed.message === 'string' && parsed.message.trim()) {
+			return parsed.message;
+		}
+
+		if (typeof parsed.error === 'string' && parsed.error.trim()) {
 			return parsed.error;
 		}
 
@@ -281,8 +300,13 @@ async function getApiErrorMessage(response: Response, currentLang: 'en' | 'zh') 
 		) {
 			return parsed.error.message;
 		}
-	} catch {
-		// Fall back to the raw body below.
+	} catch (parseError) {
+		console.warn('Failed to parse error response body as JSON', {
+			status: response.status,
+			contentType: response.headers.get('content-type'),
+			bodyPreview: text.slice(0, 200),
+			parseError
+		});
 	}
 
 	return text;
