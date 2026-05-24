@@ -7,7 +7,7 @@
 		"build": "vite build",
 		"preview": "vite preview",
 		"deploy": "npm run build && wrangler deploy",
-		"wrangler:dev": "wrangler dev",
+		"wrangler:dev": "npm run build && wrangler dev",
 		"cf-typegen": "wrangler types",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
