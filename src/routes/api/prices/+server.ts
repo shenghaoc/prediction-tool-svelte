@@ -3,7 +3,11 @@ import type { RequestHandler } from '@sveltejs/kit';
 import { FLAT_MODELS, ML_MODELS, STOREY_RANGES, TOWNS } from '$lib/lists';
 import {
 	DEFAULT_PREDICTION_MONTH_END,
-	DEFAULT_PREDICTION_MONTH_START
+	DEFAULT_PREDICTION_MONTH_START,
+	MAX_FLOOR_AREA_SQM,
+	MAX_LEASE_COMMENCE_YEAR,
+	MIN_FLOOR_AREA_SQM,
+	MIN_LEASE_COMMENCE_YEAR
 } from '$lib/prediction';
 
 type PriceQueryRow = {
@@ -62,10 +66,10 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 		typeof storeyRange !== 'string' ||
 		typeof floorAreaSqm !== 'number' ||
 		typeof leaseCommenceYear !== 'number' ||
-		floorAreaSqm < 20 ||
-		floorAreaSqm > 300 ||
-		leaseCommenceYear < 1960 ||
-		leaseCommenceYear > 2022
+		floorAreaSqm < MIN_FLOOR_AREA_SQM ||
+		floorAreaSqm > MAX_FLOOR_AREA_SQM ||
+		leaseCommenceYear < MIN_LEASE_COMMENCE_YEAR ||
+		leaseCommenceYear > MAX_LEASE_COMMENCE_YEAR
 	) {
 		return json({ error: 'Missing or invalid request fields.' }, { status: 400 });
 	}

@@ -4,7 +4,10 @@ import { lang, t } from '$lib/i18n';
 import {
 	defaultTrendData,
 	initialFormValues,
+	MAX_FLOOR_AREA_SQM,
 	MAX_LEASE_COMMENCE_YEAR,
+	MIN_FLOOR_AREA_SQM,
+	MIN_LEASE_COMMENCE_YEAR,
 	normalizePrice,
 	normalizeTrendData,
 	type FieldType,
@@ -66,14 +69,14 @@ function validateForm(form: FieldType) {
 	if (!form.flat_model) fieldErrors.flat_model = t('missing_flat_model', currentLang);
 	if (!Number.isFinite(form.floor_area_sqm)) {
 		fieldErrors.floor_area_sqm = t('missing_floor_area', currentLang);
-	} else if (form.floor_area_sqm < 20 || form.floor_area_sqm > 300) {
+	} else if (form.floor_area_sqm < MIN_FLOOR_AREA_SQM || form.floor_area_sqm > MAX_FLOOR_AREA_SQM) {
 		fieldErrors.floor_area_sqm = t('floor_area_range', currentLang);
 	}
 
 	if (!Number.isFinite(form.lease_commence_date)) {
 		fieldErrors.lease_commence_date = t('missing_lease_commence_date', currentLang);
 	} else if (
-		form.lease_commence_date < 1960 ||
+		form.lease_commence_date < MIN_LEASE_COMMENCE_YEAR ||
 		form.lease_commence_date > MAX_LEASE_COMMENCE_YEAR
 	) {
 		fieldErrors.lease_commence_date = t('missing_lease_commence_date', currentLang);
@@ -217,7 +220,7 @@ function createPredictionStore() {
 
 			try {
 				const latest = get({ subscribe });
-				const floorArea = Math.max(20, Math.min(300, Math.round(latest.form.floor_area_sqm)));
+				const floorArea = Math.max(MIN_FLOOR_AREA_SQM, Math.min(MAX_FLOOR_AREA_SQM, Math.round(latest.form.floor_area_sqm)));
 
 				const response = await fetch('/api/prices', {
 					method: 'POST',
