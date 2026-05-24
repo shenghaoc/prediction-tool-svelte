@@ -192,8 +192,8 @@ function createPredictionStore() {
 			});
 		},
 		async submit() {
-			const state = get({ subscribe });
 			const currentLang = get(lang);
+			const state = get({ subscribe });
 			persistForm(state.form);
 
 			const validation = validateForm(state.form);
@@ -247,6 +247,10 @@ function createPredictionStore() {
 					loading: false
 				}));
 			} catch (error) {
+				console.error('Price prediction fetch failed', {
+					url: '/api/prices',
+					error: error instanceof Error ? error.message : error
+				});
 				update((current) => ({
 					...current,
 					loading: false,
@@ -293,8 +297,13 @@ async function getApiErrorMessage(response: Response, currentLang: 'en' | 'zh') 
 		) {
 			return parsed.error.message;
 		}
-	} catch {
-		// Fall back to the raw body below.
+	} catch (parseError) {
+		console.warn('Failed to parse error response body as JSON', {
+			status: response.status,
+			contentType: response.headers.get('content-type'),
+			bodyPreview: text.slice(0, 200),
+			parseError
+		});
 	}
 
 	return text;

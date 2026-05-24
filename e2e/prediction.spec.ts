@@ -18,41 +18,93 @@ const mockTrendData = {
 	]
 };
 
-test.beforeEach(async ({ page }) => {
-	await page.route('**/api/prices', async (route) => {
-		await route.fulfill({
-			status: 200,
-			contentType: 'application/json',
-			body: JSON.stringify(mockTrendData)
+test.describe('happy path', () => {
+	test.beforeEach(async ({ page }) => {
+		await page.route('**/api/prices', async (route) => {
+			await route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify(mockTrendData)
+			});
 		});
+	});
+
+	test('renders the prediction flow and updates the chart summary', async ({ page }) => {
+		await page.goto('/');
+		await page.waitForSelector('body[data-theme]');
+
+		await expect(page.getByRole('heading', { level: 1, name: 'Price Prediction' })).toBeVisible();
+		await Promise.all([
+			page.waitForResponse('**/api/prices'),
+			page.getByRole('button', { name: 'Get prediction' }).click()
+		]);
+
+		await expect(page.locator('.prediction-price-panel strong').last()).toContainText('654,321');
+		await expect(page.locator('.prediction-chart-summary-grid')).toContainText('$654,321');
+	});
+
+	test('switches the page copy to chinese', async ({ page }) => {
+		await page.goto('/');
+		await page.waitForSelector('body[data-theme]');
+
+		const englishHeading = page.getByRole('heading', { level: 1, name: 'Price Prediction' });
+		const chineseHeading = page.getByText('价格预测');
+
+		if (await englishHeading.isVisible()) {
+			await page.getByRole('button', { name: '中文/English' }).click();
+		}
+
+		await expect(chineseHeading).toBeVisible();
+		await expect(page.getByText('新加坡组屋转售价估算器')).toBeVisible();
 	});
 });
 
-test('renders the prediction flow and updates the chart summary', async ({ page }) => {
-	await page.goto('/');
-	await page.waitForSelector('body[data-theme]');
+test.describe('error handling', () => {
+	test('shows error message when server returns 500', async ({ page }) => {
+		await page.route('**/api/prices', async (route) => {
+			await route.fulfill({
+				status: 500,
+				contentType: 'application/json',
+				body: JSON.stringify({ error: 'Prediction service unavailable.' })
+			});
+		});
 
-	await expect(page.getByRole('heading', { level: 1, name: 'Price Prediction' })).toBeVisible();
-	await Promise.all([
-		page.waitForResponse('**/api/prices'),
-		page.getByRole('button', { name: 'Get prediction' }).click()
-	]);
+		await page.goto('/');
+		await page.waitForSelector('body[data-theme]');
+		await page.getByRole('button', { name: 'Get prediction' }).click();
 
-	await expect(page.locator('.prediction-price-panel strong').last()).toContainText('654,321');
-	await expect(page.locator('.prediction-chart-summary-grid')).toContainText('$654,321');
-});
+		await expect(page.locator('.prediction-error')).toBeVisible();
+	});
 
-test('switches the page copy to chinese', async ({ page }) => {
-	await page.goto('/');
-	await page.waitForSelector('body[data-theme]');
+	test('shows error when server returns malformed JSON', async ({ page }) => {
+		await page.route('**/api/prices', async (route) => {
+			await route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: '{bad json'
+			});
+		});
 
-	const englishHeading = page.getByRole('heading', { level: 1, name: 'Price Prediction' });
-	const chineseHeading = page.getByText('价格预测');
+		await page.goto('/');
+		await page.waitForSelector('body[data-theme]');
+		await page.getByRole('button', { name: 'Get prediction' }).click();
 
-	if (await englishHeading.isVisible()) {
-		await page.getByRole('button', { name: '中文/English' }).click();
-	}
+		await expect(page.locator('.prediction-error')).toBeVisible();
+	});
 
-	await expect(chineseHeading).toBeVisible();
-	await expect(page.getByText('新加坡组屋转售价估算器')).toBeVisible();
+	test('shows error when request fails with non-JSON body', async ({ page }) => {
+		await page.route('**/api/prices', async (route) => {
+			await route.fulfill({
+				status: 502,
+				contentType: 'text/html',
+				body: '<html>Bad Gateway</html>'
+			});
+		});
+
+		await page.goto('/');
+		await page.waitForSelector('body[data-theme]');
+		await page.getByRole('button', { name: 'Get prediction' }).click();
+
+		await expect(page.locator('.prediction-error')).toBeVisible();
+	});
 });

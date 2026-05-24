@@ -68,8 +68,12 @@ export function normalizePrice(value: number) {
 	return Math.max(0, Math.round(value));
 }
 
-export function normalizeTrendData(data: PredictionApiResponse): TrendPoint[] {
-	return data.predictions.map((entry) => ({
+export function normalizeTrendData(data: unknown): TrendPoint[] {
+	if (!data || typeof data !== 'object' || !Array.isArray((data as Record<string, unknown>).predictions)) {
+		console.error('normalizeTrendData received unexpected data shape', data);
+		return [];
+	}
+	return (data as PredictionApiResponse).predictions.map((entry) => ({
 		label: entry.month,
 		value: normalizePrice(entry.predictedPrice)
 	}));

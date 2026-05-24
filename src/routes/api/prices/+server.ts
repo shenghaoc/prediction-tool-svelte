@@ -19,6 +19,9 @@ type PriceQueryRow = {
 };
 
 function readNumericField(value: unknown, fieldName: string): number {
+	if (value === null || value === undefined) {
+		throw new Error(`Database field ${fieldName} is null or undefined`);
+	}
 	const numericValue = Number(value);
 	if (!Number.isFinite(numericValue)) {
 		throw new Error(`Database field ${fieldName} is not a finite number`);
@@ -34,8 +37,13 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 	let requestBody: unknown;
 	try {
 		requestBody = await request.json();
-	} catch {
+	} catch (parseError) {
+		console.warn('Invalid JSON body received on /api/prices', parseError);
 		return json({ error: 'Invalid JSON body.' }, { status: 400 });
+	}
+
+	if (!requestBody || typeof requestBody !== 'object' || Array.isArray(requestBody)) {
+		return json({ error: 'Invalid request body.' }, { status: 400 });
 	}
 
 	const body = requestBody as Record<string, unknown>;
@@ -43,27 +51,32 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 	const town = body.town;
 	const flatModel = body.flatModel;
 	const storeyRange = body.storeyRange;
-	const floorAreaSqm = Number(body.floorAreaSqm);
-	const leaseCommenceYear = Number(body.leaseCommenceYear);
+	const floorAreaSqm = body.floorAreaSqm;
+	const leaseCommenceYear = body.leaseCommenceYear;
 
 	if (
 		typeof mlModel !== 'string' ||
 		typeof town !== 'string' ||
 		typeof flatModel !== 'string' ||
 		typeof storeyRange !== 'string' ||
-		!Number.isFinite(floorAreaSqm) ||
-		!Number.isFinite(leaseCommenceYear)
+		typeof floorAreaSqm !== 'number' ||
+		typeof leaseCommenceYear !== 'number' ||
+		floorAreaSqm < 20 ||
+		floorAreaSqm > 300 ||
+		leaseCommenceYear < 1960 ||
+		leaseCommenceYear > 2022
 	) {
 		return json({ error: 'Missing or invalid request fields.' }, { status: 400 });
 	}
 
 	const db = platform?.env?.DB;
 	if (!db) {
-		return json({ error: 'D1 database binding not available.' }, { status: 500 });
+		console.error('D1 database binding "DB" not available in platform.env');
+		return json({ error: 'Prediction service unavailable.' }, { status: 500 });
 	}
 
 	try {
-		const { results } = await db
+		const queryResult = await db
 			.prepare(
 				`SELECT
 					ml_models.intercept_map,
@@ -95,6 +108,13 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 				storeyRange
 			)
 			.all<PriceQueryRow>();
+
+		if (!queryResult || !Array.isArray(queryResult.results)) {
+			console.error('D1 query returned unexpected result shape', queryResult);
+			return json({ error: 'Prediction service unavailable.' }, { status: 500 });
+		}
+
+		const { results } = queryResult;
 
 		const [first] = results;
 		if (!first) {
@@ -134,14 +154,16 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 
 		return json({ predictions });
 	} catch (error: unknown) {
-		console.error(error);
+		console.error({
+			message: 'Price prediction query failed',
+			queryParams: { mlModel, town, flatModel, storeyRange, floorAreaSqm, leaseCommenceYear },
+			error:
+				error instanceof Error
+					? { message: error.message, name: error.name }
+					: error
+		});
 		return json(
-			{
-				error:
-					error instanceof Error
-						? error.message
-						: 'Prediction service unavailable.'
-			},
+			{ error: 'Prediction service unavailable.' },
 			{ status: 500 }
 		);
 	}

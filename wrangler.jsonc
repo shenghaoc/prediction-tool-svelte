@@ -1,6 +1,6 @@
 {
 	"$schema": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/config-schema.json",
-	"name": "prediction-tool-svelte",
+	"name": "ee4802-g20-tool-svelte",
 	"main": ".svelte-kit/cloudflare/_worker.js",
 	"compatibility_date": "2025-05-24",
 	"compatibility_flags": ["nodejs_als"],
