@@ -1,17 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { handle } from './hooks.server';
-
-const expectedSecurityHeaders = {
-	'X-Frame-Options': 'DENY',
-	'X-Content-Type-Options': 'nosniff',
-	'Referrer-Policy': 'strict-origin-when-cross-origin',
-	'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), browsing-topics=()',
-	'Strict-Transport-Security': 'max-age=31536000; includeSubDomains'
-} as const;
+import { handle, SECURITY_HEADERS } from './hooks.server';
 
 function expectSecurityHeaders(headers: Headers) {
-	for (const [name, value] of Object.entries(expectedSecurityHeaders)) {
+	for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
 		expect(headers.get(name)).toBe(value);
 	}
 }

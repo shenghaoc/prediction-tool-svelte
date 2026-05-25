@@ -4,7 +4,7 @@ import type { Language } from '$lib/i18n';
 
 const supportedLanguages = new Set<Language>(['en', 'zh']);
 
-const SECURITY_HEADERS = {
+export const SECURITY_HEADERS = {
 	'X-Frame-Options': 'DENY',
 	'X-Content-Type-Options': 'nosniff',
 	'Referrer-Policy': 'strict-origin-when-cross-origin',

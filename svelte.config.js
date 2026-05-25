@@ -13,10 +13,10 @@ const config = {
 				'default-src': ['self'],
 				'base-uri': ['self'],
 				'font-src': ['self', 'https://fonts.gstatic.com'],
-				'style-src': ['self', 'unsafe-inline', 'https://fonts.googleapis.com'],
+				'style-src': ['self', 'https://fonts.googleapis.com'],
 				'img-src': ['self', 'data:'],
 				'script-src': ['self'],
-				'connect-src': ['self'],
+				'connect-src': ['self', 'https://fonts.googleapis.com', 'https://fonts.gstatic.com'],
 				'frame-ancestors': ['none'],
 				'form-action': ['self']
 			}
