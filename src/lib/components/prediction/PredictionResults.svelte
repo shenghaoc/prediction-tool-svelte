@@ -14,6 +14,7 @@
 	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
 	import PriceTrendChart from './PriceTrendChart.svelte';
 	import ResultsSkeleton from './ResultsSkeleton.svelte';
+	import { formatCurrency } from '$lib/format';
 
 	type Props = {
 		output: number;
@@ -44,13 +45,7 @@
 		};
 	});
 
-	const fmt = $derived(
-		new Intl.NumberFormat($lang === 'zh' ? 'zh-SG' : 'en-SG', {
-			style: 'currency',
-			currency: 'SGD',
-			maximumFractionDigits: 0
-		})
-	);
+	const fmt = $derived((n: number) => formatCurrency(n, $lang === 'zh' ? 'zh-SG' : 'en-SG'));
 
 	function optionLabel(
 		group: 'ml_models' | 'towns' | 'storey_ranges' | 'flat_models',
@@ -129,7 +124,7 @@
 							hasPrediction && 'animate-settle text-primary'
 						)}
 					>
-						{hasPrediction ? fmt.format(Math.round(output)) : t('awaiting', $lang)}
+						{hasPrediction ? fmt(Math.round(output)) : t('awaiting', $lang)}
 					</p>
 				{/if}
 			</div>
@@ -179,7 +174,7 @@
 									{t('chart_latest', $lang)}
 								</p>
 								<p class="mt-1 text-sm font-semibold tabular-nums">
-									{fmt.format(Math.round(chartStats.latestValue))}
+									{fmt(Math.round(chartStats.latestValue))}
 								</p>
 							</div>
 							<div
@@ -189,7 +184,7 @@
 									{t('chart_range', $lang)}
 								</p>
 								<p class="mt-1 text-sm font-semibold tabular-nums">
-									{fmt.format(Math.round(chartStats.lowValue))} – {fmt.format(
+									{fmt(Math.round(chartStats.lowValue))} – {fmt(
 										Math.round(chartStats.peakValue)
 									)}
 								</p>
@@ -213,7 +208,7 @@
 									{:else}
 										<TrendingDown class="size-3.5 shrink-0" aria-hidden="true" />
 									{/if}
-									{deltaPositive ? '+' : '-'}{fmt.format(Math.abs(chartStats.deltaValue))}
+									{deltaPositive ? '+' : '-'}{fmt(Math.abs(chartStats.deltaValue))}
 								</p>
 								<p
 									class="mt-0.5 text-[9px] font-bold tracking-wider text-muted-foreground uppercase"
