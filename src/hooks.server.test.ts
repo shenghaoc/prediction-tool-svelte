@@ -2,6 +2,20 @@ import { describe, expect, it } from 'vitest';
 
 import { handle } from './hooks.server';
 
+const expectedSecurityHeaders = {
+	'X-Frame-Options': 'DENY',
+	'X-Content-Type-Options': 'nosniff',
+	'Referrer-Policy': 'strict-origin-when-cross-origin',
+	'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), browsing-topics=()',
+	'Strict-Transport-Security': 'max-age=31536000; includeSubDomains'
+} as const;
+
+function expectSecurityHeaders(headers: Headers) {
+	for (const [name, value] of Object.entries(expectedSecurityHeaders)) {
+		expect(headers.get(name)).toBe(value);
+	}
+}
+
 describe('hooks.server handle', () => {
 	it('injects a supported language from cookies into the html element', async () => {
 		const response = await handle({
@@ -11,18 +25,17 @@ describe('hooks.server handle', () => {
 				}
 			} as never,
 			resolve: async (_event, options) => {
-				const html = options?.transformPageChunk?.({
-					html: '<html lang="%lang%"></html>',
-					done: true
-				});
-				return {
-					headers: new Headers(),
-					text: async () => html
-				} as never;
+				const html =
+					options?.transformPageChunk?.({
+						html: '<html lang="%lang%"></html>',
+						done: true
+					}) ?? '';
+				return new Response(html, { headers: new Headers() });
 			}
 		});
 
 		expect(await response.text()).toBe('<html lang="zh"></html>');
+		expectSecurityHeaders(response.headers);
 	});
 
 	it('falls back to english for unsupported languages', async () => {
@@ -33,17 +46,33 @@ describe('hooks.server handle', () => {
 				}
 			} as never,
 			resolve: async (_event, options) => {
-				const html = options?.transformPageChunk?.({
-					html: '<html lang="%lang%"></html>',
-					done: true
-				});
-				return {
-					headers: new Headers(),
-					text: async () => html
-				} as never;
+				const html =
+					options?.transformPageChunk?.({
+						html: '<html lang="%lang%"></html>',
+						done: true
+					}) ?? '';
+				return new Response(html, { headers: new Headers() });
 			}
 		});
 
 		expect(await response.text()).toBe('<html lang="en"></html>');
+		expectSecurityHeaders(response.headers);
+	});
+
+	it('applies security headers to redirect responses without throwing', async () => {
+		const redirect = Response.redirect('http://localhost/api/prices/', 308);
+
+		const response = await handle({
+			event: {
+				cookies: {
+					get: () => undefined
+				}
+			} as never,
+			resolve: async () => redirect
+		});
+
+		expect(response.status).toBe(308);
+		expect(response.headers.get('Location')).toBe('http://localhost/api/prices/');
+		expectSecurityHeaders(response.headers);
 	});
 });

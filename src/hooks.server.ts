@@ -4,6 +4,24 @@ import type { Language } from '$lib/i18n';
 
 const supportedLanguages = new Set<Language>(['en', 'zh']);
 
+const SECURITY_HEADERS = {
+	'X-Frame-Options': 'DENY',
+	'X-Content-Type-Options': 'nosniff',
+	'Referrer-Policy': 'strict-origin-when-cross-origin',
+	'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), browsing-topics=()',
+	'Strict-Transport-Security': 'max-age=31536000; includeSubDomains'
+} as const;
+
+function applySecurityHeaders(response: Response): Response {
+	const secured = new Response(response.body, response);
+
+	for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
+		secured.headers.set(name, value);
+	}
+
+	return secured;
+}
+
 export const handle: Handle = async ({ event, resolve }) => {
 	const language = event.cookies.get('lang');
 	const htmlLanguage: Language =
@@ -13,14 +31,5 @@ export const handle: Handle = async ({ event, resolve }) => {
 		transformPageChunk: ({ html }) => html.replace('%lang%', htmlLanguage)
 	});
 
-	response.headers.set('X-Frame-Options', 'DENY');
-	response.headers.set('X-Content-Type-Options', 'nosniff');
-	response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-	response.headers.set(
-		'Permissions-Policy',
-		'camera=(), microphone=(), geolocation=(), browsing-topics=()'
-	);
-	response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-
-	return response;
+	return applySecurityHeaders(response);
 };
