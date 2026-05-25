@@ -6,14 +6,15 @@ const numberFormatCache = new Map<string, Intl.NumberFormat>();
 
 export function formatCurrency(n: number, locale: string = 'en-SG') {
 	try {
-		let formatter = numberFormatCache.get(locale);
+		const cacheKey = locale.toLowerCase();
+		let formatter = numberFormatCache.get(cacheKey);
 		if (!formatter) {
 			formatter = new Intl.NumberFormat(locale, {
 				style: 'currency',
 				currency: 'SGD',
 				maximumFractionDigits: 0
 			});
-			numberFormatCache.set(locale, formatter);
+			numberFormatCache.set(cacheKey, formatter);
 		}
 		return formatter.format(n);
 	} catch {
