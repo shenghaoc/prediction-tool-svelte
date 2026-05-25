@@ -9,7 +9,9 @@ export const SECURITY_HEADERS = {
 	'X-Content-Type-Options': 'nosniff',
 	'Referrer-Policy': 'strict-origin-when-cross-origin',
 	'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), browsing-topics=()',
-	'Strict-Transport-Security': 'max-age=31536000; includeSubDomains'
+	'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+	'Cross-Origin-Opener-Policy': 'same-origin',
+	'Cross-Origin-Resource-Policy': 'same-origin'
 } as const;
 
 function applySecurityHeaders(response: Response): Response {

@@ -18,7 +18,8 @@ export function persistLanguage(language: Language) {
 	}
 
 	localStorage.setItem('lang', language);
-	document.cookie = `lang=${language}; Path=/; Max-Age=31536000; SameSite=Lax`;
+	const secureFlag = window.location.protocol === 'https:' ? '; Secure' : '';
+	document.cookie = `lang=${language}; Path=/; Max-Age=31536000; SameSite=Lax${secureFlag}`;
 }
 
 export function applyDocumentLanguage(language: Language) {
