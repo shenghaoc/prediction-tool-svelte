@@ -184,9 +184,7 @@
 									{t('chart_range', $lang)}
 								</p>
 								<p class="mt-1 text-sm font-semibold tabular-nums">
-									{fmt(Math.round(chartStats.lowValue))} – {fmt(
-										Math.round(chartStats.peakValue)
-									)}
+									{fmt(Math.round(chartStats.lowValue))} – {fmt(Math.round(chartStats.peakValue))}
 								</p>
 							</div>
 							<div
