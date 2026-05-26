@@ -55,11 +55,18 @@ export const initialFormValues: FieldType = {
 	lease_commence_date: MAX_LEASE_COMMENCE_YEAR
 };
 
+// ⚡ Bolt Optimization:
+// Calculating the month labels with dayjs is surprisingly expensive in the hot path.
+// Since predictionMonth is a constant, we can pre-compute these 13 strings once
+// during module initialization rather than recalculating them on every form reset
+// or state initialization.
+const cachedDefaultTrendData: TrendPoint[] = [...Array(13).keys()].reverse().map((monthOffset) => ({
+	label: predictionMonth.subtract(monthOffset, 'month').format('YYYY-MM'),
+	value: 0
+}));
+
 export function defaultTrendData(): TrendPoint[] {
-	return [...Array(13).keys()].reverse().map((monthOffset) => ({
-		label: predictionMonth.subtract(monthOffset, 'month').format('YYYY-MM'),
-		value: 0
-	}));
+	return cachedDefaultTrendData.map((point) => ({ ...point }));
 }
 
 export function normalizePrice(value: number) {
