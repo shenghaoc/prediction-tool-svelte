@@ -13,8 +13,9 @@
 
 	type FieldName = keyof FieldType;
 	import FormSelect, { type FormSelectOption } from '$lib/components/ui/form-select.svelte';
+	import Combobox, { type ComboboxOption } from '$lib/components/ui/combobox.svelte';
+	import NumberField from '$lib/components/ui/number-field.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
 
 	type Props = {
@@ -52,6 +53,10 @@
 		onsubmit?.();
 	}
 
+	const townComboboxOptions: ComboboxOption[] = $derived(
+		TOWNS.map((town) => ({ value: town, label: t(`towns.${town}`, $lang) }))
+	);
+
 	const leaseYearOptions = $derived(
 		Array.from({ length: MAX_LEASE_COMMENCE_YEAR - MIN_LEASE_COMMENCE_YEAR + 1 }, (_, index) => {
 			const year = MIN_LEASE_COMMENCE_YEAR + index;
@@ -76,15 +81,16 @@
 			<Field.Error errors={errorFor(fieldErrors.ml_model)} />
 		</Field.Field>
 
-		<div class="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
+		<div class="grid grid-cols-2 gap-4 max-[520px]:grid-cols-1">
 			<Field.Field>
 				<Field.Label for="input-town">{t('town', $lang)}</Field.Label>
 				<Field.Content>
-					<FormSelect
+					<Combobox
 						id="input-town"
 						value={form.town}
-						options={labeledOptions(TOWNS, 'towns', $lang)}
+						options={townComboboxOptions}
 						placeholder={t('select_town', $lang)}
+						ariaLabel={t('town', $lang)}
 						onchange={(value) => handleChange('town', value as FieldType['town'])}
 					/>
 				</Field.Content>
@@ -122,35 +128,18 @@
 			<Field.Field>
 				<Field.Label for="input-floor_area">{t('floor_area', $lang)}</Field.Label>
 				<Field.Content>
-					<div
-						class="flex rounded-lg shadow-sm transition-shadow duration-200 focus-within:shadow-md focus-within:shadow-primary/10"
-					>
-						<Input
-							id="input-floor_area"
-							type="number"
-							inputmode="numeric"
-							data-no-spinner="true"
-							aria-describedby="floor-area-unit"
-							class="h-10 rounded-r-none rounded-l-lg border border-border/60 bg-card px-3 shadow-none transition-colors duration-200 focus-visible:border-primary/40"
-							min={MIN_FLOOR_AREA_SQM}
-							max={MAX_FLOOR_AREA_SQM}
-							value={Number.isFinite(form.floor_area_sqm) ? form.floor_area_sqm : ''}
-							placeholder={t('enter_floor_area', $lang)}
-							oninput={(event) =>
-								handleChange(
-									'floor_area_sqm',
-									event.currentTarget.value ? Number(event.currentTarget.value) : Number.NaN
-								)}
-							required
-						/>
-						<span
-							id="floor-area-unit"
-							class="inline-flex h-10 items-center rounded-r-lg border border-l-0 border-border/60 bg-muted px-3 text-xs font-semibold text-muted-foreground"
-						>
-							<span class="sr-only">{t('floor_area_unit', $lang)}</span>
-							<span aria-hidden="true">m²</span>
-						</span>
-					</div>
+					<NumberField
+						id="input-floor_area"
+						value={Number.isFinite(form.floor_area_sqm) ? form.floor_area_sqm : ''}
+						onchange={(v) => handleChange('floor_area_sqm', v === '' ? Number.NaN : v)}
+						min={MIN_FLOOR_AREA_SQM}
+						max={MAX_FLOOR_AREA_SQM}
+						step={5}
+						placeholder={t('enter_floor_area', $lang)}
+						unit="m²"
+						ariaLabel={t('floor_area', $lang)}
+						required
+					/>
 				</Field.Content>
 				<Field.Error errors={errorFor(fieldErrors.floor_area_sqm)} />
 			</Field.Field>
@@ -170,7 +159,7 @@
 			<Field.Error errors={errorFor(fieldErrors.lease_commence_date)} />
 		</Field.Field>
 
-		<div class="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
+		<div class="grid grid-cols-2 gap-3 max-[520px]:grid-cols-1">
 			<Button
 				type="submit"
 				size="lg"

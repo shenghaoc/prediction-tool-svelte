@@ -24,6 +24,16 @@
 
 	let mounted = $state(false);
 	let resultsEl: HTMLDivElement | null = $state(null);
+	let liveEl: HTMLDivElement | null = $state(null);
+
+	function announce(message: string, priority: 'polite' | 'assertive' = 'polite') {
+		if (!liveEl) return;
+		liveEl.setAttribute('aria-live', priority);
+		liveEl.textContent = '';
+		setTimeout(() => {
+			if (liveEl) liveEl.textContent = message;
+		}, 50);
+	}
 
 	const panelCard =
 		'relative overflow-hidden border-border/60 shadow-sm ring-1 ring-foreground/5 transition-all duration-300 hover:shadow-md hover:shadow-primary/5';
@@ -57,6 +67,9 @@
 		if (!mounted) return;
 		if ($prediction.hasPrediction) {
 			resultsEl?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+			setTimeout(() => {
+				resultsEl?.focus({ preventScroll: false });
+			}, 100);
 		}
 	});
 
@@ -64,7 +77,27 @@
 		const cleanup = prediction.init();
 		mounted = true;
 		document.documentElement.classList.add('theme-ready');
-		return cleanup;
+
+		const keyHandler = (e: KeyboardEvent) => {
+			if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+				e.preventDefault();
+				if (!$prediction.loading) handleSubmit();
+			}
+			if (
+				e.key === 'Escape' &&
+				!document.querySelector('[role="listbox"]') &&
+				document.activeElement?.closest('form')
+			) {
+				prediction.reset();
+				announce($lang === 'zh' ? '表单已重置' : 'Form reset');
+			}
+		};
+		document.addEventListener('keydown', keyHandler);
+
+		return () => {
+			cleanup();
+			document.removeEventListener('keydown', keyHandler);
+		};
 	});
 
 	function toggleLang() {
@@ -83,9 +116,17 @@
 	}
 
 	async function handleSubmit() {
+		announce($lang === 'zh' ? '正在预测…' : 'Loading prediction…', 'assertive');
 		await prediction.submit();
 		if ($prediction.hasPrediction && !$prediction.errorMessage) {
 			toast.success(t('prediction_success', $lang), { id: 'prediction' });
+			const price = `$${Math.round($prediction.output).toLocaleString()}`;
+			announce(
+				$lang === 'zh'
+					? `预测完成。预估价格：${price}`
+					: `Prediction complete. Estimated price: ${price}`,
+				'assertive'
+			);
 		}
 		if ($prediction.errorMessage) {
 			toast.error($prediction.errorMessage);
@@ -110,6 +151,23 @@
 	</main>
 {:else}
 	<main class="min-h-screen px-6 pt-5 pb-12 max-sm:px-3 max-sm:pb-8">
+		<!-- Skip navigation -->
+		<a
+			href="#input-ml_model"
+			class="fixed -left-[9999px] top-auto z-[100] h-px w-px overflow-hidden focus:fixed focus:left-4 focus:top-4 focus:h-auto focus:w-auto focus:overflow-visible focus:rounded-lg focus:bg-primary focus:px-5 focus:py-2.5 focus:text-sm focus:font-bold focus:text-primary-foreground focus:no-underline focus:shadow-lg"
+		>
+			Skip to form
+		</a>
+
+		<!-- Live region for screen reader announcements -->
+		<div
+			bind:this={liveEl}
+			role="status"
+			aria-live="polite"
+			aria-atomic="true"
+			class="absolute size-px overflow-hidden whitespace-nowrap border-0 p-0 [clip:rect(0,0,0,0)]"
+		></div>
+
 		<div class="mx-auto max-w-7xl">
 			<header
 				class="animate-fade-in-deep sticky top-0 z-20 -mx-6 mb-6 flex items-center justify-between gap-4 border-b border-border/50 bg-background/85 px-6 py-4 backdrop-blur-md max-sm:relative max-sm:mx-0 max-sm:flex-col max-sm:items-start max-sm:px-0"
@@ -206,6 +264,9 @@
 									{/each}
 								</div>
 							</Tooltip.Provider>
+							<p class="mt-3.5 text-[0.82rem] leading-relaxed text-muted-foreground">
+								{t('intro_caption', $lang)}
+							</p>
 						</Card.Content>
 					</Card.Root>
 
@@ -219,15 +280,6 @@
 							</Card.Title>
 						</Card.Header>
 						<Card.Content class="px-6">
-							{#if $prediction.loading}
-								<div
-									class="progress-track mb-4"
-									role="progressbar"
-									aria-label={t('predicting', $lang)}
-								>
-									<div class="progress-bar" style="width: 60%"></div>
-								</div>
-							{/if}
 							{#if $prediction.errorMessage && !$prediction.loading}
 								<div
 									class="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive"
@@ -244,11 +296,21 @@
 								onreset={() => prediction.reset()}
 								onchange={handleFormChange}
 							/>
+							{#if $prediction.loading}
+								<div
+									class="progress-track mt-4"
+									role="progressbar"
+									aria-label={t('predicting', $lang)}
+								>
+									<div class="progress-bar" style="width: 60%"></div>
+								</div>
+							{/if}
 						</Card.Content>
 					</Card.Root>
 				</div>
 
-				<div bind:this={resultsEl}>
+				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+				<div bind:this={resultsEl} tabindex={-1} class="outline-none" aria-label={t('predicted_price', $lang)}>
 					<PredictionResults
 						output={$prediction.output}
 						hasPrediction={$prediction.hasPrediction}

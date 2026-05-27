@@ -152,16 +152,20 @@
 				<stop offset="55%" stop-color="var(--chart-fill)" stop-opacity="0.14" />
 				<stop offset="100%" stop-color="var(--chart-fill)" stop-opacity="0" />
 			</linearGradient>
+			<linearGradient id="prediction-line-gradient" x1="0" y1="0" x2="1" y2="0">
+				<stop offset="0%" stop-color="var(--chart-fill)" />
+				<stop offset="100%" stop-color="var(--chart-2, var(--chart-fill))" />
+			</linearGradient>
 		</defs>
 
-		{#each yTicks as tick (tick.value)}
+		{#each yTicks as tick, i (tick.value)}
 			<line
 				x1={margin.left}
 				y1={tick.y}
 				x2={width - margin.right}
 				y2={tick.y}
 				stroke="color-mix(in oklab, var(--border) 70%, transparent)"
-				stroke-dasharray="3 10"
+				stroke-dasharray={i === 0 ? 'none' : '3 4'}
 			/>
 			<text
 				x={margin.left - 12}
@@ -181,8 +185,8 @@
 			<path
 				d={linePath}
 				fill="none"
-				stroke="var(--primary)"
-				stroke-width="3"
+				stroke="url(#prediction-line-gradient)"
+				stroke-width="2.5"
 				stroke-linecap="round"
 				stroke-linejoin="round"
 			/>
@@ -192,16 +196,25 @@
 			<circle
 				cx={points[peakIdx].x}
 				cy={points[peakIdx].y}
-				r="5"
-				fill="var(--primary)"
+				r="4"
+				fill="var(--chart-2, var(--primary))"
 				stroke="var(--card)"
 				stroke-width="2"
+			/>
+			<!-- Glow ring behind latest dot -->
+			<circle
+				cx={points[lastIdx].x}
+				cy={points[lastIdx].y}
+				r="7"
+				fill="var(--primary)"
+				fill-opacity="0.15"
+				stroke="none"
 			/>
 			<circle
 				cx={points[lastIdx].x}
 				cy={points[lastIdx].y}
-				r="6"
-				fill="var(--chart-2)"
+				r="5"
+				fill="var(--primary)"
 				stroke="var(--card)"
 				stroke-width="2.5"
 			/>
