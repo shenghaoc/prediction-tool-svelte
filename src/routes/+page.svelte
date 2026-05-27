@@ -86,6 +86,10 @@
 				e.preventDefault();
 				if (!$prediction.loading) handleSubmit();
 			}
+			if (e.key === 'Escape' && document.activeElement?.closest('form')) {
+				prediction.reset();
+				announce($lang === 'zh' ? '表单已重置' : 'Form reset');
+			}
 		};
 		document.addEventListener('keydown', keyHandler);
 
@@ -209,9 +213,7 @@
 								{/snippet}
 							</Tooltip.Trigger>
 							<Tooltip.Content side="bottom" class="text-xs">
-								{$prediction.darkMode
-									? $t('switch_to_light_mode')
-									: $t('switch_to_dark_mode')}
+								{$prediction.darkMode ? $t('switch_to_light_mode') : $t('switch_to_dark_mode')}
 							</Tooltip.Content>
 						</Tooltip.Root>
 					</Tooltip.Provider>
@@ -297,6 +299,8 @@
 									class="progress-track mt-4"
 									role="progressbar"
 									aria-label={$t('predicting')}
+									aria-valuemin={0}
+									aria-valuemax={100}
 								>
 									<div class="progress-bar" style="width: 60%"></div>
 								</div>

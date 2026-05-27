@@ -11,7 +11,10 @@ export function getStoredLanguage(): Language {
 }
 
 export const lang = writable<Language>(getStoredLanguage());
-export const t = derived(lang, ($lang) => (key: string) => getValue($lang, key) ?? getValue('en', key) ?? key);
+export const t = derived(
+	lang,
+	($lang) => (key: string) => getValue($lang, key) ?? getValue('en', key) ?? key
+);
 
 export function persistLanguage(language: Language) {
 	if (typeof window === 'undefined') {
@@ -316,4 +319,3 @@ function getValue(language: Language, key: string): string | undefined {
 
 	return typeof current === 'string' ? current : undefined;
 }
-

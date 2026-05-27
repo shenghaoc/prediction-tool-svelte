@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onDestroy } from 'svelte';
 	import Minus from '@lucide/svelte/icons/minus';
 	import Plus from '@lucide/svelte/icons/plus';
 
@@ -36,24 +35,30 @@
 	let focused = $state(false);
 	let holdInterval: ReturnType<typeof setTimeout> | null = null;
 
+	$effect(() => {
+		return () => stopHold();
+	});
+
 	const numValue = $derived(typeof value === 'number' ? value : NaN);
 	const atMin = $derived(!isNaN(numValue) && numValue <= min);
 	const atMax = $derived(!isNaN(numValue) && numValue >= max);
 
 	function clamp(v: number) {
-		const clamped = Math.max(min, Math.min(max, v));
-		const stepDecimals = step.toString().split('.')[1]?.length ?? 0;
-		return stepDecimals > 0 ? Number(clamped.toFixed(stepDecimals)) : Math.round(clamped);
+		return Math.max(min, Math.min(max, Math.round(v)));
 	}
 
 	function increment() {
 		const current = isNaN(numValue) ? min : numValue;
-		onchange(clamp(current + step));
+		const next = clamp(current + step);
+		onchange(next);
+		if (next >= max) stopHold();
 	}
 
 	function decrement() {
 		const current = isNaN(numValue) ? min : numValue;
-		onchange(clamp(current - step));
+		const next = clamp(current - step);
+		onchange(next);
+		if (next <= min) stopHold();
 	}
 
 	function startHold(fn: () => void) {
@@ -78,8 +83,6 @@
 			holdInterval = null;
 		}
 	}
-
-	onDestroy(stopHold);
 
 	function handleKeyDown(e: KeyboardEvent) {
 		if (e.key === 'ArrowUp') {
@@ -106,24 +109,15 @@
 
 	function handleInput(e: Event) {
 		const input = e.target as HTMLInputElement;
-		const hasDecimals = step % 1 !== 0;
-		const allowNegative = min < 0;
-		const regex = hasDecimals
-			? allowNegative
-				? /[^\d.-]/g
-				: /[^\d.]/g
-			: allowNegative
-				? /[^\d-]/g
-				: /[^\d]/g;
-		const sanitized = input.value.replace(regex, '');
+		const sanitized = input.value.replace(/\D/g, '');
 		if (input.value !== sanitized) {
 			input.value = sanitized;
 		}
-		if (sanitized === '' || sanitized === '-') {
+		if (sanitized === '') {
 			onchange('');
 			return;
 		}
-		const n = parseFloat(sanitized);
+		const n = parseInt(sanitized, 10);
 		if (!isNaN(n)) onchange(n);
 	}
 
@@ -146,8 +140,10 @@
 		disabled={atMin}
 		aria-label="Decrease value"
 		onpointerdown={(e) => {
-			e.preventDefault();
-			if (!atMin) startHold(decrement);
+			if (!atMin) {
+				e.preventDefault();
+				startHold(decrement);
+			}
 		}}
 		onpointerup={stopHold}
 		onpointerleave={stopHold}
@@ -163,7 +159,7 @@
 	<input
 		{id}
 		type="text"
-		inputmode={step % 1 !== 0 ? 'decimal' : 'numeric'}
+		inputmode="numeric"
 		role="spinbutton"
 		aria-valuemin={min}
 		aria-valuemax={max}
@@ -195,8 +191,10 @@
 		disabled={atMax}
 		aria-label="Increase value"
 		onpointerdown={(e) => {
-			e.preventDefault();
-			if (!atMax) startHold(increment);
+			if (!atMax) {
+				e.preventDefault();
+				startHold(increment);
+			}
 		}}
 		onpointerup={stopHold}
 		onpointerleave={stopHold}

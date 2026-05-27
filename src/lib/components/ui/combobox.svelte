@@ -79,17 +79,21 @@
 				if (isOpen) activeIndex = Math.max(activeIndex - 1, 0);
 				break;
 			case 'Enter':
-				if (isOpen) {
-					e.preventDefault();
-					const index = activeIndex >= 0 ? activeIndex : 0;
-					if (filtered[index]) handleSelect(filtered[index].value);
+				e.preventDefault();
+				if (isOpen && activeIndex >= 0 && filtered[activeIndex]) {
+					handleSelect(filtered[activeIndex].value);
+				} else if (isOpen) {
+					isOpen = false;
+					query = '';
 				}
 				break;
 			case 'Escape':
-				e.preventDefault();
-				e.stopPropagation();
-				isOpen = false;
-				query = '';
+				if (isOpen) {
+					e.preventDefault();
+					e.stopPropagation();
+					isOpen = false;
+					query = '';
+				}
 				break;
 			case 'Home':
 				if (isOpen) {
@@ -177,9 +181,10 @@
 			bind:this={listEl}
 			id={listboxId}
 			role="listbox"
+			tabindex={-1}
 			aria-label={ariaLabel}
 			onpointerdown={(e) => e.preventDefault()}
-			class="absolute top-[calc(100%+6px)] right-0 left-0 z-50 max-h-60 overflow-y-auto rounded-[var(--radius-sm,3px)] border border-border bg-card p-1 shadow-md"
+			class="absolute top-[calc(100%+6px)] right-0 left-0 z-50 max-h-60 overflow-y-auto rounded-[var(--radius-sm,3px)] border border-border bg-card p-1 shadow-md outline-none"
 		>
 			{#if filtered.length === 0}
 				<li class="px-3.5 py-3 text-center text-sm italic text-muted-foreground">No matches</li>
@@ -193,9 +198,7 @@
 						role="option"
 						aria-selected={isSelected}
 						onclick={() => handleSelect(opt.value)}
-						onmousemove={(e) => {
-							if (e.movementX !== 0 || e.movementY !== 0) activeIndex = i;
-						}}
+						onmouseenter={() => (activeIndex = i)}
 						class={cn(
 							'flex cursor-pointer items-center justify-between gap-2 rounded-[var(--radius-sm,3px)] px-2.5 py-1.5 text-[0.8125rem] transition-colors duration-100',
 							isActive && 'bg-primary/10',
