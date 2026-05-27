@@ -39,8 +39,8 @@ export const MAX_FLOOR_AREA_SQM = 300;
 export const MIN_LEASE_COMMENCE_YEAR = 1960;
 
 /** The fixed reference month used for predictions (YYYY-MM). */
-const PREDICTION_MONTH = DEFAULT_PREDICTION_MONTH_END; // '2022-02'
-export const MAX_LEASE_COMMENCE_YEAR = 2022;
+const PREDICTION_MONTH = DEFAULT_PREDICTION_MONTH_END;
+export const MAX_LEASE_COMMENCE_YEAR = parseInt(PREDICTION_MONTH.split('-')[0], 10);
 
 export const initialFormValues: FieldType = {
 	ml_model: ML_MODELS[0],

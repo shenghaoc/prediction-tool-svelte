@@ -135,10 +135,8 @@
 		disabled={atMin}
 		aria-label="Decrease value"
 		onpointerdown={(e) => {
-			if (!atMin) {
-				e.preventDefault();
-				startHold(decrement);
-			}
+			e.preventDefault();
+			if (!atMin) startHold(decrement);
 		}}
 		onpointerup={stopHold}
 		onpointerleave={stopHold}
@@ -186,10 +184,8 @@
 		disabled={atMax}
 		aria-label="Increase value"
 		onpointerdown={(e) => {
-			if (!atMax) {
-				e.preventDefault();
-				startHold(increment);
-			}
+			e.preventDefault();
+			if (!atMax) startHold(increment);
 		}}
 		onpointerup={stopHold}
 		onpointerleave={stopHold}

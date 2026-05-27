@@ -25,13 +25,16 @@
 	let mounted = $state(false);
 	let resultsEl: HTMLDivElement | null = $state(null);
 	let liveEl: HTMLDivElement | null = $state(null);
+	let announceTimer: ReturnType<typeof setTimeout> | null = null;
 
 	function announce(message: string, priority: 'polite' | 'assertive' = 'polite') {
 		if (!liveEl) return;
+		if (announceTimer) clearTimeout(announceTimer);
 		liveEl.setAttribute('aria-live', priority);
 		liveEl.textContent = '';
-		setTimeout(() => {
+		announceTimer = setTimeout(() => {
 			if (liveEl) liveEl.textContent = message;
+			announceTimer = null;
 		}, 50);
 	}
 
@@ -97,6 +100,7 @@
 		return () => {
 			cleanup();
 			document.removeEventListener('keydown', keyHandler);
+			if (announceTimer) clearTimeout(announceTimer);
 		};
 	});
 
@@ -301,8 +305,6 @@
 									class="progress-track mt-4"
 									role="progressbar"
 									aria-label={t('predicting', $lang)}
-									aria-valuemin={0}
-									aria-valuemax={100}
 								>
 									<div class="progress-bar" style="width: 60%"></div>
 								</div>
