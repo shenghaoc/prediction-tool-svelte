@@ -74,51 +74,61 @@
 		inputEl?.focus();
 	}
 
-	function handleKeyDown(e: KeyboardEvent) {
-		switch (e.key) {
-			case 'ArrowDown':
+function handleKeyDown(e: KeyboardEvent) {
+	switch (e.key) {
+		case 'ArrowDown':
+			e.preventDefault();
+			if (!isOpen) {
+				isOpen = true;
+				activeIndex = 0;
+			} else {
+				activeIndex = Math.min(activeIndex + 1, filtered.length - 1);
+			}
+			break;
+		case 'ArrowUp':
+			e.preventDefault();
+			if (isOpen) activeIndex = Math.max(activeIndex - 1, 0);
+			break;
+		case 'Enter':
+			if (isOpen && activeIndex >= 0 && filtered[activeIndex]) {
 				e.preventDefault();
-				if (!isOpen) {
-					isOpen = true;
-					activeIndex = 0;
-				} else {
-					activeIndex = Math.min(activeIndex + 1, filtered.length - 1);
-				}
-				break;
-			case 'ArrowUp':
+				handleSelect(filtered[activeIndex].value);
+			}
+			break;
+		case 'Escape':
+			e.preventDefault();
+			e.stopPropagation();
+			isOpen = false;
+			query = '';
+			break;
+		case 'Home':
+			if (isOpen) {
 				e.preventDefault();
-				if (isOpen) activeIndex = Math.max(activeIndex - 1, 0);
-				break;
-			case 'Enter':
+				activeIndex = 0;
+			}
+			break;
+		case 'End':
+			if (isOpen) {
 				e.preventDefault();
-				if (isOpen && activeIndex >= 0 && filtered[activeIndex]) {
-					handleSelect(filtered[activeIndex].value);
-				}
-				break;
-			case 'Escape':
-				e.preventDefault();
-				isOpen = false;
-				query = '';
-				break;
-			case 'Home':
-				if (isOpen) {
-					e.preventDefault();
-					activeIndex = 0;
-				}
-				break;
-			case 'End':
-				if (isOpen) {
-					e.preventDefault();
-					activeIndex = filtered.length - 1;
-				}
-				break;
-		}
+				activeIndex = filtered.length - 1;
+			}
+			break;
 	}
+}
 
 	const activeOptionId = $derived(activeIndex >= 0 ? `${listboxId.replace('-listbox', '')}-opt-${activeIndex}` : undefined);
 </script>
 
-<div bind:this={containerEl} class={cn('relative', className)}>
+<div
+	bind:this={containerEl}
+	class={cn('relative', className)}
+	onfocusout={(e) => {
+		if (containerEl && !containerEl.contains(e.relatedTarget as Node)) {
+			isOpen = false;
+			query = '';
+		}
+	}}
+>
 	<div class="relative flex">
 		<input
 			bind:this={inputEl}
