@@ -79,9 +79,12 @@
 				if (isOpen) activeIndex = Math.max(activeIndex - 1, 0);
 				break;
 			case 'Enter':
+				e.preventDefault();
 				if (isOpen && activeIndex >= 0 && filtered[activeIndex]) {
-					e.preventDefault();
 					handleSelect(filtered[activeIndex].value);
+				} else if (isOpen) {
+					isOpen = false;
+					query = '';
 				}
 				break;
 			case 'Escape':

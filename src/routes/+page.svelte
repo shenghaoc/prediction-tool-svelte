@@ -116,7 +116,7 @@
 	}
 
 	async function handleSubmit() {
-		announce($lang === 'zh' ? '正在预测…' : 'Loading prediction…', 'assertive');
+		announce($t('predicting'), 'assertive');
 		await prediction.submit();
 		if ($prediction.hasPrediction && !$prediction.errorMessage) {
 			toast.success($t('prediction_success'), { id: 'prediction' });
