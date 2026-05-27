@@ -38,7 +38,51 @@ function roundToTwo(value: number): number {
 	return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
-export const POST: RequestHandler = async ({ request, platform }) => {
+// Simple in-memory rate limiter per-isolate for basic DoS protection
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const MAX_REQUESTS = 50; // Maximum requests per minute
+const WINDOW_MS = 60 * 1000; // 1 minute window
+const MAX_MAP_SIZE = 10000; // Prevent memory leak
+
+function isRateLimited(ip: string): boolean {
+	const now = Date.now();
+
+	// Prevent unbounded growth of the Map (memory leak protection)
+	if (rateLimitMap.size > MAX_MAP_SIZE) {
+		// Clear map to prevent OOM
+		rateLimitMap.clear();
+	}
+
+	const record = rateLimitMap.get(ip);
+
+	if (!record || now > record.resetTime) {
+		rateLimitMap.set(ip, { count: 1, resetTime: now + WINDOW_MS });
+		return false;
+	}
+
+	if (record.count >= MAX_REQUESTS) {
+		return true;
+	}
+
+	record.count++;
+	return false;
+}
+
+export const POST: RequestHandler = async ({ request, platform, getClientAddress }) => {
+	// Add basic rate limiting to protect the D1 database
+	let ip: string;
+	try {
+		ip = getClientAddress();
+	} catch {
+		// Use Cloudflare connecting IP directly, fallback to a single bucket if missing.
+		// Avoid x-forwarded-for which can be easily spoofed by the client.
+		ip = request.headers.get('cf-connecting-ip') || 'unknown';
+	}
+
+	if (isRateLimited(ip)) {
+		return json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
+	}
+
 	let requestBody: unknown;
 	try {
 		requestBody = await request.json();
