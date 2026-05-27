@@ -61,26 +61,26 @@ function applyTheme(darkMode: boolean) {
 }
 
 function validateForm(form: FieldType) {
-	const currentLang = get(lang);
+	const translate = get(t);
 	const fieldErrors = blankFieldErrors();
 
-	if (!form.ml_model) fieldErrors.ml_model = t('choose_ml_model', currentLang);
-	if (!form.town) fieldErrors.town = t('missing_town', currentLang);
-	if (!form.storey_range) fieldErrors.storey_range = t('missing_storey_range', currentLang);
-	if (!form.flat_model) fieldErrors.flat_model = t('missing_flat_model', currentLang);
+	if (!form.ml_model) fieldErrors.ml_model = translate('choose_ml_model');
+	if (!form.town) fieldErrors.town = translate('missing_town');
+	if (!form.storey_range) fieldErrors.storey_range = translate('missing_storey_range');
+	if (!form.flat_model) fieldErrors.flat_model = translate('missing_flat_model');
 	if (!Number.isFinite(form.floor_area_sqm)) {
-		fieldErrors.floor_area_sqm = t('missing_floor_area', currentLang);
+		fieldErrors.floor_area_sqm = translate('missing_floor_area');
 	} else if (form.floor_area_sqm < MIN_FLOOR_AREA_SQM || form.floor_area_sqm > MAX_FLOOR_AREA_SQM) {
-		fieldErrors.floor_area_sqm = t('floor_area_range', currentLang);
+		fieldErrors.floor_area_sqm = translate('floor_area_range');
 	}
 
 	if (!Number.isFinite(form.lease_commence_date)) {
-		fieldErrors.lease_commence_date = t('missing_lease_commence_date', currentLang);
+		fieldErrors.lease_commence_date = translate('missing_lease_commence_date');
 	} else if (
 		form.lease_commence_date < MIN_LEASE_COMMENCE_YEAR ||
 		form.lease_commence_date > MAX_LEASE_COMMENCE_YEAR
 	) {
-		fieldErrors.lease_commence_date = t('missing_lease_commence_date', currentLang);
+		fieldErrors.lease_commence_date = translate('missing_lease_commence_date');
 	}
 
 	return {
@@ -208,7 +208,6 @@ function createPredictionStore() {
 			});
 		},
 		async submit() {
-			const currentLang = get(lang);
 			const state = get({ subscribe });
 			persistForm(state.form);
 
@@ -255,14 +254,14 @@ function createPredictionStore() {
 				});
 
 				if (!response.ok) {
-					throw new Error(await getApiErrorMessage(response, currentLang));
+					throw new Error(await getApiErrorMessage(response));
 				}
 
 				const serverData = await response.json();
 				const trendData = normalizeTrendData(serverData);
 
 				if (trendData.length === 0 || !trendData.some((point) => point.value > 0)) {
-					throw new Error(t('error_invalid_prediction', currentLang));
+					throw new Error(get(t)('error_invalid_prediction'));
 				}
 
 				update((current) => ({
@@ -285,7 +284,7 @@ function createPredictionStore() {
 					hasPrediction: false,
 					trendData: defaultTrendData(),
 					errorMessage:
-						error instanceof Error && error.message ? error.message : t('error_fetch', currentLang)
+						error instanceof Error && error.message ? error.message : get(t)('error_fetch')
 				}));
 			}
 		}
@@ -294,10 +293,10 @@ function createPredictionStore() {
 
 export const prediction = createPredictionStore();
 
-async function getApiErrorMessage(response: Response, currentLang: 'en' | 'zh') {
+async function getApiErrorMessage(response: Response) {
 	const text = await response.text();
 	if (!text) {
-		return t('error_fetch', currentLang);
+		return get(t)('error_fetch');
 	}
 
 	try {

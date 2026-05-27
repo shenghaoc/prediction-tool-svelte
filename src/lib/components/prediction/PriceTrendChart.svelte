@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { formatCurrency } from '$lib/format';
 	import { formatCurrencyTick, type TrendPoint } from '$lib/prediction';
 	import type { Language } from '$lib/i18n';
@@ -12,6 +13,14 @@
 	let { data, ariaLabel, locale = 'en' }: Props = $props();
 
 	const currencyLocale = $derived(locale === 'zh' ? 'zh-SG' : 'en-SG');
+
+	// Unique per-instance ID prevents SVG gradient collisions when multiple
+	// charts appear on the same page. Generated client-side only (onMount)
+	// so SSR always emits the same stable value and avoids hydration mismatches.
+	let uid = $state('s');
+	onMount(() => {
+		uid = Math.random().toString(36).slice(2, 8);
+	});
 
 	const width = 760;
 	let svg: SVGSVGElement | null = $state(null);
@@ -147,21 +156,25 @@
 		style="cursor: crosshair"
 	>
 		<defs>
-			<linearGradient id="prediction-area-gradient" x1="0" y1="0" x2="0" y2="1">
+			<linearGradient id={`prediction-area-gradient-${uid}`} x1="0" y1="0" x2="0" y2="1">
 				<stop offset="0%" stop-color="var(--chart-fill)" stop-opacity="0.42" />
 				<stop offset="55%" stop-color="var(--chart-fill)" stop-opacity="0.14" />
 				<stop offset="100%" stop-color="var(--chart-fill)" stop-opacity="0" />
 			</linearGradient>
+			<linearGradient id={`prediction-line-gradient-${uid}`} x1="0" y1="0" x2="1" y2="0">
+				<stop offset="0%" stop-color="var(--chart-fill)" />
+				<stop offset="100%" stop-color="var(--chart-2, var(--chart-fill))" />
+			</linearGradient>
 		</defs>
 
-		{#each yTicks as tick (tick.value)}
+		{#each yTicks as tick, i (tick.value)}
 			<line
 				x1={margin.left}
 				y1={tick.y}
 				x2={width - margin.right}
 				y2={tick.y}
 				stroke="color-mix(in oklab, var(--border) 70%, transparent)"
-				stroke-dasharray="3 10"
+				stroke-dasharray={i === 0 ? 'none' : '3 4'}
 			/>
 			<text
 				x={margin.left - 12}
@@ -177,34 +190,46 @@
 		{/each}
 
 		{#if areaPath}
-			<path d={areaPath} fill="url(#prediction-area-gradient)" />
+			<path d={areaPath} fill={`url(#prediction-area-gradient-${uid})`} />
 			<path
 				d={linePath}
 				fill="none"
-				stroke="var(--primary)"
-				stroke-width="3"
+				stroke={`url(#prediction-line-gradient-${uid})`}
+				stroke-width="2.5"
 				stroke-linecap="round"
 				stroke-linejoin="round"
 			/>
 		{/if}
 
 		{#if points.length > 0}
+			<!-- Latest dot and glow first -->
 			<circle
-				cx={points[peakIdx].x}
-				cy={points[peakIdx].y}
-				r="5"
+				cx={points[lastIdx].x}
+				cy={points[lastIdx].y}
+				r="7"
 				fill="var(--primary)"
-				stroke="var(--card)"
-				stroke-width="2"
+				fill-opacity="0.15"
+				stroke="none"
 			/>
 			<circle
 				cx={points[lastIdx].x}
 				cy={points[lastIdx].y}
-				r="6"
-				fill="var(--chart-2)"
+				r="5"
+				fill="var(--primary)"
 				stroke="var(--card)"
 				stroke-width="2.5"
 			/>
+			<!-- Peak dot on top -->
+			{#if peakIdx !== lastIdx}
+				<circle
+					cx={points[peakIdx].x}
+					cy={points[peakIdx].y}
+					r="4"
+					fill="var(--chart-2, var(--primary))"
+					stroke="var(--card)"
+					stroke-width="2"
+				/>
+			{/if}
 		{/if}
 
 		{#if activePoint}

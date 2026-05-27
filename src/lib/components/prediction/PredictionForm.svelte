@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Loader2 from '@lucide/svelte/icons/loader-2';
 
-	import { lang, t, type Language } from '$lib/i18n';
+	import { t } from '$lib/i18n';
 	import { FLAT_MODELS, ML_MODELS, STOREY_RANGES, TOWNS } from '$lib/lists';
 	import {
 		MAX_FLOOR_AREA_SQM,
@@ -13,8 +13,9 @@
 
 	type FieldName = keyof FieldType;
 	import FormSelect, { type FormSelectOption } from '$lib/components/ui/form-select.svelte';
+	import Combobox, { type ComboboxOption } from '$lib/components/ui/combobox.svelte';
+	import NumberField from '$lib/components/ui/number-field.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
 
 	type Props = {
@@ -34,12 +35,11 @@
 
 	function labeledOptions<T extends string>(
 		values: readonly T[],
-		group: 'ml_models' | 'towns' | 'storey_ranges' | 'flat_models',
-		language: Language
+		group: 'ml_models' | 'towns' | 'storey_ranges' | 'flat_models'
 	): FormSelectOption<T>[] {
 		return values.map((value) => ({
 			value,
-			label: t(`${group}.${value}`, language)
+			label: $t(`${group}.${value}`)
 		}));
 	}
 
@@ -52,6 +52,10 @@
 		onsubmit?.();
 	}
 
+	const townComboboxOptions: ComboboxOption[] = $derived(
+		TOWNS.map((town) => ({ value: town, label: $t(`towns.${town}`) }))
+	);
+
 	const leaseYearOptions = $derived(
 		Array.from({ length: MAX_LEASE_COMMENCE_YEAR - MIN_LEASE_COMMENCE_YEAR + 1 }, (_, index) => {
 			const year = MIN_LEASE_COMMENCE_YEAR + index;
@@ -63,28 +67,29 @@
 <form onsubmit={submitForm}>
 	<Field.Group class="gap-6">
 		<Field.Field>
-			<Field.Label for="input-ml_model">{t('ml_model', $lang)}</Field.Label>
+			<Field.Label for="input-ml_model">{$t('ml_model')}</Field.Label>
 			<Field.Content>
 				<FormSelect
 					id="input-ml_model"
 					value={form.ml_model}
-					options={labeledOptions(ML_MODELS, 'ml_models', $lang)}
-					placeholder={t('select_ml_model', $lang)}
+					options={labeledOptions(ML_MODELS, 'ml_models')}
+					placeholder={$t('select_ml_model')}
 					onchange={(value) => handleChange('ml_model', value as FieldType['ml_model'])}
 				/>
 			</Field.Content>
 			<Field.Error errors={errorFor(fieldErrors.ml_model)} />
 		</Field.Field>
 
-		<div class="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
+		<div class="grid grid-cols-2 gap-4 max-[520px]:grid-cols-1">
 			<Field.Field>
-				<Field.Label for="input-town">{t('town', $lang)}</Field.Label>
+				<Field.Label for="input-town">{$t('town')}</Field.Label>
 				<Field.Content>
-					<FormSelect
+					<Combobox
 						id="input-town"
 						value={form.town}
-						options={labeledOptions(TOWNS, 'towns', $lang)}
-						placeholder={t('select_town', $lang)}
+						options={townComboboxOptions}
+						placeholder={$t('select_town')}
+						ariaLabel={$t('town')}
 						onchange={(value) => handleChange('town', value as FieldType['town'])}
 					/>
 				</Field.Content>
@@ -92,13 +97,13 @@
 			</Field.Field>
 
 			<Field.Field>
-				<Field.Label for="input-storey_range">{t('storey_range', $lang)}</Field.Label>
+				<Field.Label for="input-storey_range">{$t('storey_range')}</Field.Label>
 				<Field.Content>
 					<FormSelect
 						id="input-storey_range"
 						value={form.storey_range}
-						options={labeledOptions(STOREY_RANGES, 'storey_ranges', $lang)}
-						placeholder={t('select_storey_range', $lang)}
+						options={labeledOptions(STOREY_RANGES, 'storey_ranges')}
+						placeholder={$t('select_storey_range')}
 						onchange={(value) => handleChange('storey_range', value as FieldType['storey_range'])}
 					/>
 				</Field.Content>
@@ -106,13 +111,13 @@
 			</Field.Field>
 
 			<Field.Field>
-				<Field.Label for="input-flat_model">{t('flat_model', $lang)}</Field.Label>
+				<Field.Label for="input-flat_model">{$t('flat_model')}</Field.Label>
 				<Field.Content>
 					<FormSelect
 						id="input-flat_model"
 						value={form.flat_model}
-						options={labeledOptions(FLAT_MODELS, 'flat_models', $lang)}
-						placeholder={t('select_flat_model', $lang)}
+						options={labeledOptions(FLAT_MODELS, 'flat_models')}
+						placeholder={$t('select_flat_model')}
 						onchange={(value) => handleChange('flat_model', value as FieldType['flat_model'])}
 					/>
 				</Field.Content>
@@ -120,57 +125,40 @@
 			</Field.Field>
 
 			<Field.Field>
-				<Field.Label for="input-floor_area">{t('floor_area', $lang)}</Field.Label>
+				<Field.Label for="input-floor_area">{$t('floor_area')}</Field.Label>
 				<Field.Content>
-					<div
-						class="flex rounded-lg shadow-sm transition-shadow duration-200 focus-within:shadow-md focus-within:shadow-primary/10"
-					>
-						<Input
-							id="input-floor_area"
-							type="number"
-							inputmode="numeric"
-							data-no-spinner="true"
-							aria-describedby="floor-area-unit"
-							class="h-10 rounded-r-none rounded-l-lg border border-border/60 bg-card px-3 shadow-none transition-colors duration-200 focus-visible:border-primary/40"
-							min={MIN_FLOOR_AREA_SQM}
-							max={MAX_FLOOR_AREA_SQM}
-							value={Number.isFinite(form.floor_area_sqm) ? form.floor_area_sqm : ''}
-							placeholder={t('enter_floor_area', $lang)}
-							oninput={(event) =>
-								handleChange(
-									'floor_area_sqm',
-									event.currentTarget.value ? Number(event.currentTarget.value) : Number.NaN
-								)}
-							required
-						/>
-						<span
-							id="floor-area-unit"
-							class="inline-flex h-10 items-center rounded-r-lg border border-l-0 border-border/60 bg-muted px-3 text-xs font-semibold text-muted-foreground"
-						>
-							<span class="sr-only">{t('floor_area_unit', $lang)}</span>
-							<span aria-hidden="true">m²</span>
-						</span>
-					</div>
+					<NumberField
+						id="input-floor_area"
+						value={Number.isFinite(form.floor_area_sqm) ? form.floor_area_sqm : ''}
+						onchange={(v) => handleChange('floor_area_sqm', v === '' ? Number.NaN : v)}
+						min={MIN_FLOOR_AREA_SQM}
+						max={MAX_FLOOR_AREA_SQM}
+						step={5}
+						placeholder={$t('enter_floor_area')}
+						unit="m²"
+						ariaLabel={$t('floor_area')}
+						required
+					/>
 				</Field.Content>
 				<Field.Error errors={errorFor(fieldErrors.floor_area_sqm)} />
 			</Field.Field>
 		</div>
 
 		<Field.Field>
-			<Field.Label for="input-lease_commence_date">{t('lease_commence_date', $lang)}</Field.Label>
+			<Field.Label for="input-lease_commence_date">{$t('lease_commence_date')}</Field.Label>
 			<Field.Content>
 				<FormSelect
 					id="input-lease_commence_date"
 					value={String(form.lease_commence_date)}
 					options={leaseYearOptions}
-					placeholder={t('select_year', $lang)}
+					placeholder={$t('select_year')}
 					onchange={(year) => handleChange('lease_commence_date', Number(year))}
 				/>
 			</Field.Content>
 			<Field.Error errors={errorFor(fieldErrors.lease_commence_date)} />
 		</Field.Field>
 
-		<div class="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
+		<div class="grid grid-cols-2 gap-3 max-[520px]:grid-cols-1">
 			<Button
 				type="submit"
 				size="lg"
@@ -179,9 +167,9 @@
 			>
 				{#if loading}
 					<Loader2 class="size-4 animate-spin" aria-hidden="true" />
-					{t('predicting', $lang)}
+					{$t('predicting')}
 				{:else}
-					{t('get_prediction', $lang)}
+					{$t('get_prediction')}
 				{/if}
 			</Button>
 			<Button
@@ -191,7 +179,7 @@
 				class="w-full tracking-normal normal-case transition-all duration-200 hover:bg-muted/80"
 				onclick={() => onreset?.()}
 			>
-				{t('reset_form', $lang)}
+				{$t('reset_form')}
 			</Button>
 		</div>
 	</Field.Group>

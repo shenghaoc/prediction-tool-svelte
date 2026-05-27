@@ -19,7 +19,7 @@
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20260527.1",
-		"@internationalized/date": "^3.12.1",
+		"@eslint/js": "^10.0.1",
 		"@lucide/svelte": "^1.16.0",
 		"@playwright/test": "^1.59.1",
 		"@sveltejs/adapter-cloudflare": "^7.2.8",
@@ -46,9 +46,9 @@
 		"wrangler": "^4.95.0"
 	},
 	"dependencies": {
+		"@js-temporal/polyfill": "^0.5.1",
 		"bits-ui": "^2.18.1",
 		"clsx": "^2.1.1",
-		"dayjs": "^1.11.20",
 		"svelte-sonner": "^1.1.1",
 		"tailwind-merge": "^3.6.0",
 		"tailwind-variants": "^3.2.2"

@@ -1,6 +1,3 @@
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-
 import {
 	FLAT_MODELS,
 	ML_MODELS,
@@ -11,8 +8,7 @@ import {
 	type StoreyRange,
 	type Town
 } from '$lib/lists';
-
-dayjs.extend(utc);
+import { Temporal } from '$lib/temporal';
 
 export type FieldType = {
 	ml_model: MLModel;
@@ -43,8 +39,9 @@ export const MIN_FLOOR_AREA_SQM = 20;
 export const MAX_FLOOR_AREA_SQM = 300;
 export const MIN_LEASE_COMMENCE_YEAR = 1960;
 
-export const predictionMonth = dayjs.utc('2022-02', 'YYYY-MM');
-export const MAX_LEASE_COMMENCE_YEAR = predictionMonth.year();
+/** The fixed reference month used for predictions (YYYY-MM). */
+const PREDICTION_MONTH = Temporal.PlainYearMonth.from(DEFAULT_PREDICTION_MONTH_END);
+export const MAX_LEASE_COMMENCE_YEAR = PREDICTION_MONTH.year;
 
 export const initialFormValues: FieldType = {
 	ml_model: ML_MODELS[0],
@@ -55,13 +52,13 @@ export const initialFormValues: FieldType = {
 	lease_commence_date: MAX_LEASE_COMMENCE_YEAR
 };
 
-// predictionMonth is constant, so these labels are safe to cache on first use.
+// PREDICTION_MONTH is constant, so these labels are safe to cache on first use.
 let cachedDefaultTrendData: TrendPoint[] | null = null;
 
 export function defaultTrendData(): TrendPoint[] {
 	if (!cachedDefaultTrendData) {
 		cachedDefaultTrendData = [...Array(13).keys()].reverse().map((monthOffset) => ({
-			label: predictionMonth.subtract(monthOffset, 'month').format('YYYY-MM'),
+			label: PREDICTION_MONTH.subtract({ months: monthOffset }).toString(),
 			value: 0
 		}));
 	}

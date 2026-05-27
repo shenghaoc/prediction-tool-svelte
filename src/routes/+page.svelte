@@ -24,28 +24,41 @@
 
 	let mounted = $state(false);
 	let resultsEl: HTMLDivElement | null = $state(null);
+	let liveEl: HTMLDivElement | null = $state(null);
+	let announceTimer: ReturnType<typeof setTimeout> | null = null;
+
+	function announce(message: string, priority: 'polite' | 'assertive' = 'polite') {
+		if (!liveEl) return;
+		if (announceTimer) clearTimeout(announceTimer);
+		liveEl.setAttribute('aria-live', priority);
+		liveEl.textContent = '';
+		announceTimer = setTimeout(() => {
+			if (liveEl) liveEl.textContent = message;
+			announceTimer = null;
+		}, 50);
+	}
 
 	const panelCard =
 		'relative overflow-hidden border-border/60 shadow-sm ring-1 ring-foreground/5 transition-all duration-300 hover:shadow-md hover:shadow-primary/5';
 
 	const figures = $derived([
 		{
-			label: t('stat_models', $lang),
+			label: $t('stat_models'),
 			value: ML_MODELS.length.toString().padStart(2, '0'),
 			icon: Layers,
-			hint: t('stat_models_hint', $lang)
+			hint: $t('stat_models_hint')
 		},
 		{
-			label: t('stat_towns', $lang),
+			label: $t('stat_towns'),
 			value: TOWNS.length.toString().padStart(2, '0'),
 			icon: MapPin,
-			hint: t('stat_towns_hint', $lang)
+			hint: $t('stat_towns_hint')
 		},
 		{
-			label: t('stat_types', $lang),
+			label: $t('stat_types'),
 			value: FLAT_MODELS.length.toString().padStart(2, '0'),
 			icon: Home,
-			hint: t('stat_types_hint', $lang)
+			hint: $t('stat_types_hint')
 		}
 	]);
 
@@ -57,6 +70,9 @@
 		if (!mounted) return;
 		if ($prediction.hasPrediction) {
 			resultsEl?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+			setTimeout(() => {
+				resultsEl?.focus({ preventScroll: true });
+			}, 100);
 		}
 	});
 
@@ -64,7 +80,20 @@
 		const cleanup = prediction.init();
 		mounted = true;
 		document.documentElement.classList.add('theme-ready');
-		return cleanup;
+
+		const keyHandler = (e: KeyboardEvent) => {
+			if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+				e.preventDefault();
+				if (!$prediction.loading) handleSubmit();
+			}
+		};
+		document.addEventListener('keydown', keyHandler);
+
+		return () => {
+			cleanup();
+			document.removeEventListener('keydown', keyHandler);
+			if (announceTimer) clearTimeout(announceTimer);
+		};
 	});
 
 	function toggleLang() {
@@ -83,9 +112,17 @@
 	}
 
 	async function handleSubmit() {
+		announce($t('predicting'), 'assertive');
 		await prediction.submit();
 		if ($prediction.hasPrediction && !$prediction.errorMessage) {
-			toast.success(t('prediction_success', $lang), { id: 'prediction' });
+			toast.success($t('prediction_success'), { id: 'prediction' });
+			const price = `$${Math.round($prediction.output).toLocaleString()}`;
+			announce(
+				$lang === 'zh'
+					? `预测完成。预估价格：${price}`
+					: `Prediction complete. Estimated price: ${price}`,
+				'assertive'
+			);
 		}
 		if ($prediction.errorMessage) {
 			toast.error($prediction.errorMessage);
@@ -94,8 +131,8 @@
 </script>
 
 <svelte:head>
-	<title>{t('page_title', $lang)}</title>
-	<meta name="description" content={t('page_description', $lang)} />
+	<title>{$t('page_title')}</title>
+	<meta name="description" content={$t('page_description')} />
 </svelte:head>
 
 {#if !mounted}
@@ -110,15 +147,32 @@
 	</main>
 {:else}
 	<main class="min-h-screen px-6 pt-5 pb-12 max-sm:px-3 max-sm:pb-8">
+		<!-- Skip navigation -->
+		<a
+			href="#input-ml_model"
+			class="fixed -left-[9999px] top-auto z-[100] h-px w-px overflow-hidden focus:fixed focus:left-4 focus:top-4 focus:h-auto focus:w-auto focus:overflow-visible focus:rounded-lg focus:bg-primary focus:px-5 focus:py-2.5 focus:text-sm focus:font-bold focus:text-primary-foreground focus:no-underline focus:shadow-lg"
+		>
+			Skip to form
+		</a>
+
+		<!-- Live region for screen reader announcements -->
+		<div
+			bind:this={liveEl}
+			role="status"
+			aria-live="polite"
+			aria-atomic="true"
+			class="absolute size-px overflow-hidden whitespace-nowrap border-0 p-0 [clip:rect(0,0,0,0)]"
+		></div>
+
 		<div class="mx-auto max-w-7xl">
 			<header
 				class="animate-fade-in-deep sticky top-0 z-20 -mx-6 mb-6 flex items-center justify-between gap-4 border-b border-border/50 bg-background/85 px-6 py-4 backdrop-blur-md max-sm:relative max-sm:mx-0 max-sm:flex-col max-sm:items-start max-sm:px-0"
 			>
 				<div class="flex items-center gap-2.5">
-					<span class="font-heading text-base font-bold tracking-tight">{t('brand', $lang)}</span>
+					<span class="font-heading text-base font-bold tracking-tight">{$t('brand')}</span>
 					<Badge variant="secondary" class="gap-1">
 						<Sparkles class="size-3" aria-hidden="true" />
-						{t('badge', $lang)}
+						{$t('badge')}
 					</Badge>
 				</div>
 
@@ -130,7 +184,7 @@
 						class="tracking-normal normal-case max-sm:flex-1"
 						onclick={toggleLang}
 					>
-						{t('switch_language', $lang)}
+						{$t('switch_language')}
 					</Button>
 					<Tooltip.Provider>
 						<Tooltip.Root>
@@ -142,8 +196,8 @@
 										variant="outline"
 										size="icon-sm"
 										aria-label={$prediction.darkMode
-											? t('switch_to_light_mode', $lang)
-											: t('switch_to_dark_mode', $lang)}
+											? $t('switch_to_light_mode')
+											: $t('switch_to_dark_mode')}
 										onclick={() => prediction.toggleTheme()}
 									>
 										{#if $prediction.darkMode}
@@ -156,8 +210,8 @@
 							</Tooltip.Trigger>
 							<Tooltip.Content side="bottom" class="text-xs">
 								{$prediction.darkMode
-									? t('switch_to_light_mode', $lang)
-									: t('switch_to_dark_mode', $lang)}
+									? $t('switch_to_light_mode')
+									: $t('switch_to_dark_mode')}
 							</Tooltip.Content>
 						</Tooltip.Root>
 					</Tooltip.Provider>
@@ -187,10 +241,10 @@
 									$lang === 'zh' && 'font-cjk font-extrabold'
 								)}
 							>
-								<h1>{t('price_prediction', $lang)}</h1>
+								<h1>{$t('price_prediction')}</h1>
 							</Card.Title>
 							<Card.Description class="max-w-prose text-base leading-relaxed">
-								{t('intro_blurb', $lang)}
+								{$t('intro_blurb')}
 							</Card.Description>
 						</Card.Header>
 						<Card.Content class="relative px-6 pt-4">
@@ -206,6 +260,9 @@
 									{/each}
 								</div>
 							</Tooltip.Provider>
+							<p class="mt-3.5 text-[0.82rem] leading-relaxed text-muted-foreground">
+								{$t('intro_caption')}
+							</p>
 						</Card.Content>
 					</Card.Root>
 
@@ -215,19 +272,10 @@
 					>
 						<Card.Header class="px-6 pb-2">
 							<Card.Title class="text-primary normal-case">
-								<h2>{t('prediction_form', $lang)}</h2>
+								<h2>{$t('prediction_form')}</h2>
 							</Card.Title>
 						</Card.Header>
 						<Card.Content class="px-6">
-							{#if $prediction.loading}
-								<div
-									class="progress-track mb-4"
-									role="progressbar"
-									aria-label={t('predicting', $lang)}
-								>
-									<div class="progress-bar" style="width: 60%"></div>
-								</div>
-							{/if}
 							{#if $prediction.errorMessage && !$prediction.loading}
 								<div
 									class="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive"
@@ -244,11 +292,26 @@
 								onreset={() => prediction.reset()}
 								onchange={handleFormChange}
 							/>
+							{#if $prediction.loading}
+								<div
+									class="progress-track mt-4"
+									role="progressbar"
+									aria-label={$t('predicting')}
+								>
+									<div class="progress-bar" style="width: 60%"></div>
+								</div>
+							{/if}
 						</Card.Content>
 					</Card.Root>
 				</div>
 
-				<div bind:this={resultsEl}>
+				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+				<div
+					bind:this={resultsEl}
+					tabindex={-1}
+					class="outline-none"
+					aria-label={$t('predicted_price')}
+				>
 					<PredictionResults
 						output={$prediction.output}
 						hasPrediction={$prediction.hasPrediction}
