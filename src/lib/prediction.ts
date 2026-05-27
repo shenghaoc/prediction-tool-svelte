@@ -8,6 +8,7 @@ import {
 	type StoreyRange,
 	type Town
 } from '$lib/lists';
+import { Temporal } from '$lib/temporal';
 
 export type FieldType = {
 	ml_model: MLModel;
@@ -39,8 +40,8 @@ export const MAX_FLOOR_AREA_SQM = 300;
 export const MIN_LEASE_COMMENCE_YEAR = 1960;
 
 /** The fixed reference month used for predictions (YYYY-MM). */
-const PREDICTION_MONTH = DEFAULT_PREDICTION_MONTH_END;
-export const MAX_LEASE_COMMENCE_YEAR = parseInt(PREDICTION_MONTH.split('-')[0], 10);
+const PREDICTION_MONTH = Temporal.PlainYearMonth.from(DEFAULT_PREDICTION_MONTH_END);
+export const MAX_LEASE_COMMENCE_YEAR = PREDICTION_MONTH.year;
 
 export const initialFormValues: FieldType = {
 	ml_model: ML_MODELS[0],
@@ -51,22 +52,13 @@ export const initialFormValues: FieldType = {
 	lease_commence_date: MAX_LEASE_COMMENCE_YEAR
 };
 
-/** Returns a YYYY-MM string `months` before the given YYYY-MM string. */
-function subtractMonths(yearMonth: string, months: number): string {
-	const [y, m] = yearMonth.split('-').map(Number);
-	const total = y * 12 + (m - 1) - months;
-	const year = Math.floor(total / 12);
-	const month = String((total % 12) + 1).padStart(2, '0');
-	return `${year}-${month}`;
-}
-
 // PREDICTION_MONTH is constant, so these labels are safe to cache on first use.
 let cachedDefaultTrendData: TrendPoint[] | null = null;
 
 export function defaultTrendData(): TrendPoint[] {
 	if (!cachedDefaultTrendData) {
 		cachedDefaultTrendData = [...Array(13).keys()].reverse().map((monthOffset) => ({
-			label: subtractMonths(PREDICTION_MONTH, monthOffset),
+			label: PREDICTION_MONTH.subtract({ months: monthOffset }).toString(),
 			value: 0
 		}));
 	}

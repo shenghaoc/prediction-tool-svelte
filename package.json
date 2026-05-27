@@ -47,6 +47,7 @@
 		"wrangler": "^4.95.0"
 	},
 	"dependencies": {
+		"@js-temporal/polyfill": "^0.5.1",
 		"bits-ui": "^2.18.1",
 		"clsx": "^2.1.1",
 		"svelte-sonner": "^1.1.1",

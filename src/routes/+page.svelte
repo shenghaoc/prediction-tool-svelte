@@ -43,22 +43,22 @@
 
 	const figures = $derived([
 		{
-			label: t('stat_models', $lang),
+			label: $t('stat_models'),
 			value: ML_MODELS.length.toString().padStart(2, '0'),
 			icon: Layers,
-			hint: t('stat_models_hint', $lang)
+			hint: $t('stat_models_hint')
 		},
 		{
-			label: t('stat_towns', $lang),
+			label: $t('stat_towns'),
 			value: TOWNS.length.toString().padStart(2, '0'),
 			icon: MapPin,
-			hint: t('stat_towns_hint', $lang)
+			hint: $t('stat_towns_hint')
 		},
 		{
-			label: t('stat_types', $lang),
+			label: $t('stat_types'),
 			value: FLAT_MODELS.length.toString().padStart(2, '0'),
 			icon: Home,
-			hint: t('stat_types_hint', $lang)
+			hint: $t('stat_types_hint')
 		}
 	]);
 
@@ -120,10 +120,10 @@
 	}
 
 	async function handleSubmit() {
-		announce($lang === 'zh' ? '正在预测…' : 'Loading prediction…', 'assertive');
+		announce($t('predicting'), 'assertive');
 		await prediction.submit();
 		if ($prediction.hasPrediction && !$prediction.errorMessage) {
-			toast.success(t('prediction_success', $lang), { id: 'prediction' });
+			toast.success($t('prediction_success'), { id: 'prediction' });
 			const price = `$${Math.round($prediction.output).toLocaleString()}`;
 			announce(
 				$lang === 'zh'
@@ -139,8 +139,8 @@
 </script>
 
 <svelte:head>
-	<title>{t('page_title', $lang)}</title>
-	<meta name="description" content={t('page_description', $lang)} />
+	<title>{$t('page_title')}</title>
+	<meta name="description" content={$t('page_description')} />
 </svelte:head>
 
 {#if !mounted}
@@ -177,10 +177,10 @@
 				class="animate-fade-in-deep sticky top-0 z-20 -mx-6 mb-6 flex items-center justify-between gap-4 border-b border-border/50 bg-background/85 px-6 py-4 backdrop-blur-md max-sm:relative max-sm:mx-0 max-sm:flex-col max-sm:items-start max-sm:px-0"
 			>
 				<div class="flex items-center gap-2.5">
-					<span class="font-heading text-base font-bold tracking-tight">{t('brand', $lang)}</span>
+					<span class="font-heading text-base font-bold tracking-tight">{$t('brand')}</span>
 					<Badge variant="secondary" class="gap-1">
 						<Sparkles class="size-3" aria-hidden="true" />
-						{t('badge', $lang)}
+						{$t('badge')}
 					</Badge>
 				</div>
 
@@ -192,7 +192,7 @@
 						class="tracking-normal normal-case max-sm:flex-1"
 						onclick={toggleLang}
 					>
-						{t('switch_language', $lang)}
+						{$t('switch_language')}
 					</Button>
 					<Tooltip.Provider>
 						<Tooltip.Root>
@@ -204,8 +204,8 @@
 										variant="outline"
 										size="icon-sm"
 										aria-label={$prediction.darkMode
-											? t('switch_to_light_mode', $lang)
-											: t('switch_to_dark_mode', $lang)}
+											? $t('switch_to_light_mode')
+											: $t('switch_to_dark_mode')}
 										onclick={() => prediction.toggleTheme()}
 									>
 										{#if $prediction.darkMode}
@@ -218,8 +218,8 @@
 							</Tooltip.Trigger>
 							<Tooltip.Content side="bottom" class="text-xs">
 								{$prediction.darkMode
-									? t('switch_to_light_mode', $lang)
-									: t('switch_to_dark_mode', $lang)}
+									? $t('switch_to_light_mode')
+									: $t('switch_to_dark_mode')}
 							</Tooltip.Content>
 						</Tooltip.Root>
 					</Tooltip.Provider>
@@ -249,10 +249,10 @@
 									$lang === 'zh' && 'font-cjk font-extrabold'
 								)}
 							>
-								<h1>{t('price_prediction', $lang)}</h1>
+								<h1>{$t('price_prediction')}</h1>
 							</Card.Title>
 							<Card.Description class="max-w-prose text-base leading-relaxed">
-								{t('intro_blurb', $lang)}
+								{$t('intro_blurb')}
 							</Card.Description>
 						</Card.Header>
 						<Card.Content class="relative px-6 pt-4">
@@ -269,7 +269,7 @@
 								</div>
 							</Tooltip.Provider>
 							<p class="mt-3.5 text-[0.82rem] leading-relaxed text-muted-foreground">
-								{t('intro_caption', $lang)}
+								{$t('intro_caption')}
 							</p>
 						</Card.Content>
 					</Card.Root>
@@ -280,7 +280,7 @@
 					>
 						<Card.Header class="px-6 pb-2">
 							<Card.Title class="text-primary normal-case">
-								<h2>{t('prediction_form', $lang)}</h2>
+								<h2>{$t('prediction_form')}</h2>
 							</Card.Title>
 						</Card.Header>
 						<Card.Content class="px-6">
@@ -304,7 +304,7 @@
 								<div
 									class="progress-track mt-4"
 									role="progressbar"
-									aria-label={t('predicting', $lang)}
+									aria-label={$t('predicting')}
 								>
 									<div class="progress-bar" style="width: 60%"></div>
 								</div>
@@ -318,7 +318,7 @@
 					bind:this={resultsEl}
 					tabindex={-1}
 					class="outline-none"
-					aria-label={t('predicted_price', $lang)}
+					aria-label={$t('predicted_price')}
 				>
 					<PredictionResults
 						output={$prediction.output}

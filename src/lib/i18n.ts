@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { derived, writable } from 'svelte/store';
 
 export type Language = 'en' | 'zh';
 
@@ -11,6 +11,7 @@ export function getStoredLanguage(): Language {
 }
 
 export const lang = writable<Language>(getStoredLanguage());
+export const t = derived(lang, ($lang) => (key: string) => getValue($lang, key) ?? getValue('en', key) ?? key);
 
 export function persistLanguage(language: Language) {
 	if (typeof window === 'undefined') {
@@ -316,6 +317,3 @@ function getValue(language: Language, key: string): string | undefined {
 	return typeof current === 'string' ? current : undefined;
 }
 
-export function t(key: string, language: Language) {
-	return getValue(language, key) ?? getValue('en', key) ?? key;
-}

@@ -5,7 +5,7 @@
 	import TrendingDown from '@lucide/svelte/icons/trending-down';
 	import TrendingUp from '@lucide/svelte/icons/trending-up';
 
-	import { lang, t, type Language } from '$lib/i18n';
+	import { lang, t } from '$lib/i18n';
 	import { cn } from '$lib/utils.js';
 	import type { SummaryValues, TrendPoint } from '$lib/prediction';
 	import { Badge } from '$lib/components/ui/badge/index.js';
@@ -47,30 +47,22 @@
 
 	const fmt = $derived((n: number) => formatCurrency(n, $lang === 'zh' ? 'zh-SG' : 'en-SG'));
 
-	function optionLabel(
-		group: 'ml_models' | 'towns' | 'storey_ranges' | 'flat_models',
-		value: string,
-		language: Language
-	) {
-		return t(`${group}.${value}`, language);
-	}
-
 	const panelCard =
 		'relative overflow-hidden border-border/60 shadow-sm ring-1 ring-foreground/5 transition-all duration-300 hover:shadow-md hover:shadow-primary/5';
 
 	const summaryItems = $derived([
 		{
-			label: t('ml_model', $lang),
-			value: optionLabel('ml_models', summaryValues.ml_model, $lang),
+			label: $t('ml_model'),
+			value: $t(`ml_models.${summaryValues.ml_model}`),
 			icon: Layers
 		},
 		{
-			label: t('town', $lang),
-			value: optionLabel('towns', summaryValues.town, $lang),
+			label: $t('town'),
+			value: $t(`towns.${summaryValues.town}`),
 			icon: MapPin
 		},
 		{
-			label: t('lease_commence_date', $lang),
+			label: $t('lease_commence_date'),
 			value: String(summaryValues.lease_commence_date),
 			icon: Home
 		}
@@ -92,9 +84,9 @@
 			class="relative flex flex-row items-start justify-between gap-4 px-6 pb-2 max-sm:flex-col"
 		>
 			<div>
-				<Badge variant="secondary" class="mb-2">{t('predicted_trends', $lang)}</Badge>
+				<Badge variant="secondary" class="mb-2">{$t('predicted_trends')}</Badge>
 				<Card.Title class="font-heading text-2xl tracking-tight normal-case">
-					<h2 id="prediction-results-heading">{t('predicted_price', $lang)}</h2>
+					<h2 id="prediction-results-heading">{$t('predicted_price')}</h2>
 				</Card.Title>
 			</div>
 			<div
@@ -112,7 +104,7 @@
 					aria-hidden="true"
 				></div>
 				<p class="relative text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
-					{t('prediction', $lang)}
+					{$t('prediction')}
 				</p>
 				{#if showSkeleton}
 					<Skeleton class="animate-shimmer relative mt-2 h-9 w-36 rounded-lg" />
@@ -124,7 +116,7 @@
 							hasPrediction && 'animate-settle text-primary'
 						)}
 					>
-						{hasPrediction ? fmt(Math.round(output)) : t('awaiting', $lang)}
+						{hasPrediction ? fmt(Math.round(output)) : $t('awaiting')}
 					</p>
 				{/if}
 			</div>
@@ -161,17 +153,17 @@
 					<Separator />
 					<div class="animate-fade-in">
 						<Card.Description class="mb-1 tracking-wider uppercase">
-							{t('predicted_trends', $lang)}
+							{$t('predicted_trends')}
 						</Card.Description>
 						<h3 class="mb-3 font-heading text-sm font-semibold normal-case">
-							{t('chart_story_title', $lang)}
+							{$t('chart_story_title')}
 						</h3>
 						<div class="mb-4 grid grid-cols-3 gap-2.5 max-sm:grid-cols-1">
 							<div
 								class="rounded-xl border border-border/60 bg-secondary/40 px-3 py-2.5 backdrop-blur-sm"
 							>
 								<p class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
-									{t('chart_latest', $lang)}
+									{$t('chart_latest')}
 								</p>
 								<p class="mt-1 text-sm font-semibold tabular-nums">
 									{fmt(Math.round(chartStats.latestValue))}
@@ -181,7 +173,7 @@
 								class="rounded-xl border border-border/60 bg-secondary/40 px-3 py-2.5 backdrop-blur-sm"
 							>
 								<p class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
-									{t('chart_range', $lang)}
+									{$t('chart_range')}
 								</p>
 								<p class="mt-1 text-sm font-semibold tabular-nums">
 									{fmt(Math.round(chartStats.lowValue))} – {fmt(Math.round(chartStats.peakValue))}
@@ -191,7 +183,7 @@
 								class="rounded-xl border border-border/60 bg-secondary/40 px-3 py-2.5 backdrop-blur-sm"
 							>
 								<p class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
-									{t('chart_delta', $lang)}
+									{$t('chart_delta')}
 								</p>
 								<p
 									class={cn(
@@ -211,7 +203,7 @@
 								<p
 									class="mt-0.5 text-[9px] font-bold tracking-wider text-muted-foreground uppercase"
 								>
-									{t('vs_12m_ago', $lang)}
+									{$t('vs_12m_ago')}
 								</p>
 							</div>
 						</div>
@@ -223,7 +215,7 @@
 							{:else}
 								<PriceTrendChart
 									data={trendData}
-									ariaLabel={`${t('predicted_trends', $lang)}: ${t('chart_story_title', $lang)}`}
+									ariaLabel={`${$t('predicted_trends')}: ${$t('chart_story_title')}`}
 									locale={$lang}
 								/>
 							{/if}
@@ -242,13 +234,13 @@
 							{/each}
 						</div>
 						<h3 class="animate-fade-in font-heading text-base font-semibold text-foreground">
-							{t('placeholder_title', $lang)}
+							{$t('placeholder_title')}
 						</h3>
 						<p
 							class="animate-fade-in mx-auto max-w-[32ch] text-sm leading-relaxed text-muted-foreground"
 							style="animation-delay: 0.08s; animation-fill-mode: both"
 						>
-							{t('placeholder_body', $lang)}
+							{$t('placeholder_body')}
 						</p>
 					</div>
 				{/if}
