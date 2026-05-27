@@ -55,11 +55,17 @@ export const initialFormValues: FieldType = {
 	lease_commence_date: MAX_LEASE_COMMENCE_YEAR
 };
 
+// predictionMonth is constant, so these labels are safe to cache on first use.
+let cachedDefaultTrendData: TrendPoint[] | null = null;
+
 export function defaultTrendData(): TrendPoint[] {
-	return [...Array(13).keys()].reverse().map((monthOffset) => ({
-		label: predictionMonth.subtract(monthOffset, 'month').format('YYYY-MM'),
-		value: 0
-	}));
+	if (!cachedDefaultTrendData) {
+		cachedDefaultTrendData = [...Array(13).keys()].reverse().map((monthOffset) => ({
+			label: predictionMonth.subtract(monthOffset, 'month').format('YYYY-MM'),
+			value: 0
+		}));
+	}
+	return cachedDefaultTrendData.map((point) => ({ ...point }));
 }
 
 export function normalizePrice(value: number) {
