@@ -64,10 +64,6 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 		typeof town !== 'string' ||
 		typeof flatModel !== 'string' ||
 		typeof storeyRange !== 'string' ||
-		mlModel.length > 50 ||
-		town.length > 50 ||
-		flatModel.length > 50 ||
-		storeyRange.length > 50 ||
 		typeof floorAreaSqm !== 'number' ||
 		typeof leaseCommenceYear !== 'number' ||
 		!Number.isFinite(floorAreaSqm) ||
