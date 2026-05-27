@@ -35,6 +35,10 @@
 	let focused = $state(false);
 	let holdInterval: ReturnType<typeof setTimeout> | null = null;
 
+	$effect(() => {
+		return () => stopHold();
+	});
+
 	const numValue = $derived(typeof value === 'number' ? value : NaN);
 	const atMin = $derived(!isNaN(numValue) && numValue <= min);
 	const atMax = $derived(!isNaN(numValue) && numValue >= max);
@@ -45,12 +49,16 @@
 
 	function increment() {
 		const current = isNaN(numValue) ? min : numValue;
-		onchange(clamp(current + step));
+		const next = clamp(current + step);
+		onchange(next);
+		if (next >= max) stopHold();
 	}
 
 	function decrement() {
 		const current = isNaN(numValue) ? min : numValue;
-		onchange(clamp(current - step));
+		const next = clamp(current - step);
+		onchange(next);
+		if (next <= min) stopHold();
 	}
 
 	function startHold(fn: () => void) {

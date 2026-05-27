@@ -218,9 +218,7 @@
 								{/snippet}
 							</Tooltip.Trigger>
 							<Tooltip.Content side="bottom" class="text-xs">
-								{$prediction.darkMode
-									? $t('switch_to_light_mode')
-									: $t('switch_to_dark_mode')}
+								{$prediction.darkMode ? $t('switch_to_light_mode') : $t('switch_to_dark_mode')}
 							</Tooltip.Content>
 						</Tooltip.Root>
 					</Tooltip.Provider>

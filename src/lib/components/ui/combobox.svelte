@@ -85,10 +85,12 @@
 				}
 				break;
 			case 'Escape':
-				e.preventDefault();
-				e.stopPropagation();
-				isOpen = false;
-				query = '';
+				if (isOpen) {
+					e.preventDefault();
+					e.stopPropagation();
+					isOpen = false;
+					query = '';
+				}
 				break;
 			case 'Home':
 				if (isOpen) {
@@ -176,8 +178,9 @@
 			bind:this={listEl}
 			id={listboxId}
 			role="listbox"
+			tabindex={-1}
 			aria-label={ariaLabel}
-			class="absolute top-[calc(100%+6px)] right-0 left-0 z-50 max-h-60 overflow-y-auto rounded-[var(--radius-sm,3px)] border border-border bg-card p-1 shadow-md"
+			class="absolute top-[calc(100%+6px)] right-0 left-0 z-50 max-h-60 overflow-y-auto rounded-[var(--radius-sm,3px)] border border-border bg-card p-1 shadow-md outline-none"
 		>
 			{#if filtered.length === 0}
 				<li class="px-3.5 py-3 text-center text-sm italic text-muted-foreground">No matches</li>
