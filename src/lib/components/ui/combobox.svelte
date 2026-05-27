@@ -180,6 +180,7 @@
 			role="listbox"
 			tabindex={-1}
 			aria-label={ariaLabel}
+			onpointerdown={(e) => e.preventDefault()}
 			class="absolute top-[calc(100%+6px)] right-0 left-0 z-50 max-h-60 overflow-y-auto rounded-[var(--radius-sm,3px)] border border-border bg-card p-1 shadow-md outline-none"
 		>
 			{#if filtered.length === 0}

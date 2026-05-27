@@ -53,7 +53,7 @@
 	}
 
 	const townComboboxOptions: ComboboxOption[] = $derived(
-		TOWNS.map((town) => ({ value: town, label: t(`towns.${town}`, $lang) }))
+		TOWNS.map((town) => ({ value: town, label: $t(`towns.${town}`) }))
 	);
 
 	const leaseYearOptions = $derived(
@@ -88,8 +88,8 @@
 						id="input-town"
 						value={form.town}
 						options={townComboboxOptions}
-						placeholder={t('select_town', $lang)}
-						ariaLabel={t('town', $lang)}
+						placeholder={$t('select_town')}
+						ariaLabel={$t('town')}
 						onchange={(value) => handleChange('town', value as FieldType['town'])}
 					/>
 				</Field.Content>
@@ -134,9 +134,9 @@
 						min={MIN_FLOOR_AREA_SQM}
 						max={MAX_FLOOR_AREA_SQM}
 						step={5}
-						placeholder={t('enter_floor_area', $lang)}
+						placeholder={$t('enter_floor_area')}
 						unit="m²"
-						ariaLabel={t('floor_area', $lang)}
+						ariaLabel={$t('floor_area')}
 						required
 					/>
 				</Field.Content>

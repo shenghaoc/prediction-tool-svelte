@@ -86,11 +86,7 @@
 				e.preventDefault();
 				if (!$prediction.loading) handleSubmit();
 			}
-			if (
-				e.key === 'Escape' &&
-				!document.querySelector('[role="listbox"]') &&
-				document.activeElement?.closest('form')
-			) {
+			if (e.key === 'Escape' && document.activeElement?.closest('form')) {
 				prediction.reset();
 				announce($lang === 'zh' ? '表单已重置' : 'Form reset');
 			}
@@ -123,7 +119,7 @@
 		announce($lang === 'zh' ? '正在预测…' : 'Loading prediction…', 'assertive');
 		await prediction.submit();
 		if ($prediction.hasPrediction && !$prediction.errorMessage) {
-			toast.success(t('prediction_success', $lang), { id: 'prediction' });
+			toast.success($t('prediction_success'), { id: 'prediction' });
 			const price = `$${Math.round($prediction.output).toLocaleString()}`;
 			announce(
 				$lang === 'zh'
@@ -267,7 +263,7 @@
 								</div>
 							</Tooltip.Provider>
 							<p class="mt-3.5 text-[0.82rem] leading-relaxed text-muted-foreground">
-								{t('intro_caption', $lang)}
+								{$t('intro_caption')}
 							</p>
 						</Card.Content>
 					</Card.Root>
@@ -302,7 +298,7 @@
 								<div
 									class="progress-track mt-4"
 									role="progressbar"
-									aria-label={t('predicting', $lang)}
+									aria-label={$t('predicting')}
 									aria-valuemin={0}
 									aria-valuemax={100}
 								>
@@ -318,7 +314,7 @@
 					bind:this={resultsEl}
 					tabindex={-1}
 					class="outline-none"
-					aria-label={t('predicted_price', $lang)}
+					aria-label={$t('predicted_price')}
 				>
 					<PredictionResults
 						output={$prediction.output}
