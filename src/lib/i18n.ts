@@ -298,16 +298,32 @@ const zh = {
 
 const dictionaries = { en, zh } as const;
 
-function getValue(language: Language, key: string): string | undefined {
-	const source = dictionaries[language] as Record<string, unknown>;
-	let current: unknown = source;
+// ⚡ Bolt Optimization:
+// Pre-flatten translation dictionaries into a single-level hash map at startup.
+// This avoids expensive string `.split('.')` and object traversal on every $t() call,
+// turning O(depth) string operations into an O(1) property lookup.
+const flatDictionaries: Record<Language, Record<string, string>> = { en: {}, zh: {} };
 
-	for (const segment of key.split('.')) {
-		if (!current || typeof current !== 'object' || !(segment in current)) {
-			return undefined;
+function flattenDictionary(
+	obj: Record<string, unknown>,
+	prefix: string,
+	target: Record<string, string>
+) {
+	for (const key in obj) {
+		const value = obj[key];
+		const newKey = prefix ? `${prefix}.${key}` : key;
+
+		if (typeof value === 'string') {
+			target[newKey] = value;
+		} else if (value && typeof value === 'object') {
+			flattenDictionary(value as Record<string, unknown>, newKey, target);
 		}
-		current = (current as Record<string, unknown>)[segment];
 	}
+}
 
-	return typeof current === 'string' ? current : undefined;
+flattenDictionary(en, '', flatDictionaries.en);
+flattenDictionary(zh, '', flatDictionaries.zh);
+
+function getValue(language: Language, key: string): string | undefined {
+	return flatDictionaries[language]?.[key];
 }
