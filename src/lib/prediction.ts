@@ -55,10 +55,7 @@ export const initialFormValues: FieldType = {
 	lease_commence_date: MAX_LEASE_COMMENCE_YEAR
 };
 
-// ⚡ Bolt Optimization:
-// Calculating the month labels with dayjs is surprisingly expensive in the hot path.
-// Since predictionMonth is a constant, we can pre-compute these 13 strings once
-// on first use rather than recalculating them on every form reset or state initialization.
+// predictionMonth is constant, so these labels are safe to cache on first use.
 let cachedDefaultTrendData: TrendPoint[] | null = null;
 
 export function defaultTrendData(): TrendPoint[] {
