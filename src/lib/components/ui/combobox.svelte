@@ -192,7 +192,9 @@
 						role="option"
 						aria-selected={isSelected}
 						onclick={() => handleSelect(opt.value)}
-						onmouseenter={() => (activeIndex = i)}
+						onmousemove={(e) => {
+							if (e.movementX !== 0 || e.movementY !== 0) activeIndex = i;
+						}}
 						class={cn(
 							'flex cursor-pointer items-center justify-between gap-2 rounded-[var(--radius-sm,3px)] px-2.5 py-1.5 text-[0.8125rem] transition-colors duration-100',
 							isActive && 'bg-primary/10',

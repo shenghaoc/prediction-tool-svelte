@@ -13,6 +13,10 @@
 
 	const currencyLocale = $derived(locale === 'zh' ? 'zh-SG' : 'en-SG');
 
+	// Unique per-instance ID prevents SVG gradient collisions when multiple
+	// charts with the same data length appear on the same page.
+	const uid = Math.random().toString(36).slice(2, 8);
+
 	const width = 760;
 	let svg: SVGSVGElement | null = $state(null);
 	let activeIndex = $state(-1);
@@ -147,12 +151,12 @@
 		style="cursor: crosshair"
 	>
 		<defs>
-			<linearGradient id={`prediction-area-gradient-${data.length}`} x1="0" y1="0" x2="0" y2="1">
+			<linearGradient id={`prediction-area-gradient-${uid}`} x1="0" y1="0" x2="0" y2="1">
 				<stop offset="0%" stop-color="var(--chart-fill)" stop-opacity="0.42" />
 				<stop offset="55%" stop-color="var(--chart-fill)" stop-opacity="0.14" />
 				<stop offset="100%" stop-color="var(--chart-fill)" stop-opacity="0" />
 			</linearGradient>
-			<linearGradient id={`prediction-line-gradient-${data.length}`} x1="0" y1="0" x2="1" y2="0">
+			<linearGradient id={`prediction-line-gradient-${uid}`} x1="0" y1="0" x2="1" y2="0">
 				<stop offset="0%" stop-color="var(--chart-fill)" />
 				<stop offset="100%" stop-color="var(--chart-2, var(--chart-fill))" />
 			</linearGradient>
@@ -181,11 +185,11 @@
 		{/each}
 
 		{#if areaPath}
-			<path d={areaPath} fill={`url(#prediction-area-gradient-${data.length})`} />
+			<path d={areaPath} fill={`url(#prediction-area-gradient-${uid})`} />
 			<path
 				d={linePath}
 				fill="none"
-				stroke={`url(#prediction-line-gradient-${data.length})`}
+				stroke={`url(#prediction-line-gradient-${uid})`}
 				stroke-width="2.5"
 				stroke-linecap="round"
 				stroke-linejoin="round"

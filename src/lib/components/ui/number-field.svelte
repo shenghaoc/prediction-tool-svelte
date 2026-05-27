@@ -41,7 +41,9 @@
 	const atMax = $derived(!isNaN(numValue) && numValue >= max);
 
 	function clamp(v: number) {
-		return Math.max(min, Math.min(max, Math.round(v)));
+		const clamped = Math.max(min, Math.min(max, v));
+		const stepDecimals = step.toString().split('.')[1]?.length ?? 0;
+		return stepDecimals > 0 ? Number(clamped.toFixed(stepDecimals)) : Math.round(clamped);
 	}
 
 	function increment() {
@@ -104,15 +106,24 @@
 
 	function handleInput(e: Event) {
 		const input = e.target as HTMLInputElement;
-		const sanitized = input.value.replace(/\D/g, '');
+		const hasDecimals = step % 1 !== 0;
+		const allowNegative = min < 0;
+		const regex = hasDecimals
+			? allowNegative
+				? /[^\d.-]/g
+				: /[^\d.]/g
+			: allowNegative
+				? /[^\d-]/g
+				: /[^\d]/g;
+		const sanitized = input.value.replace(regex, '');
 		if (input.value !== sanitized) {
 			input.value = sanitized;
 		}
-		if (sanitized === '') {
+		if (sanitized === '' || sanitized === '-') {
 			onchange('');
 			return;
 		}
-		const n = parseInt(sanitized, 10);
+		const n = parseFloat(sanitized);
 		if (!isNaN(n)) onchange(n);
 	}
 
@@ -152,7 +163,7 @@
 	<input
 		{id}
 		type="text"
-		inputmode="numeric"
+		inputmode={step % 1 !== 0 ? 'decimal' : 'numeric'}
 		role="spinbutton"
 		aria-valuemin={min}
 		aria-valuemax={max}
