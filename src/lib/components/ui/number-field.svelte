@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onDestroy } from 'svelte';
 	import Minus from '@lucide/svelte/icons/minus';
 	import Plus from '@lucide/svelte/icons/plus';
 
@@ -75,6 +76,8 @@
 			holdInterval = null;
 		}
 	}
+
+	onDestroy(stopHold);
 
 	function handleKeyDown(e: KeyboardEvent) {
 		if (e.key === 'ArrowUp') {
