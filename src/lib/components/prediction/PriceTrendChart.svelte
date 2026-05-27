@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { formatCurrency } from '$lib/format';
 	import { formatCurrencyTick, type TrendPoint } from '$lib/prediction';
 	import type { Language } from '$lib/i18n';
@@ -14,8 +15,12 @@
 	const currencyLocale = $derived(locale === 'zh' ? 'zh-SG' : 'en-SG');
 
 	// Unique per-instance ID prevents SVG gradient collisions when multiple
-	// charts with the same data length appear on the same page.
-	const uid = Math.random().toString(36).slice(2, 8);
+	// charts appear on the same page. Generated client-side only (onMount)
+	// so SSR always emits the same stable value and avoids hydration mismatches.
+	let uid = $state('s');
+	onMount(() => {
+		uid = Math.random().toString(36).slice(2, 8);
+	});
 
 	const width = 760;
 	let svg: SVGSVGElement | null = $state(null);
