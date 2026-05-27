@@ -15,11 +15,7 @@ updates:
     groups:
       svelte:
         patterns:
-          - 'svelte'
-          - 'svelte-*'
-          - '@sveltejs/*'
-          - 'eslint-plugin-svelte'
-          - 'prettier-plugin-svelte'
+          - '*svelte*'
         update-types:
           - 'minor'
           - 'patch'
@@ -33,9 +29,7 @@ updates:
           - 'patch'
       tailwind:
         patterns:
-          - 'tailwindcss'
-          - '@tailwindcss/*'
-          - 'tailwind-*'
+          - '*tailwind*'
           - 'tw-animate-css'
         update-types:
           - 'minor'
