@@ -47,7 +47,6 @@ const en = {
 	page_description:
 		'Estimate Singapore HDB resale prices from flat attributes and review the predicted 12-month price path.',
 	price_prediction: 'Price\nPrediction',
-	intro_eyebrow: 'Singapore HDB resale estimator',
 	intro_blurb:
 		'Compare flat attributes, submit a scenario, and get a quick resale estimate with a 12-month trend view.',
 	intro_caption: 'Fast scenario testing for layout, lease, and town combinations.',
@@ -74,7 +73,6 @@ const en = {
 	get_prediction: 'Get prediction',
 	predicting: 'Predicting…',
 	reset_form: 'Reset',
-	floor_area_unit: 'Square metres (m²)',
 	switch_to_light_mode: 'Switch to light mode',
 	switch_to_dark_mode: 'Switch to dark mode',
 	predicted_trends: 'Predicted Trends for Past 12 Months',
@@ -85,7 +83,6 @@ const en = {
 	vs_12m_ago: 'vs 12 months ago',
 	prediction: 'Prediction',
 	predicted_price: 'Predicted Price',
-	awaiting_prediction: 'Awaiting prediction',
 	awaiting: 'Awaiting prediction',
 	placeholder_title: 'Run a scenario to generate a forecast',
 	placeholder_body:
@@ -94,7 +91,6 @@ const en = {
 	error_fetch: 'Failed to fetch prediction. Please try again.',
 	error_invalid_prediction:
 		'The server returned prices we could not display. Try different inputs or a model.',
-	error_form_restore_failed: 'Saved form data was invalid and has been reset.',
 	switch_language: '中文/English',
 	ml_models: {
 		'Support Vector Regression': 'Support Vector Regression',
@@ -183,7 +179,6 @@ const zh = {
 	page_title: '新加坡组屋转售价预测',
 	page_description: '根据房屋属性估算新加坡组屋转售价，并查看过去12个月的预测价格走势。',
 	price_prediction: '价格\n预测',
-	intro_eyebrow: '新加坡组屋转售价估算器',
 	intro_blurb: '比较房屋属性，提交一个情境，并快速查看估算转售价与过去12个月趋势。',
 	intro_caption: '快速测试不同城镇、户型、楼层与租约组合。',
 	prediction_form: '预测表单',
@@ -209,7 +204,6 @@ const zh = {
 	get_prediction: '获取预测',
 	predicting: '预测中…',
 	reset_form: '重置',
-	floor_area_unit: '平方米 (m²)',
 	switch_to_light_mode: '切换到浅色模式',
 	switch_to_dark_mode: '切换到深色模式',
 	predicted_trends: '过去12个月预测趋势',
@@ -220,14 +214,12 @@ const zh = {
 	vs_12m_ago: '对比12个月前',
 	prediction: '预测',
 	predicted_price: '预测价格',
-	awaiting_prediction: '等待预测',
 	awaiting: '等待预测',
 	placeholder_title: '运行情境以生成预测',
 	placeholder_body: '选择模型、调整房屋详情并提交表单，查看预计转售价与12个月趋势。',
 	prediction_success: '预测完成！向下滚动查看结果。',
 	error_fetch: '获取预测失败，请重试。',
 	error_invalid_prediction: '服务器返回的价格无法显示，请尝试其他输入或模型。',
-	error_form_restore_failed: '已保存的表单数据无效，已重置。',
 	switch_language: '中文/English',
 	ml_models: {
 		'Support Vector Regression': '支持向量回归',
