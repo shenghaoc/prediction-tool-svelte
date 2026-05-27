@@ -18,7 +18,7 @@
 		"test:e2e": "playwright test"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20260524.1",
+		"@cloudflare/workers-types": "^4.20260527.1",
 		"@internationalized/date": "^3.12.1",
 		"@lucide/svelte": "^1.16.0",
 		"@playwright/test": "^1.59.1",
@@ -43,7 +43,7 @@
 		"typescript": "^6.0.3",
 		"vite": "^7.3.2",
 		"vitest": "^4.1.7",
-		"wrangler": "^4.94.0"
+		"wrangler": "^4.95.0"
 	},
 	"dependencies": {
 		"bits-ui": "^2.18.1",
