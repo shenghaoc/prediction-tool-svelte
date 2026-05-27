@@ -32,8 +32,8 @@
 		class: className
 	}: Props = $props();
 
-	let focused = $state(false);
-	let holdInterval: ReturnType<typeof setInterval> | null = null;
+let focused = $state(false);
+let holdInterval: ReturnType<typeof setTimeout> | null = null;
 
 	const numValue = $derived(typeof value === 'number' ? value : NaN);
 	const atMin = $derived(!isNaN(numValue) && numValue <= min);
@@ -53,21 +53,25 @@
 		onchange(clamp(current - step));
 	}
 
-	function startHold(fn: () => void) {
-		fn();
-		let count = 0;
-		holdInterval = setInterval(() => {
+function startHold(fn: () => void) {
+	fn();
+	let count = 0;
+	const repeat = () => {
+		holdInterval = setTimeout(() => {
 			count++;
 			fn();
+			repeat();
 		}, count < 5 ? 200 : 80);
-	}
+	};
+	repeat();
+}
 
-	function stopHold() {
-		if (holdInterval) {
-			clearInterval(holdInterval);
-			holdInterval = null;
-		}
+function stopHold() {
+	if (holdInterval) {
+		clearTimeout(holdInterval);
+		holdInterval = null;
 	}
+}
 
 	function handleKeyDown(e: KeyboardEvent) {
 		if (e.key === 'ArrowUp') {
@@ -85,15 +89,26 @@
 		}
 	}
 
-	function handleInput(e: Event) {
-		const raw = (e.target as HTMLInputElement).value;
-		if (raw === '') {
-			onchange('');
-			return;
-		}
-		const n = parseInt(raw, 10);
-		if (!isNaN(n)) onchange(clamp(n));
+function handleBlur() {
+	focused = false;
+	if (typeof value === 'number' && !isNaN(value)) {
+		onchange(clamp(value));
 	}
+}
+
+function handleInput(e: Event) {
+	const input = e.target as HTMLInputElement;
+	const sanitized = input.value.replace(/\D/g, '');
+	if (input.value !== sanitized) {
+		input.value = sanitized;
+	}
+	if (sanitized === '') {
+		onchange('');
+		return;
+	}
+	const n = parseInt(sanitized, 10);
+	if (!isNaN(n)) onchange(n);
+}
 
 	const gridCols = $derived(unit ? 'grid-cols-[40px_1fr_auto_40px]' : 'grid-cols-[40px_1fr_40px]');
 </script>
@@ -138,13 +153,13 @@
 		aria-valuemax={max}
 		aria-valuenow={isNaN(numValue) ? undefined : numValue}
 		aria-label={ariaLabel}
-		value={value === '' || value === undefined ? '' : value}
+		value={isNaN(numValue) ? '' : value}
 		{placeholder}
 		{required}
 		oninput={handleInput}
 		onkeydown={handleKeyDown}
 		onfocus={() => (focused = true)}
-		onblur={() => (focused = false)}
+		onblur={handleBlur}
 		autocomplete="off"
 		class="h-10 w-full border-x border-border/40 bg-card px-3 text-center text-sm font-medium text-foreground tabular-nums outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
 	/>

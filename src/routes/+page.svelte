@@ -68,7 +68,7 @@
 		if ($prediction.hasPrediction) {
 			resultsEl?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 			setTimeout(() => {
-				resultsEl?.focus({ preventScroll: false });
+				resultsEl?.focus({ preventScroll: true });
 			}, 100);
 		}
 	});
