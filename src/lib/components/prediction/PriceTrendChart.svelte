@@ -211,6 +211,15 @@
 				fill-opacity="0.15"
 				stroke="none"
 			/>
+			<!-- Glow ring behind latest dot -->
+			<circle
+				cx={points[lastIdx].x}
+				cy={points[lastIdx].y}
+				r="7"
+				fill="var(--primary)"
+				fill-opacity="0.15"
+				stroke="none"
+			/>
 			<circle
 				cx={points[lastIdx].x}
 				cy={points[lastIdx].y}

@@ -49,6 +49,17 @@
 	});
 
 	$effect(() => {
+		const handler = (e: PointerEvent) => {
+			if (containerEl && !containerEl.contains(e.target as Node)) {
+				isOpen = false;
+				query = '';
+			}
+		};
+		document.addEventListener('pointerdown', handler);
+		return () => document.removeEventListener('pointerdown', handler);
+	});
+
+	$effect(() => {
 		if (!isOpen || activeIndex < 0 || !listEl) return;
 		const items = listEl.querySelectorAll('[role="option"]');
 		items[activeIndex]?.scrollIntoView({ block: 'nearest' });
@@ -79,15 +90,13 @@
 				if (isOpen) activeIndex = Math.max(activeIndex - 1, 0);
 				break;
 			case 'Enter':
-				if (isOpen) {
-					e.preventDefault();
-					const index = activeIndex >= 0 ? activeIndex : 0;
-					if (filtered[index]) handleSelect(filtered[index].value);
+				e.preventDefault();
+				if (isOpen && activeIndex >= 0 && filtered[activeIndex]) {
+					handleSelect(filtered[activeIndex].value);
 				}
 				break;
 			case 'Escape':
 				e.preventDefault();
-				e.stopPropagation();
 				isOpen = false;
 				query = '';
 				break;
@@ -106,19 +115,10 @@
 		}
 	}
 
-	const activeOptionId = $derived(activeIndex >= 0 ? `${id}-opt-${activeIndex}` : undefined);
+	const activeOptionId = $derived(activeIndex >= 0 ? `${listboxId.replace('-listbox', '')}-opt-${activeIndex}` : undefined);
 </script>
 
-<div
-	bind:this={containerEl}
-	class={cn('relative', className)}
-	onfocusout={(e) => {
-		if (containerEl && !containerEl.contains(e.relatedTarget as Node)) {
-			isOpen = false;
-			query = '';
-		}
-	}}
->
+<div bind:this={containerEl} class={cn('relative', className)}>
 	<div class="relative flex">
 		<input
 			bind:this={inputEl}
@@ -178,7 +178,6 @@
 			id={listboxId}
 			role="listbox"
 			aria-label={ariaLabel}
-			onpointerdown={(e) => e.preventDefault()}
 			class="absolute top-[calc(100%+6px)] right-0 left-0 z-50 max-h-60 overflow-y-auto rounded-[var(--radius-sm,3px)] border border-border bg-card p-1 shadow-md"
 		>
 			{#if filtered.length === 0}
@@ -193,9 +192,7 @@
 						role="option"
 						aria-selected={isSelected}
 						onclick={() => handleSelect(opt.value)}
-						onmousemove={(e) => {
-							if (e.movementX !== 0 || e.movementY !== 0) activeIndex = i;
-						}}
+						onmouseenter={() => (activeIndex = i)}
 						class={cn(
 							'flex cursor-pointer items-center justify-between gap-2 rounded-[var(--radius-sm,3px)] px-2.5 py-1.5 text-[0.8125rem] transition-colors duration-100',
 							isActive && 'bg-primary/10',

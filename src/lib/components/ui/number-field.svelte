@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onDestroy } from 'svelte';
 	import Minus from '@lucide/svelte/icons/minus';
 	import Plus from '@lucide/svelte/icons/plus';
 
@@ -34,16 +33,14 @@
 	}: Props = $props();
 
 	let focused = $state(false);
-	let holdInterval: ReturnType<typeof setTimeout> | null = null;
+	let holdInterval: ReturnType<typeof setInterval> | null = null;
 
 	const numValue = $derived(typeof value === 'number' ? value : NaN);
 	const atMin = $derived(!isNaN(numValue) && numValue <= min);
 	const atMax = $derived(!isNaN(numValue) && numValue >= max);
 
 	function clamp(v: number) {
-		const clamped = Math.max(min, Math.min(max, v));
-		const stepDecimals = step.toString().split('.')[1]?.length ?? 0;
-		return stepDecimals > 0 ? Number(clamped.toFixed(stepDecimals)) : Math.round(clamped);
+		return Math.max(min, Math.min(max, Math.round(v)));
 	}
 
 	function increment() {
@@ -59,27 +56,18 @@
 	function startHold(fn: () => void) {
 		fn();
 		let count = 0;
-		const repeat = () => {
-			holdInterval = setTimeout(
-				() => {
-					count++;
-					fn();
-					repeat();
-				},
-				count < 5 ? 200 : 80
-			);
-		};
-		repeat();
+		holdInterval = setInterval(() => {
+			count++;
+			fn();
+		}, count < 5 ? 200 : 80);
 	}
 
 	function stopHold() {
 		if (holdInterval) {
-			clearTimeout(holdInterval);
+			clearInterval(holdInterval);
 			holdInterval = null;
 		}
 	}
-
-	onDestroy(stopHold);
 
 	function handleKeyDown(e: KeyboardEvent) {
 		if (e.key === 'ArrowUp') {
@@ -97,34 +85,14 @@
 		}
 	}
 
-	function handleBlur() {
-		focused = false;
-		if (typeof value === 'number' && !isNaN(value)) {
-			onchange(clamp(value));
-		}
-	}
-
 	function handleInput(e: Event) {
-		const input = e.target as HTMLInputElement;
-		const hasDecimals = step % 1 !== 0;
-		const allowNegative = min < 0;
-		const regex = hasDecimals
-			? allowNegative
-				? /[^\d.-]/g
-				: /[^\d.]/g
-			: allowNegative
-				? /[^\d-]/g
-				: /[^\d]/g;
-		const sanitized = input.value.replace(regex, '');
-		if (input.value !== sanitized) {
-			input.value = sanitized;
-		}
-		if (sanitized === '' || sanitized === '-') {
+		const raw = (e.target as HTMLInputElement).value;
+		if (raw === '') {
 			onchange('');
 			return;
 		}
-		const n = parseFloat(sanitized);
-		if (!isNaN(n)) onchange(n);
+		const n = parseInt(raw, 10);
+		if (!isNaN(n)) onchange(clamp(n));
 	}
 
 	const gridCols = $derived(unit ? 'grid-cols-[40px_1fr_auto_40px]' : 'grid-cols-[40px_1fr_40px]');
@@ -146,12 +114,13 @@
 		disabled={atMin}
 		aria-label="Decrease value"
 		onpointerdown={(e) => {
-			e.preventDefault();
-			if (!atMin) startHold(decrement);
+			if (!atMin) {
+				e.preventDefault();
+				startHold(decrement);
+			}
 		}}
 		onpointerup={stopHold}
 		onpointerleave={stopHold}
-		onpointercancel={stopHold}
 		class={cn(
 			'flex items-center justify-center border-none bg-secondary/60 text-secondary-foreground transition-colors duration-150 hover:bg-primary/10 hover:text-primary',
 			atMin && 'cursor-not-allowed opacity-35'
@@ -163,19 +132,19 @@
 	<input
 		{id}
 		type="text"
-		inputmode={step % 1 !== 0 ? 'decimal' : 'numeric'}
+		inputmode="numeric"
 		role="spinbutton"
 		aria-valuemin={min}
 		aria-valuemax={max}
 		aria-valuenow={isNaN(numValue) ? undefined : numValue}
 		aria-label={ariaLabel}
-		value={isNaN(numValue) ? '' : value}
+		value={value === '' || value === undefined ? '' : value}
 		{placeholder}
 		{required}
 		oninput={handleInput}
 		onkeydown={handleKeyDown}
 		onfocus={() => (focused = true)}
-		onblur={handleBlur}
+		onblur={() => (focused = false)}
 		autocomplete="off"
 		class="h-10 w-full border-x border-border/40 bg-card px-3 text-center text-sm font-medium text-foreground tabular-nums outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
 	/>
@@ -195,12 +164,13 @@
 		disabled={atMax}
 		aria-label="Increase value"
 		onpointerdown={(e) => {
-			e.preventDefault();
-			if (!atMax) startHold(increment);
+			if (!atMax) {
+				e.preventDefault();
+				startHold(increment);
+			}
 		}}
 		onpointerup={stopHold}
 		onpointerleave={stopHold}
-		onpointercancel={stopHold}
 		class={cn(
 			'flex items-center justify-center border-none bg-secondary/60 text-secondary-foreground transition-colors duration-150 hover:bg-primary/10 hover:text-primary',
 			atMax && 'cursor-not-allowed opacity-35'

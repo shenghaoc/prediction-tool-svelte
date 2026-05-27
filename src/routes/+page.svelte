@@ -36,6 +36,7 @@
 			if (liveEl) liveEl.textContent = message;
 			announceTimer = null;
 		}, 50);
+		}, 50);
 	}
 
 	const panelCard =
@@ -71,7 +72,7 @@
 		if ($prediction.hasPrediction) {
 			resultsEl?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 			setTimeout(() => {
-				resultsEl?.focus({ preventScroll: true });
+				resultsEl?.focus({ preventScroll: false });
 			}, 100);
 		}
 	});
@@ -85,6 +86,14 @@
 			if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
 				e.preventDefault();
 				if (!$prediction.loading) handleSubmit();
+			}
+			if (
+				e.key === 'Escape' &&
+				!document.querySelector('[role="listbox"]') &&
+				document.activeElement?.closest('form')
+			) {
+				prediction.reset();
+				announce($lang === 'zh' ? '表单已重置' : 'Form reset');
 			}
 		};
 		document.addEventListener('keydown', keyHandler);
@@ -112,10 +121,10 @@
 	}
 
 	async function handleSubmit() {
-		announce($t('predicting'), 'assertive');
+		announce($lang === 'zh' ? '正在预测…' : 'Loading prediction…', 'assertive');
 		await prediction.submit();
 		if ($prediction.hasPrediction && !$prediction.errorMessage) {
-			toast.success($t('prediction_success'), { id: 'prediction' });
+			toast.success(t('prediction_success', $lang), { id: 'prediction' });
 			const price = `$${Math.round($prediction.output).toLocaleString()}`;
 			announce(
 				$lang === 'zh'
@@ -261,7 +270,7 @@
 								</div>
 							</Tooltip.Provider>
 							<p class="mt-3.5 text-[0.82rem] leading-relaxed text-muted-foreground">
-								{$t('intro_caption')}
+								{t('intro_caption', $lang)}
 							</p>
 						</Card.Content>
 					</Card.Root>
@@ -296,7 +305,7 @@
 								<div
 									class="progress-track mt-4"
 									role="progressbar"
-									aria-label={$t('predicting')}
+									aria-label={t('predicting', $lang)}
 								>
 									<div class="progress-bar" style="width: 60%"></div>
 								</div>
@@ -306,12 +315,7 @@
 				</div>
 
 				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-				<div
-					bind:this={resultsEl}
-					tabindex={-1}
-					class="outline-none"
-					aria-label={$t('predicted_price')}
-				>
+				<div bind:this={resultsEl} tabindex={-1} class="outline-none" aria-label={t('predicted_price', $lang)}>
 					<PredictionResults
 						output={$prediction.output}
 						hasPrediction={$prediction.hasPrediction}
