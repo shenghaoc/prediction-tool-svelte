@@ -16,46 +16,59 @@ updates:
       svelte:
         patterns:
           - 'svelte'
+          - 'svelte-*'
           - '@sveltejs/*'
-          - 'svelte-check'
           - 'eslint-plugin-svelte'
           - 'prettier-plugin-svelte'
+        update-types:
+          - 'minor'
+          - 'patch'
+      vite:
+        patterns:
+          - 'vite'
+          - 'vitest'
+          - '@vitest/*'
+        update-types:
+          - 'minor'
+          - 'patch'
+      tailwind:
+        patterns:
+          - 'tailwindcss'
+          - '@tailwindcss/*'
+          - 'tailwind-*'
+          - 'tw-animate-css'
         update-types:
           - 'minor'
           - 'patch'
       typescript:
         patterns:
           - 'typescript'
+          - 'tslib'
           - '@typescript-eslint/*'
-        update-types:
-          - 'minor'
-          - 'patch'
-      types:
-        patterns:
           - '@types/*'
         update-types:
           - 'minor'
           - 'patch'
-      eslint:
+      linting:
         patterns:
           - 'eslint'
           - 'eslint-*'
           - '@eslint/*'
+          - 'prettier'
+          - 'prettier-*'
+        update-types:
+          - 'minor'
+          - 'patch'
+      cloudflare:
+        patterns:
+          - '@cloudflare/*'
+          - 'wrangler'
         update-types:
           - 'minor'
           - 'patch'
       testing:
         patterns:
-          - 'vitest'
-          - '@vitest/*'
           - '@playwright/test'
-        update-types:
-          - 'minor'
-          - 'patch'
-      build:
-        patterns:
-          - 'vite'
-          - 'prettier'
         update-types:
           - 'minor'
           - 'patch'
