@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import Loader2 from '@lucide/svelte/icons/loader-2';
 
 	import { t } from '$lib/i18n';
@@ -28,6 +29,12 @@
 	};
 
 	let { form, fieldErrors, loading, onsubmit, onreset, onchange }: Props = $props();
+
+	let isMac = $state(false);
+	onMount(() => {
+		const userAgent = navigator.userAgent.toLowerCase();
+		isMac = userAgent.includes('mac') && !userAgent.includes('windows');
+	});
 
 	function errorFor(message: string) {
 		return message ? [{ message }] : undefined;
@@ -169,7 +176,13 @@
 					<Loader2 class="size-4 animate-spin" aria-hidden="true" />
 					{$t('predicting')}
 				{:else}
-					{$t('get_prediction')}
+					<span class="flex items-center gap-2">
+						{$t('get_prediction')}
+						<kbd
+							class="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border border-primary-foreground/20 bg-primary-foreground/10 px-1.5 font-sans text-[10px] font-medium opacity-80 sm:flex"
+							aria-hidden="true">{isMac ? '⌘' : 'Ctrl'} ↵</kbd
+						>
+					</span>
 				{/if}
 			</Button>
 			<Button
@@ -179,7 +192,13 @@
 				class="w-full tracking-normal normal-case transition-all duration-200 hover:bg-muted/80"
 				onclick={() => onreset?.()}
 			>
-				{$t('reset_form')}
+				<span class="flex items-center gap-2">
+					{$t('reset_form')}
+					<kbd
+						class="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border border-border bg-muted/50 px-1.5 font-sans text-[10px] font-medium text-muted-foreground sm:flex"
+						aria-hidden="true">Esc</kbd
+					>
+				</span>
 			</Button>
 		</div>
 	</Field.Group>
