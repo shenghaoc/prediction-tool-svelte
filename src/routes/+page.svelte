@@ -36,7 +36,6 @@
 			if (liveEl) liveEl.textContent = message;
 			announceTimer = null;
 		}, 50);
-		}, 50);
 	}
 
 	const panelCard =
