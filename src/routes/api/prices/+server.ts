@@ -66,6 +66,8 @@ export const POST: RequestHandler = async ({ request, platform }) => {
 		typeof storeyRange !== 'string' ||
 		typeof floorAreaSqm !== 'number' ||
 		typeof leaseCommenceYear !== 'number' ||
+		!Number.isFinite(floorAreaSqm) ||
+		!Number.isFinite(leaseCommenceYear) ||
 		floorAreaSqm < MIN_FLOOR_AREA_SQM ||
 		floorAreaSqm > MAX_FLOOR_AREA_SQM ||
 		leaseCommenceYear < MIN_LEASE_COMMENCE_YEAR ||
