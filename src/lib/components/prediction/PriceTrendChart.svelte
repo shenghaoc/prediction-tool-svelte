@@ -147,12 +147,12 @@
 		style="cursor: crosshair"
 	>
 		<defs>
-			<linearGradient id="prediction-area-gradient" x1="0" y1="0" x2="0" y2="1">
+			<linearGradient id={`prediction-area-gradient-${data.length}`} x1="0" y1="0" x2="0" y2="1">
 				<stop offset="0%" stop-color="var(--chart-fill)" stop-opacity="0.42" />
 				<stop offset="55%" stop-color="var(--chart-fill)" stop-opacity="0.14" />
 				<stop offset="100%" stop-color="var(--chart-fill)" stop-opacity="0" />
 			</linearGradient>
-			<linearGradient id="prediction-line-gradient" x1="0" y1="0" x2="1" y2="0">
+			<linearGradient id={`prediction-line-gradient-${data.length}`} x1="0" y1="0" x2="1" y2="0">
 				<stop offset="0%" stop-color="var(--chart-fill)" />
 				<stop offset="100%" stop-color="var(--chart-2, var(--chart-fill))" />
 			</linearGradient>
@@ -181,11 +181,11 @@
 		{/each}
 
 		{#if areaPath}
-			<path d={areaPath} fill="url(#prediction-area-gradient)" />
+			<path d={areaPath} fill={`url(#prediction-area-gradient-${data.length})`} />
 			<path
 				d={linePath}
 				fill="none"
-				stroke="url(#prediction-line-gradient)"
+				stroke={`url(#prediction-line-gradient-${data.length})`}
 				stroke-width="2.5"
 				stroke-linecap="round"
 				stroke-linejoin="round"
@@ -193,15 +193,7 @@
 		{/if}
 
 		{#if points.length > 0}
-			<circle
-				cx={points[peakIdx].x}
-				cy={points[peakIdx].y}
-				r="4"
-				fill="var(--chart-2, var(--primary))"
-				stroke="var(--card)"
-				stroke-width="2"
-			/>
-			<!-- Glow ring behind latest dot -->
+			<!-- Latest dot and glow first -->
 			<circle
 				cx={points[lastIdx].x}
 				cy={points[lastIdx].y}
@@ -218,6 +210,17 @@
 				stroke="var(--card)"
 				stroke-width="2.5"
 			/>
+			<!-- Peak dot on top -->
+			{#if peakIdx !== lastIdx}
+				<circle
+					cx={points[peakIdx].x}
+					cy={points[peakIdx].y}
+					r="4"
+					fill="var(--chart-2, var(--primary))"
+					stroke="var(--card)"
+					stroke-width="2"
+				/>
+			{/if}
 		{/if}
 
 		{#if activePoint}

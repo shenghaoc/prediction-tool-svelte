@@ -32,8 +32,8 @@
 		class: className
 	}: Props = $props();
 
-let focused = $state(false);
-let holdInterval: ReturnType<typeof setTimeout> | null = null;
+	let focused = $state(false);
+	let holdInterval: ReturnType<typeof setTimeout> | null = null;
 
 	const numValue = $derived(typeof value === 'number' ? value : NaN);
 	const atMin = $derived(!isNaN(numValue) && numValue <= min);
@@ -53,25 +53,28 @@ let holdInterval: ReturnType<typeof setTimeout> | null = null;
 		onchange(clamp(current - step));
 	}
 
-function startHold(fn: () => void) {
-	fn();
-	let count = 0;
-	const repeat = () => {
-		holdInterval = setTimeout(() => {
-			count++;
-			fn();
-			repeat();
-		}, count < 5 ? 200 : 80);
-	};
-	repeat();
-}
-
-function stopHold() {
-	if (holdInterval) {
-		clearTimeout(holdInterval);
-		holdInterval = null;
+	function startHold(fn: () => void) {
+		fn();
+		let count = 0;
+		const repeat = () => {
+			holdInterval = setTimeout(
+				() => {
+					count++;
+					fn();
+					repeat();
+				},
+				count < 5 ? 200 : 80
+			);
+		};
+		repeat();
 	}
-}
+
+	function stopHold() {
+		if (holdInterval) {
+			clearTimeout(holdInterval);
+			holdInterval = null;
+		}
+	}
 
 	function handleKeyDown(e: KeyboardEvent) {
 		if (e.key === 'ArrowUp') {
@@ -89,26 +92,26 @@ function stopHold() {
 		}
 	}
 
-function handleBlur() {
-	focused = false;
-	if (typeof value === 'number' && !isNaN(value)) {
-		onchange(clamp(value));
+	function handleBlur() {
+		focused = false;
+		if (typeof value === 'number' && !isNaN(value)) {
+			onchange(clamp(value));
+		}
 	}
-}
 
-function handleInput(e: Event) {
-	const input = e.target as HTMLInputElement;
-	const sanitized = input.value.replace(/\D/g, '');
-	if (input.value !== sanitized) {
-		input.value = sanitized;
+	function handleInput(e: Event) {
+		const input = e.target as HTMLInputElement;
+		const sanitized = input.value.replace(/\D/g, '');
+		if (input.value !== sanitized) {
+			input.value = sanitized;
+		}
+		if (sanitized === '') {
+			onchange('');
+			return;
+		}
+		const n = parseInt(sanitized, 10);
+		if (!isNaN(n)) onchange(n);
 	}
-	if (sanitized === '') {
-		onchange('');
-		return;
-	}
-	const n = parseInt(sanitized, 10);
-	if (!isNaN(n)) onchange(n);
-}
 
 	const gridCols = $derived(unit ? 'grid-cols-[40px_1fr_auto_40px]' : 'grid-cols-[40px_1fr_40px]');
 </script>
@@ -136,6 +139,7 @@ function handleInput(e: Event) {
 		}}
 		onpointerup={stopHold}
 		onpointerleave={stopHold}
+		onpointercancel={stopHold}
 		class={cn(
 			'flex items-center justify-center border-none bg-secondary/60 text-secondary-foreground transition-colors duration-150 hover:bg-primary/10 hover:text-primary',
 			atMin && 'cursor-not-allowed opacity-35'
@@ -186,6 +190,7 @@ function handleInput(e: Event) {
 		}}
 		onpointerup={stopHold}
 		onpointerleave={stopHold}
+		onpointercancel={stopHold}
 		class={cn(
 			'flex items-center justify-center border-none bg-secondary/60 text-secondary-foreground transition-colors duration-150 hover:bg-primary/10 hover:text-primary',
 			atMax && 'cursor-not-allowed opacity-35'

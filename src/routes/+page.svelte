@@ -301,6 +301,8 @@
 									class="progress-track mt-4"
 									role="progressbar"
 									aria-label={t('predicting', $lang)}
+									aria-valuemin={0}
+									aria-valuemax={100}
 								>
 									<div class="progress-bar" style="width: 60%"></div>
 								</div>
@@ -310,7 +312,12 @@
 				</div>
 
 				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-				<div bind:this={resultsEl} tabindex={-1} class="outline-none" aria-label={t('predicted_price', $lang)}>
+				<div
+					bind:this={resultsEl}
+					tabindex={-1}
+					class="outline-none"
+					aria-label={t('predicted_price', $lang)}
+				>
 					<PredictionResults
 						output={$prediction.output}
 						hasPrediction={$prediction.hasPrediction}
