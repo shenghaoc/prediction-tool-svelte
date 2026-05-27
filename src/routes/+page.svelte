@@ -132,21 +132,35 @@
 					>
 						{t('switch_language', $lang)}
 					</Button>
-					<Button
-						type="button"
-						variant="outline"
-						size="icon-sm"
-						aria-label={$prediction.darkMode
-							? t('switch_to_light_mode', $lang)
-							: t('switch_to_dark_mode', $lang)}
-						onclick={() => prediction.toggleTheme()}
-					>
-						{#if $prediction.darkMode}
-							<Sun class="size-4" />
-						{:else}
-							<Moon class="size-4" />
-						{/if}
-					</Button>
+					<Tooltip.Provider>
+						<Tooltip.Root>
+							<Tooltip.Trigger>
+								{#snippet child({ props })}
+									<Button
+										{...props}
+										type="button"
+										variant="outline"
+										size="icon-sm"
+										aria-label={$prediction.darkMode
+											? t('switch_to_light_mode', $lang)
+											: t('switch_to_dark_mode', $lang)}
+										onclick={() => prediction.toggleTheme()}
+									>
+										{#if $prediction.darkMode}
+											<Sun class="size-4" />
+										{:else}
+											<Moon class="size-4" />
+										{/if}
+									</Button>
+								{/snippet}
+							</Tooltip.Trigger>
+							<Tooltip.Content side="bottom" class="text-xs">
+								{$prediction.darkMode
+									? t('switch_to_light_mode', $lang)
+									: t('switch_to_dark_mode', $lang)}
+							</Tooltip.Content>
+						</Tooltip.Root>
+					</Tooltip.Provider>
 				</div>
 			</header>
 
