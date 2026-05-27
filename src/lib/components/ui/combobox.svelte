@@ -79,9 +79,10 @@
 				if (isOpen) activeIndex = Math.max(activeIndex - 1, 0);
 				break;
 			case 'Enter':
-				if (isOpen && activeIndex >= 0 && filtered[activeIndex]) {
+				if (isOpen) {
 					e.preventDefault();
-					handleSelect(filtered[activeIndex].value);
+					const index = activeIndex >= 0 ? activeIndex : 0;
+					if (filtered[index]) handleSelect(filtered[index].value);
 				}
 				break;
 			case 'Escape':

@@ -86,14 +86,6 @@
 				e.preventDefault();
 				if (!$prediction.loading) handleSubmit();
 			}
-			if (
-				e.key === 'Escape' &&
-				!document.querySelector('[role="listbox"]') &&
-				document.activeElement?.closest('form')
-			) {
-				prediction.reset();
-				announce($lang === 'zh' ? '表单已重置' : 'Form reset');
-			}
 		};
 		document.addEventListener('keydown', keyHandler);
 
