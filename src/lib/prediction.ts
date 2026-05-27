@@ -26,7 +26,7 @@ export type TrendPoint = {
 
 export type SummaryValues = Pick<FieldType, 'ml_model' | 'town' | 'lease_commence_date'>;
 
-export type PredictionApiResponse = {
+type PredictionApiResponse = {
 	predictions: Array<{
 		month: string;
 		predictedPrice: number;
