@@ -49,17 +49,6 @@
 	});
 
 	$effect(() => {
-		const handler = (e: PointerEvent) => {
-			if (containerEl && !containerEl.contains(e.target as Node)) {
-				isOpen = false;
-				query = '';
-			}
-		};
-		document.addEventListener('pointerdown', handler);
-		return () => document.removeEventListener('pointerdown', handler);
-	});
-
-	$effect(() => {
 		if (!isOpen || activeIndex < 0 || !listEl) return;
 		const items = listEl.querySelectorAll('[role="option"]');
 		items[activeIndex]?.scrollIntoView({ block: 'nearest' });
@@ -74,49 +63,49 @@
 		inputEl?.focus();
 	}
 
-function handleKeyDown(e: KeyboardEvent) {
-	switch (e.key) {
-		case 'ArrowDown':
-			e.preventDefault();
-			if (!isOpen) {
-				isOpen = true;
-				activeIndex = 0;
-			} else {
-				activeIndex = Math.min(activeIndex + 1, filtered.length - 1);
-			}
-			break;
-		case 'ArrowUp':
-			e.preventDefault();
-			if (isOpen) activeIndex = Math.max(activeIndex - 1, 0);
-			break;
-		case 'Enter':
-			if (isOpen && activeIndex >= 0 && filtered[activeIndex]) {
+	function handleKeyDown(e: KeyboardEvent) {
+		switch (e.key) {
+			case 'ArrowDown':
 				e.preventDefault();
-				handleSelect(filtered[activeIndex].value);
-			}
-			break;
-		case 'Escape':
-			e.preventDefault();
-			e.stopPropagation();
-			isOpen = false;
-			query = '';
-			break;
-		case 'Home':
-			if (isOpen) {
+				if (!isOpen) {
+					isOpen = true;
+					activeIndex = 0;
+				} else {
+					activeIndex = Math.min(activeIndex + 1, filtered.length - 1);
+				}
+				break;
+			case 'ArrowUp':
 				e.preventDefault();
-				activeIndex = 0;
-			}
-			break;
-		case 'End':
-			if (isOpen) {
+				if (isOpen) activeIndex = Math.max(activeIndex - 1, 0);
+				break;
+			case 'Enter':
+				if (isOpen && activeIndex >= 0 && filtered[activeIndex]) {
+					e.preventDefault();
+					handleSelect(filtered[activeIndex].value);
+				}
+				break;
+			case 'Escape':
 				e.preventDefault();
-				activeIndex = filtered.length - 1;
-			}
-			break;
+				e.stopPropagation();
+				isOpen = false;
+				query = '';
+				break;
+			case 'Home':
+				if (isOpen) {
+					e.preventDefault();
+					activeIndex = 0;
+				}
+				break;
+			case 'End':
+				if (isOpen) {
+					e.preventDefault();
+					activeIndex = filtered.length - 1;
+				}
+				break;
+		}
 	}
-}
 
-	const activeOptionId = $derived(activeIndex >= 0 ? `${listboxId.replace('-listbox', '')}-opt-${activeIndex}` : undefined);
+	const activeOptionId = $derived(activeIndex >= 0 ? `${id}-opt-${activeIndex}` : undefined);
 </script>
 
 <div

@@ -234,7 +234,6 @@ input[data-no-spinner='true']::-webkit-inner-spin-button {
 :focus-visible {
 	outline: 2px solid var(--primary);
 	outline-offset: 2px;
-	border-radius: var(--radius-sm);
 }
 
 /* ── v5: Combobox listbox scrollbar ── */
