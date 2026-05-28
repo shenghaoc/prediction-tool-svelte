@@ -97,7 +97,7 @@
 		}
 		if (e.key === 'Escape' && document.activeElement?.closest('form')) {
 			prediction.reset();
-			announce(i18n.lang === 'zh' ? '表单已重置' : 'Form reset');
+			announce(i18n.t('form_reset'));
 		}
 	}
 
@@ -121,12 +121,7 @@
 		if (prediction.hasPrediction && !prediction.errorMessage) {
 			toast.success(i18n.t('prediction_success'), { id: 'prediction' });
 			const price = `$${Math.round(prediction.output).toLocaleString()}`;
-			announce(
-				i18n.lang === 'zh'
-					? `预测完成。预估价格：${price}`
-					: `Prediction complete. Estimated price: ${price}`,
-				'assertive'
-			);
+			announce(`${i18n.t('prediction_complete')}${price}`, 'assertive');
 		}
 		if (prediction.errorMessage) {
 			toast.error(prediction.errorMessage);

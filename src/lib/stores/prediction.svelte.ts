@@ -147,10 +147,6 @@ export class PredictionStore {
 	init() {
 		if (!browser) return;
 
-		const savedTheme = localStorage.getItem('theme') === 'dark';
-		this.darkMode = savedTheme;
-		applyTheme(savedTheme);
-
 		const savedForm = localStorage.getItem('form');
 		if (savedForm) {
 			try {
@@ -188,10 +184,10 @@ export class PredictionStore {
 	}
 
 	updateField<K extends FieldName>(key: K, value: FieldType[K]) {
-		this.form = { ...this.form, [key]: value };
+		this.form[key] = value;
 		persistForm(this.form);
 		this.errorMessage = '';
-		this.fieldErrors = { ...this.fieldErrors, [key]: '' };
+		this.fieldErrors[key] = '';
 	}
 
 	async submit() {

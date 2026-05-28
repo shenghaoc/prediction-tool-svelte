@@ -70,11 +70,12 @@
 		TOWNS.map((town) => ({ value: town, label: i18n.t(`towns.${town}`) }))
 	);
 
-	const leaseYearOptions = $derived(
-		Array.from({ length: MAX_LEASE_COMMENCE_YEAR - MIN_LEASE_COMMENCE_YEAR + 1 }, (_, index) => {
+	const leaseYearOptions = Array.from(
+		{ length: MAX_LEASE_COMMENCE_YEAR - MIN_LEASE_COMMENCE_YEAR + 1 },
+		(_, index) => {
 			const year = MIN_LEASE_COMMENCE_YEAR + index;
 			return { value: String(year), label: String(year) };
-		})
+		}
 	);
 </script>
 
