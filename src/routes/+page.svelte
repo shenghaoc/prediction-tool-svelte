@@ -95,7 +95,7 @@
 			e.preventDefault();
 			if (!prediction.loading) handleSubmit();
 		}
-		if (e.key === 'Escape' && document.activeElement?.closest('form')) {
+		if (e.key === 'Escape' && document.activeElement?.closest?.('form')) {
 			prediction.reset();
 			announce(i18n.t('form_reset'));
 		}

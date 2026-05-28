@@ -39,18 +39,31 @@ function createSummary(form: FieldType): SummaryValues {
 
 function persistForm(form: FieldType) {
 	if (!browser) return;
-	localStorage.setItem('form', JSON.stringify(form));
+	try {
+		localStorage.setItem('form', JSON.stringify(form));
+	} catch {
+		// Storage unavailable or blocked
+	}
 }
 
 function applyTheme(darkMode: boolean) {
 	if (!browser) return;
-	localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+	try {
+		localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+	} catch {
+		// Storage unavailable or blocked
+	}
 	document.documentElement.classList.toggle('dark', darkMode);
 	document.body.setAttribute('data-theme', darkMode ? 'dark' : 'light');
 }
 
 function readInitialDarkMode(): boolean {
-	return browser && localStorage.getItem('theme') === 'dark';
+	if (!browser) return false;
+	try {
+		return localStorage.getItem('theme') === 'dark';
+	} catch {
+		return false;
+	}
 }
 
 function validateForm(form: FieldType, i18n: I18n) {
@@ -88,31 +101,36 @@ async function getApiErrorMessage(response: Response, i18n: I18n) {
 	}
 
 	try {
-		const parsed = JSON.parse(text) as {
+		const parsed = JSON.parse(text);
+		if (!parsed || typeof parsed !== 'object') {
+			return text;
+		}
+
+		const body = parsed as {
 			error?: string | { message?: string };
 			statusMessage?: string;
 			message?: string;
 		};
 
-		if (typeof parsed.statusMessage === 'string' && parsed.statusMessage.trim()) {
-			return parsed.statusMessage;
+		if (typeof body.statusMessage === 'string' && body.statusMessage.trim()) {
+			return body.statusMessage;
 		}
 
-		if (typeof parsed.message === 'string' && parsed.message.trim()) {
-			return parsed.message;
+		if (typeof body.message === 'string' && body.message.trim()) {
+			return body.message;
 		}
 
-		if (typeof parsed.error === 'string' && parsed.error.trim()) {
-			return parsed.error;
+		if (typeof body.error === 'string' && body.error.trim()) {
+			return body.error;
 		}
 
 		if (
-			parsed.error &&
-			typeof parsed.error === 'object' &&
-			'message' in parsed.error &&
-			typeof parsed.error.message === 'string'
+			body.error &&
+			typeof body.error === 'object' &&
+			'message' in body.error &&
+			typeof body.error.message === 'string'
 		) {
-			return parsed.error.message;
+			return body.error.message;
 		}
 	} catch (parseError) {
 		console.warn('Failed to parse error response body as JSON', {
@@ -133,7 +151,7 @@ export class PredictionStore {
 	trendData = $state<TrendPoint[]>(defaultTrendData());
 	output = $state(0);
 	loading = $state(false);
-	darkMode = $state(readInitialDarkMode());
+	darkMode = $state(false);
 	errorMessage = $state('');
 	hasPrediction = $state(false);
 	fieldErrors = $state<Record<FieldName, string>>(blankFieldErrors());
@@ -141,27 +159,33 @@ export class PredictionStore {
 
 	constructor(i18n: I18n) {
 		this.#i18n = i18n;
-		applyTheme(this.darkMode);
 	}
 
 	init() {
 		if (!browser) return;
 
-		const savedForm = localStorage.getItem('form');
-		if (savedForm) {
-			try {
-				const parsed = JSON.parse(savedForm) as Partial<FieldType>;
-				this.form = {
-					...initialFormValues,
-					...parsed,
-					floor_area_sqm: Number(parsed.floor_area_sqm ?? initialFormValues.floor_area_sqm),
-					lease_commence_date: Number(
-						parsed.lease_commence_date ?? initialFormValues.lease_commence_date
-					)
-				};
-			} catch {
-				this.form = { ...initialFormValues };
+		this.darkMode = readInitialDarkMode();
+		applyTheme(this.darkMode);
+
+		try {
+			const savedForm = localStorage.getItem('form');
+			if (savedForm) {
+				try {
+					const parsed = JSON.parse(savedForm) as Partial<FieldType>;
+					this.form = {
+						...initialFormValues,
+						...parsed,
+						floor_area_sqm: Number(parsed.floor_area_sqm ?? initialFormValues.floor_area_sqm),
+						lease_commence_date: Number(
+							parsed.lease_commence_date ?? initialFormValues.lease_commence_date
+						)
+					};
+				} catch {
+					this.form = { ...initialFormValues };
+				}
 			}
+		} catch {
+			// Storage unavailable or blocked — keep default form
 		}
 	}
 
@@ -172,7 +196,11 @@ export class PredictionStore {
 
 	reset() {
 		if (browser) {
-			localStorage.removeItem('form');
+			try {
+				localStorage.removeItem('form');
+			} catch {
+				// Storage unavailable or blocked
+			}
 		}
 
 		this.form = { ...initialFormValues };
