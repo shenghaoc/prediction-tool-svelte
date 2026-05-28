@@ -32,8 +32,7 @@
 
 	let isMac = $state(false);
 	onMount(() => {
-		const userAgent = navigator.userAgent.toLowerCase();
-		isMac = userAgent.includes('mac') && !userAgent.includes('windows');
+		isMac = navigator.platform.startsWith('Mac');
 	});
 
 	function errorFor(message: string) {
