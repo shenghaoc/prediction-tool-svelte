@@ -191,6 +191,8 @@ export class PredictionStore {
 	}
 
 	async submit() {
+		if (this.loading) return;
+
 		persistForm(this.form);
 
 		const validation = validateForm(this.form, this.#i18n);
