@@ -109,8 +109,9 @@
 	function setActiveIndexFromPointer(event: PointerEvent) {
 		if (!svg || points.length === 0) return;
 
-		const rect = svg.getBoundingClientRect();
-		const x = ((event.clientX - rect.left) / rect.width) * width;
+		// Use pointer offset to avoid Layout Thrashing from getBoundingClientRect
+		const rectWidth = svg.clientWidth || svg.getBoundingClientRect().width;
+		const x = (event.offsetX / rectWidth) * width;
 
 		let nearestIndex = 0;
 		let nearestDistance = Number.POSITIVE_INFINITY;

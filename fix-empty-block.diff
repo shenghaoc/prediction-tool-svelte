@@ -1,0 +1,13 @@
+<<<<<<< SEARCH
+					try {
+						localStorage.setItem('form', JSON.stringify(this.form));
+					} catch {}
+				}
+=======
+					try {
+						localStorage.setItem('form', JSON.stringify(this.form));
+					} catch {
+						// Ignored before unload
+					}
+				}
+>>>>>>> REPLACE

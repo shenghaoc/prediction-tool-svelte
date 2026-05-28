@@ -1,0 +1,5 @@
+<<<<<<< SEARCH
+**Action:** Extract inline property mappings into `$derived` variables to prevent re-evaluation on reactive updates. Cache `DOMRect` during hover sessions and discard it on `pointerleave` rather than computing it on every `pointermove`.
+=======
+**Action:** Extract inline property mappings into `$derived` variables to prevent re-evaluation on reactive updates. Use `event.offsetX` / `event.offsetY` instead of `getBoundingClientRect()` on every `pointermove` to calculate coordinates without forcing Layout Thrashing reflows or dealing with stale scroll offsets.
+>>>>>>> REPLACE

@@ -1,0 +1,18 @@
+<<<<<<< SEARCH
+		try {
+			const savedForm = localStorage.getItem('form');
+=======
+		if (browser) {
+			window.addEventListener('beforeunload', () => {
+				if (persistTimeout) {
+					clearTimeout(persistTimeout);
+					try {
+						localStorage.setItem('form', JSON.stringify(this.form));
+					} catch {}
+				}
+			});
+		}
+
+		try {
+			const savedForm = localStorage.getItem('form');
+>>>>>>> REPLACE

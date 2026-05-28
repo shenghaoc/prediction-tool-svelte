@@ -44,9 +44,7 @@ const MAX_REQUESTS = 50; // Maximum requests per minute
 const WINDOW_MS = 60 * 1000; // 1 minute window
 const MAX_MAP_SIZE = 10000; // Prevent memory leak
 
-type RateLimitResult =
-	| { limited: false }
-	| { limited: true; retryAfterSecs: number };
+type RateLimitResult = { limited: false } | { limited: true; retryAfterSecs: number };
 
 function evictRateLimitEntries(): void {
 	if (rateLimitMap.size <= MAX_MAP_SIZE) {
@@ -90,10 +88,7 @@ function checkRateLimit(ip: string): RateLimitResult {
 	return { limited: false };
 }
 
-function resolveClientIp(
-	request: Request,
-	getClientAddress: unknown
-): string | null {
+function resolveClientIp(request: Request, getClientAddress: unknown): string | null {
 	if (typeof getClientAddress === 'function') {
 		try {
 			const ip = getClientAddress();
