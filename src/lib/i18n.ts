@@ -296,18 +296,29 @@ const zh = {
 	}
 } as const;
 
-const dictionaries = { en, zh } as const;
+// Pre-flatten dictionaries at startup for O(1) $t() lookups.
+const flatDictionaries: Record<Language, Record<string, string>> = { en: {}, zh: {} };
+
+function flattenDictionary(
+	obj: Record<string, any>,
+	prefix: string,
+	target: Record<string, string>
+) {
+	for (const key of Object.keys(obj)) {
+		const value = obj[key];
+		const newKey = prefix ? `${prefix}.${key}` : key;
+
+		if (typeof value === 'string') {
+			target[newKey] = value;
+		} else if (value && typeof value === 'object') {
+			flattenDictionary(value, newKey, target);
+		}
+	}
+}
+
+flattenDictionary(en, '', flatDictionaries.en);
+flattenDictionary(zh, '', flatDictionaries.zh);
 
 function getValue(language: Language, key: string): string | undefined {
-	const source = dictionaries[language] as Record<string, unknown>;
-	let current: unknown = source;
-
-	for (const segment of key.split('.')) {
-		if (!current || typeof current !== 'object' || !(segment in current)) {
-			return undefined;
-		}
-		current = (current as Record<string, unknown>)[segment];
-	}
-
-	return typeof current === 'string' ? current : undefined;
+	return flatDictionaries[language][key];
 }
