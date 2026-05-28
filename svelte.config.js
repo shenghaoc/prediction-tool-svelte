@@ -18,7 +18,9 @@ const config = {
 				'script-src': ['self'],
 				'connect-src': ['self', 'https://fonts.googleapis.com', 'https://fonts.gstatic.com'],
 				'frame-ancestors': ['none'],
-				'form-action': ['self']
+				'form-action': ['self'],
+				'object-src': ['none'],
+				'upgrade-insecure-requests': true
 			}
 		}
 	}
