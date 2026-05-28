@@ -95,14 +95,17 @@ function checkRateLimit(ip: string): RateLimitResult {
 
 function resolveClientIp(
 	request: Request,
-	getClientAddress: () => string
+	getClientAddress: unknown
 ): string | null {
-	try {
-		return getClientAddress();
-	} catch {
-		// Use Cloudflare connecting IP directly. Avoid x-forwarded-for which can be spoofed.
-		return request.headers.get('cf-connecting-ip');
+	if (typeof getClientAddress === 'function') {
+		try {
+			return getClientAddress();
+		} catch {
+			// Fall through to header-based resolution
+		}
 	}
+	// Use Cloudflare connecting IP directly. Avoid x-forwarded-for which can be spoofed.
+	return request.headers.get('cf-connecting-ip');
 }
 
 export const POST: RequestHandler = async ({ request, platform, getClientAddress }) => {
