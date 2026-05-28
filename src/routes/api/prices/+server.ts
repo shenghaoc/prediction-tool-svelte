@@ -74,7 +74,11 @@ function checkRateLimit(ip: string): RateLimitResult {
 		return { limited: false };
 	}
 
+	// Refresh insertion order so active IPs aren't evicted prematurely
+	rateLimitMap.delete(ip);
+
 	if (record.count >= MAX_REQUESTS) {
+		rateLimitMap.set(ip, record);
 		return {
 			limited: true,
 			retryAfterSecs: Math.max(1, Math.ceil((record.resetTime - now) / 1000))
@@ -82,6 +86,7 @@ function checkRateLimit(ip: string): RateLimitResult {
 	}
 
 	record.count++;
+	rateLimitMap.set(ip, record);
 	return { limited: false };
 }
 
@@ -91,7 +96,8 @@ function resolveClientIp(
 ): string | null {
 	if (typeof getClientAddress === 'function') {
 		try {
-			return getClientAddress();
+			const ip = getClientAddress();
+			if (ip) return ip;
 		} catch {
 			// Fall through to header-based resolution
 		}
@@ -100,9 +106,10 @@ function resolveClientIp(
 	return request.headers.get('cf-connecting-ip');
 }
 
-export const POST: RequestHandler = async ({ request, platform, getClientAddress }) => {
+export const POST: RequestHandler = async (event) => {
+	const { request, platform } = event;
 	// Add basic rate limiting to protect the D1 database
-	const ip = resolveClientIp(request, getClientAddress);
+	const ip = resolveClientIp(request, () => event.getClientAddress());
 	if (ip) {
 		const rateLimit = checkRateLimit(ip);
 		if (rateLimit.limited) {
