@@ -300,7 +300,7 @@ const zh = {
 const flatDictionaries: Record<Language, Record<string, string>> = { en: {}, zh: {} };
 
 function flattenDictionary(
-	obj: Record<string, unknown>,
+	obj: Record<string, any>,
 	prefix: string,
 	target: Record<string, string>
 ) {
@@ -311,7 +311,7 @@ function flattenDictionary(
 		if (typeof value === 'string') {
 			target[newKey] = value;
 		} else if (value && typeof value === 'object') {
-			flattenDictionary(value as Record<string, unknown>, newKey, target);
+			flattenDictionary(value, newKey, target);
 		}
 	}
 }
