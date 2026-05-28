@@ -48,31 +48,23 @@ type RateLimitResult =
 	| { limited: false }
 	| { limited: true; retryAfterSecs: number };
 
-function evictRateLimitEntries(now: number): void {
+function evictRateLimitEntries(): void {
 	if (rateLimitMap.size <= MAX_MAP_SIZE) {
 		return;
 	}
 
-	for (const [key, record] of rateLimitMap) {
-		if (now > record.resetTime) {
-			rateLimitMap.delete(key);
+	const targetSize = Math.floor(MAX_MAP_SIZE / 2);
+	for (const key of rateLimitMap.keys()) {
+		if (rateLimitMap.size <= targetSize) {
+			break;
 		}
-	}
-
-	if (rateLimitMap.size > MAX_MAP_SIZE) {
-		const targetSize = Math.floor(MAX_MAP_SIZE / 2);
-		for (const key of rateLimitMap.keys()) {
-			if (rateLimitMap.size <= targetSize) {
-				break;
-			}
-			rateLimitMap.delete(key);
-		}
+		rateLimitMap.delete(key);
 	}
 }
 
 function checkRateLimit(ip: string): RateLimitResult {
 	const now = Date.now();
-	evictRateLimitEntries(now);
+	evictRateLimitEntries();
 
 	const record = rateLimitMap.get(ip);
 
