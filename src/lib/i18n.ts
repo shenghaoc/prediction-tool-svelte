@@ -296,12 +296,7 @@ const zh = {
 	}
 } as const;
 
-const dictionaries = { en, zh } as const;
-
-// ⚡ Bolt Optimization:
-// Pre-flatten translation dictionaries into a single-level hash map at startup.
-// This avoids expensive string `.split('.')` and object traversal on every $t() call,
-// turning O(depth) string operations into an O(1) property lookup.
+// Pre-flatten dictionaries at startup for O(1) $t() lookups.
 const flatDictionaries: Record<Language, Record<string, string>> = { en: {}, zh: {} };
 
 function flattenDictionary(
@@ -309,7 +304,7 @@ function flattenDictionary(
 	prefix: string,
 	target: Record<string, string>
 ) {
-	for (const key in obj) {
+	for (const key of Object.keys(obj)) {
 		const value = obj[key];
 		const newKey = prefix ? `${prefix}.${key}` : key;
 
@@ -325,5 +320,5 @@ flattenDictionary(en, '', flatDictionaries.en);
 flattenDictionary(zh, '', flatDictionaries.zh);
 
 function getValue(language: Language, key: string): string | undefined {
-	return flatDictionaries[language]?.[key];
+	return flatDictionaries[language][key];
 }
