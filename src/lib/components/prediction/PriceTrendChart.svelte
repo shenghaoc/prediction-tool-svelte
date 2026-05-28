@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { formatCurrency } from '$lib/format';
 	import { formatCurrencyTick, type TrendPoint } from '$lib/prediction';
 	import type { Language } from '$lib/i18n';
@@ -15,28 +14,16 @@
 	const currencyLocale = $derived(locale === 'zh' ? 'zh-SG' : 'en-SG');
 
 	// Unique per-instance ID prevents SVG gradient collisions when multiple
-	// charts appear on the same page. Generated client-side only (onMount)
-	// so SSR always emits the same stable value and avoids hydration mismatches.
-	let uid = $state('s');
-	onMount(() => {
-		uid = Math.random().toString(36).slice(2, 8);
-	});
+	// charts appear on the same page. `$props.id()` is stable across SSR and
+	// hydration, so it avoids hydration mismatches.
+	const uid = $props.id();
 
 	const width = 760;
 	let svg: SVGSVGElement | null = $state(null);
 	let activeIndex = $state(-1);
-	let isMobile = $state(false);
+	let windowWidth = $state(0);
 
-	$effect(() => {
-		if (typeof window === 'undefined') return;
-		const update = () => {
-			isMobile = window.innerWidth < 900;
-		};
-		update();
-		window.addEventListener('resize', update);
-		return () => window.removeEventListener('resize', update);
-	});
-
+	const isMobile = $derived(windowWidth > 0 && windowWidth < 900);
 	const height = $derived(isMobile ? 280 : 360);
 	const margin = $derived({
 		top: 24,
@@ -143,6 +130,8 @@
 		activeIndex = -1;
 	}
 </script>
+
+<svelte:window bind:innerWidth={windowWidth} />
 
 <div class="relative w-full">
 	<svg

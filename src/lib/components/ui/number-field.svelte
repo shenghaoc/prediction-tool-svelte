@@ -40,22 +40,22 @@
 	});
 
 	const numValue = $derived(typeof value === 'number' ? value : NaN);
-	const atMin = $derived(!isNaN(numValue) && numValue <= min);
-	const atMax = $derived(!isNaN(numValue) && numValue >= max);
+	const atMin = $derived(!Number.isNaN(numValue) && numValue <= min);
+	const atMax = $derived(!Number.isNaN(numValue) && numValue >= max);
 
 	function clamp(v: number) {
 		return Math.max(min, Math.min(max, Math.round(v)));
 	}
 
 	function increment() {
-		const current = isNaN(numValue) ? min : numValue;
+		const current = Number.isNaN(numValue) ? min : numValue;
 		const next = clamp(current + step);
 		onchange(next);
 		if (next >= max) stopHold();
 	}
 
 	function decrement() {
-		const current = isNaN(numValue) ? min : numValue;
+		const current = Number.isNaN(numValue) ? min : numValue;
 		const next = clamp(current - step);
 		onchange(next);
 		if (next <= min) stopHold();
@@ -102,7 +102,7 @@
 
 	function handleBlur() {
 		focused = false;
-		if (typeof value === 'number' && !isNaN(value)) {
+		if (typeof value === 'number' && !Number.isNaN(value)) {
 			onchange(clamp(value));
 		}
 	}
@@ -118,7 +118,7 @@
 			return;
 		}
 		const n = parseInt(sanitized, 10);
-		if (!isNaN(n)) onchange(n);
+		if (!Number.isNaN(n)) onchange(n);
 	}
 
 	const gridCols = $derived(unit ? 'grid-cols-[40px_1fr_auto_40px]' : 'grid-cols-[40px_1fr_40px]');
@@ -163,9 +163,9 @@
 		role="spinbutton"
 		aria-valuemin={min}
 		aria-valuemax={max}
-		aria-valuenow={isNaN(numValue) ? undefined : numValue}
+		aria-valuenow={Number.isNaN(numValue) ? undefined : numValue}
 		aria-label={ariaLabel}
-		value={isNaN(numValue) ? '' : value}
+		value={Number.isNaN(numValue) ? '' : value}
 		{placeholder}
 		{required}
 		oninput={handleInput}

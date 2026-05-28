@@ -18,10 +18,10 @@ describe('hooks.server handle', () => {
 			} as never,
 			resolve: async (_event, options) => {
 				const html =
-					options?.transformPageChunk?.({
+					(await options?.transformPageChunk?.({
 						html: '<html lang="%lang%"></html>',
 						done: true
-					}) ?? '';
+					})) ?? '';
 				return new Response(html, { headers: new Headers() });
 			}
 		});
@@ -39,10 +39,10 @@ describe('hooks.server handle', () => {
 			} as never,
 			resolve: async (_event, options) => {
 				const html =
-					options?.transformPageChunk?.({
+					(await options?.transformPageChunk?.({
 						html: '<html lang="%lang%"></html>',
 						done: true
-					}) ?? '';
+					})) ?? '';
 				return new Response(html, { headers: new Headers() });
 			}
 		});

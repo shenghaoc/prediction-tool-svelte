@@ -1,5 +1,3 @@
-import { derived, writable } from 'svelte/store';
-
 export type Language = 'en' | 'zh';
 
 export function getStoredLanguage(): Language {
@@ -9,12 +7,6 @@ export function getStoredLanguage(): Language {
 
 	return localStorage.getItem('lang') === 'zh' ? 'zh' : 'en';
 }
-
-export const lang = writable<Language>(getStoredLanguage());
-export const t = derived(
-	lang,
-	($lang) => (key: string) => getValue($lang, key) ?? getValue('en', key) ?? key
-);
 
 export function persistLanguage(language: Language) {
 	if (typeof window === 'undefined') {
@@ -319,6 +311,6 @@ function flattenDictionary(
 flattenDictionary(en, '', flatDictionaries.en);
 flattenDictionary(zh, '', flatDictionaries.zh);
 
-function getValue(language: Language, key: string): string | undefined {
+export function getValue(language: Language, key: string): string | undefined {
 	return flatDictionaries[language][key];
 }

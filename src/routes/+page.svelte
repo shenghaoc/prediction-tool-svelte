@@ -8,13 +8,14 @@
 	import Sparkles from '@lucide/svelte/icons/sparkles';
 	import Sun from '@lucide/svelte/icons/sun';
 
-	import { applyDocumentLanguage, lang, persistLanguage, t, type Language } from '$lib/i18n';
+	import { applyDocumentLanguage, type Language } from '$lib/i18n';
+	import { getI18nContext } from '$lib/i18n.svelte';
 	import { FLAT_MODELS, ML_MODELS, TOWNS } from '$lib/lists';
 	import type { FieldType } from '$lib/prediction';
 	import PredictionForm from '$lib/components/prediction/PredictionForm.svelte';
 	import PredictionResults from '$lib/components/prediction/PredictionResults.svelte';
 	import StatTile from '$lib/components/prediction/StatTile.svelte';
-	import { prediction } from '$lib/stores/prediction';
+	import { getPredictionContext } from '$lib/stores/prediction.svelte';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
@@ -22,18 +23,21 @@
 	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
 	import { cn } from '$lib/utils.js';
 
+	const i18n = getI18nContext();
+	const prediction = getPredictionContext();
+
 	let mounted = $state(false);
 	let resultsEl: HTMLDivElement | null = $state(null);
-	let liveEl: HTMLDivElement | null = $state(null);
+	let liveMessage = $state('');
+	let livePriority = $state<'polite' | 'assertive'>('polite');
 	let announceTimer: ReturnType<typeof setTimeout> | null = null;
 
 	function announce(message: string, priority: 'polite' | 'assertive' = 'polite') {
-		if (!liveEl) return;
 		if (announceTimer) clearTimeout(announceTimer);
-		liveEl.setAttribute('aria-live', priority);
-		liveEl.textContent = '';
+		livePriority = priority;
+		liveMessage = '';
 		announceTimer = setTimeout(() => {
-			if (liveEl) liveEl.textContent = message;
+			liveMessage = message;
 			announceTimer = null;
 		}, 50);
 	}
@@ -43,32 +47,32 @@
 
 	const figures = $derived([
 		{
-			label: $t('stat_models'),
+			label: i18n.t('stat_models'),
 			value: ML_MODELS.length.toString().padStart(2, '0'),
 			icon: Layers,
-			hint: $t('stat_models_hint')
+			hint: i18n.t('stat_models_hint')
 		},
 		{
-			label: $t('stat_towns'),
+			label: i18n.t('stat_towns'),
 			value: TOWNS.length.toString().padStart(2, '0'),
 			icon: MapPin,
-			hint: $t('stat_towns_hint')
+			hint: i18n.t('stat_towns_hint')
 		},
 		{
-			label: $t('stat_types'),
+			label: i18n.t('stat_types'),
 			value: FLAT_MODELS.length.toString().padStart(2, '0'),
 			icon: Home,
-			hint: $t('stat_types_hint')
+			hint: i18n.t('stat_types_hint')
 		}
 	]);
 
 	$effect(() => {
-		applyDocumentLanguage($lang);
+		applyDocumentLanguage(i18n.lang);
 	});
 
 	$effect(() => {
 		if (!mounted) return;
-		if ($prediction.hasPrediction) {
+		if (prediction.hasPrediction) {
 			resultsEl?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 			setTimeout(() => {
 				resultsEl?.focus({ preventScroll: true });
@@ -77,33 +81,29 @@
 	});
 
 	onMount(() => {
-		const cleanup = prediction.init();
+		prediction.init();
 		mounted = true;
 		document.documentElement.classList.add('theme-ready');
 
-		const keyHandler = (e: KeyboardEvent) => {
-			if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-				e.preventDefault();
-				if (!$prediction.loading) handleSubmit();
-			}
-			if (e.key === 'Escape' && document.activeElement?.closest('form')) {
-				prediction.reset();
-				announce($lang === 'zh' ? '表单已重置' : 'Form reset');
-			}
-		};
-		document.addEventListener('keydown', keyHandler);
-
 		return () => {
-			cleanup();
-			document.removeEventListener('keydown', keyHandler);
 			if (announceTimer) clearTimeout(announceTimer);
 		};
 	});
 
+	function handleKeydown(e: KeyboardEvent) {
+		if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+			e.preventDefault();
+			if (!prediction.loading) handleSubmit();
+		}
+		if (e.key === 'Escape' && document.activeElement?.closest('form')) {
+			prediction.reset();
+			announce(i18n.lang === 'zh' ? '表单已重置' : 'Form reset');
+		}
+	}
+
 	function toggleLang() {
-		const next: Language = $lang === 'en' ? 'zh' : 'en';
-		lang.set(next);
-		persistLanguage(next);
+		const next: Language = i18n.lang === 'en' ? 'zh' : 'en';
+		i18n.setLanguage(next);
 	}
 
 	function handleFormChange(patch: Partial<FieldType>) {
@@ -116,28 +116,30 @@
 	}
 
 	async function handleSubmit() {
-		announce($t('predicting'), 'assertive');
+		announce(i18n.t('predicting'), 'assertive');
 		await prediction.submit();
-		if ($prediction.hasPrediction && !$prediction.errorMessage) {
-			toast.success($t('prediction_success'), { id: 'prediction' });
-			const price = `$${Math.round($prediction.output).toLocaleString()}`;
+		if (prediction.hasPrediction && !prediction.errorMessage) {
+			toast.success(i18n.t('prediction_success'), { id: 'prediction' });
+			const price = `$${Math.round(prediction.output).toLocaleString()}`;
 			announce(
-				$lang === 'zh'
+				i18n.lang === 'zh'
 					? `预测完成。预估价格：${price}`
 					: `Prediction complete. Estimated price: ${price}`,
 				'assertive'
 			);
 		}
-		if ($prediction.errorMessage) {
-			toast.error($prediction.errorMessage);
+		if (prediction.errorMessage) {
+			toast.error(prediction.errorMessage);
 		}
 	}
 </script>
 
 <svelte:head>
-	<title>{$t('page_title')}</title>
-	<meta name="description" content={$t('page_description')} />
+	<title>{i18n.t('page_title')}</title>
+	<meta name="description" content={i18n.t('page_description')} />
 </svelte:head>
+
+<svelte:document onkeydown={handleKeydown} />
 
 {#if !mounted}
 	<main class="min-h-screen px-6 pt-5 pb-12" aria-busy="true">
@@ -161,22 +163,23 @@
 
 		<!-- Live region for screen reader announcements -->
 		<div
-			bind:this={liveEl}
 			role="status"
-			aria-live="polite"
+			aria-live={livePriority}
 			aria-atomic="true"
 			class="absolute size-px overflow-hidden whitespace-nowrap border-0 p-0 [clip:rect(0,0,0,0)]"
-		></div>
+		>
+			{liveMessage}
+		</div>
 
 		<div class="mx-auto max-w-7xl">
 			<header
 				class="animate-fade-in-deep sticky top-0 z-20 -mx-6 mb-6 flex items-center justify-between gap-4 border-b border-border/50 bg-background/85 px-6 py-4 backdrop-blur-md max-sm:relative max-sm:mx-0 max-sm:flex-col max-sm:items-start max-sm:px-0"
 			>
 				<div class="flex items-center gap-2.5">
-					<span class="font-heading text-base font-bold tracking-tight">{$t('brand')}</span>
+					<span class="font-heading text-base font-bold tracking-tight">{i18n.t('brand')}</span>
 					<Badge variant="secondary" class="gap-1">
 						<Sparkles class="size-3" aria-hidden="true" />
-						{$t('badge')}
+						{i18n.t('badge')}
 					</Badge>
 				</div>
 
@@ -188,7 +191,7 @@
 						class="tracking-normal normal-case max-sm:flex-1"
 						onclick={toggleLang}
 					>
-						{$t('switch_language')}
+						{i18n.t('switch_language')}
 					</Button>
 					<Tooltip.Provider>
 						<Tooltip.Root>
@@ -199,12 +202,12 @@
 										type="button"
 										variant="outline"
 										size="icon-sm"
-										aria-label={$prediction.darkMode
-											? $t('switch_to_light_mode')
-											: $t('switch_to_dark_mode')}
+										aria-label={prediction.darkMode
+											? i18n.t('switch_to_light_mode')
+											: i18n.t('switch_to_dark_mode')}
 										onclick={() => prediction.toggleTheme()}
 									>
-										{#if $prediction.darkMode}
+										{#if prediction.darkMode}
 											<Sun class="size-4" />
 										{:else}
 											<Moon class="size-4" />
@@ -213,7 +216,9 @@
 								{/snippet}
 							</Tooltip.Trigger>
 							<Tooltip.Content side="bottom" class="text-xs">
-								{$prediction.darkMode ? $t('switch_to_light_mode') : $t('switch_to_dark_mode')}
+								{prediction.darkMode
+									? i18n.t('switch_to_light_mode')
+									: i18n.t('switch_to_dark_mode')}
 							</Tooltip.Content>
 						</Tooltip.Root>
 					</Tooltip.Provider>
@@ -240,13 +245,13 @@
 							<Card.Title
 								class={cn(
 									'font-heading text-[clamp(2rem,5vw,3rem)] font-bold tracking-tight whitespace-pre-line normal-case',
-									$lang === 'zh' && 'font-cjk font-extrabold'
+									i18n.lang === 'zh' && 'font-cjk font-extrabold'
 								)}
 							>
-								<h1>{$t('price_prediction')}</h1>
+								<h1>{i18n.t('price_prediction')}</h1>
 							</Card.Title>
 							<Card.Description class="max-w-prose text-base leading-relaxed">
-								{$t('intro_blurb')}
+								{i18n.t('intro_blurb')}
 							</Card.Description>
 						</Card.Header>
 						<Card.Content class="relative px-6 pt-4">
@@ -263,7 +268,7 @@
 								</div>
 							</Tooltip.Provider>
 							<p class="mt-3.5 text-[0.82rem] leading-relaxed text-muted-foreground">
-								{$t('intro_caption')}
+								{i18n.t('intro_caption')}
 							</p>
 						</Card.Content>
 					</Card.Root>
@@ -274,31 +279,31 @@
 					>
 						<Card.Header class="px-6 pb-2">
 							<Card.Title class="text-primary normal-case">
-								<h2>{$t('prediction_form')}</h2>
+								<h2>{i18n.t('prediction_form')}</h2>
 							</Card.Title>
 						</Card.Header>
 						<Card.Content class="px-6">
-							{#if $prediction.errorMessage && !$prediction.loading}
+							{#if prediction.errorMessage && !prediction.loading}
 								<div
 									class="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive"
 									role="alert"
 								>
-									{$prediction.errorMessage}
+									{prediction.errorMessage}
 								</div>
 							{/if}
 							<PredictionForm
-								form={$prediction.form}
-								fieldErrors={$prediction.fieldErrors}
-								loading={$prediction.loading}
+								form={prediction.form}
+								fieldErrors={prediction.fieldErrors}
+								loading={prediction.loading}
 								onsubmit={handleSubmit}
 								onreset={() => prediction.reset()}
 								onchange={handleFormChange}
 							/>
-							{#if $prediction.loading}
+							{#if prediction.loading}
 								<div
 									class="progress-track mt-4"
 									role="progressbar"
-									aria-label={$t('predicting')}
+									aria-label={i18n.t('predicting')}
 									aria-valuemin={0}
 									aria-valuemax={100}
 								>
@@ -314,14 +319,14 @@
 					bind:this={resultsEl}
 					tabindex={-1}
 					class="outline-none"
-					aria-label={$t('predicted_price')}
+					aria-label={i18n.t('predicted_price')}
 				>
 					<PredictionResults
-						output={$prediction.output}
-						hasPrediction={$prediction.hasPrediction}
-						summaryValues={$prediction.summaryValues}
-						trendData={$prediction.trendData}
-						loading={$prediction.loading}
+						output={prediction.output}
+						hasPrediction={prediction.hasPrediction}
+						summaryValues={prediction.summaryValues}
+						trendData={prediction.trendData}
+						loading={prediction.loading}
 					/>
 				</div>
 			</div>
