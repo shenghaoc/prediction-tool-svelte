@@ -77,6 +77,7 @@ function checkRateLimit(ip: string): RateLimitResult {
 	const record = rateLimitMap.get(ip);
 
 	if (!record || now > record.resetTime) {
+		rateLimitMap.delete(ip);
 		rateLimitMap.set(ip, { count: 1, resetTime: now + WINDOW_MS });
 		return { limited: false };
 	}
