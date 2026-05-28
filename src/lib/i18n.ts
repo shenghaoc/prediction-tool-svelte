@@ -1,20 +1,15 @@
-import { derived, writable } from 'svelte/store';
-
 export type Language = 'en' | 'zh';
 
 export function getStoredLanguage(): Language {
 	if (typeof window === 'undefined') {
 		return 'en';
 	}
-
-	return localStorage.getItem('lang') === 'zh' ? 'zh' : 'en';
+	try {
+		return localStorage.getItem('lang') === 'zh' ? 'zh' : 'en';
+	} catch {
+		return 'en';
+	}
 }
-
-export const lang = writable<Language>(getStoredLanguage());
-export const t = derived(
-	lang,
-	($lang) => (key: string) => getValue($lang, key) ?? getValue('en', key) ?? key
-);
 
 export function persistLanguage(language: Language) {
 	if (typeof window === 'undefined') {
@@ -88,6 +83,8 @@ const en = {
 	placeholder_body:
 		'Choose a model, adjust the flat details, and submit the form to see the projected resale price and 12-month trend.',
 	prediction_success: 'Prediction complete! Scroll down to view results.',
+	form_reset: 'Form reset',
+	prediction_complete: 'Prediction complete. Estimated price: ',
 	error_fetch: 'Failed to fetch prediction. Please try again.',
 	error_invalid_prediction:
 		'The server returned prices we could not display. Try different inputs or a model.',
@@ -218,6 +215,8 @@ const zh = {
 	placeholder_title: '运行情境以生成预测',
 	placeholder_body: '选择模型、调整房屋详情并提交表单，查看预计转售价与12个月趋势。',
 	prediction_success: '预测完成！向下滚动查看结果。',
+	form_reset: '表单已重置',
+	prediction_complete: '预测完成。预估价格：',
 	error_fetch: '获取预测失败，请重试。',
 	error_invalid_prediction: '服务器返回的价格无法显示，请尝试其他输入或模型。',
 	switch_language: '中文/English',
@@ -319,6 +318,6 @@ function flattenDictionary(
 flattenDictionary(en, '', flatDictionaries.en);
 flattenDictionary(zh, '', flatDictionaries.zh);
 
-function getValue(language: Language, key: string): string | undefined {
+export function getValue(language: Language, key: string): string | undefined {
 	return flatDictionaries[language][key];
 }

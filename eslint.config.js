@@ -45,7 +45,7 @@ export default [
 	},
 	...svelte.configs['flat/recommended'],
 	{
-		files: ['**/*.svelte'],
+		files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],
 		languageOptions: {
 			globals: {
 				...globals.browser,
