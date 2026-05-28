@@ -4,8 +4,11 @@ export function getStoredLanguage(): Language {
 	if (typeof window === 'undefined') {
 		return 'en';
 	}
-
-	return localStorage.getItem('lang') === 'zh' ? 'zh' : 'en';
+	try {
+		return localStorage.getItem('lang') === 'zh' ? 'zh' : 'en';
+	} catch {
+		return 'en';
+	}
 }
 
 export function persistLanguage(language: Language) {
