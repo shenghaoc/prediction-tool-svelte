@@ -44,43 +44,77 @@ const MAX_REQUESTS = 50; // Maximum requests per minute
 const WINDOW_MS = 60 * 1000; // 1 minute window
 const MAX_MAP_SIZE = 10000; // Prevent memory leak
 
-function isRateLimited(ip: string): boolean {
-	const now = Date.now();
+type RateLimitResult =
+	| { limited: false }
+	| { limited: true; retryAfterSecs: number };
 
-	// Prevent unbounded growth of the Map (memory leak protection)
-	if (rateLimitMap.size > MAX_MAP_SIZE) {
-		// Clear map to prevent OOM
-		rateLimitMap.clear();
+function evictRateLimitEntries(now: number): void {
+	if (rateLimitMap.size <= MAX_MAP_SIZE) {
+		return;
 	}
+
+	for (const [key, record] of rateLimitMap) {
+		if (now > record.resetTime) {
+			rateLimitMap.delete(key);
+		}
+	}
+
+	if (rateLimitMap.size > MAX_MAP_SIZE) {
+		const toDelete = [...rateLimitMap.keys()].slice(0, MAX_MAP_SIZE / 2);
+		for (const key of toDelete) {
+			rateLimitMap.delete(key);
+		}
+	}
+}
+
+function checkRateLimit(ip: string): RateLimitResult {
+	const now = Date.now();
+	evictRateLimitEntries(now);
 
 	const record = rateLimitMap.get(ip);
 
 	if (!record || now > record.resetTime) {
 		rateLimitMap.set(ip, { count: 1, resetTime: now + WINDOW_MS });
-		return false;
+		return { limited: false };
 	}
 
 	if (record.count >= MAX_REQUESTS) {
-		return true;
+		return {
+			limited: true,
+			retryAfterSecs: Math.max(1, Math.ceil((record.resetTime - now) / 1000))
+		};
 	}
 
 	record.count++;
-	return false;
+	return { limited: false };
+}
+
+function resolveClientIp(
+	request: Request,
+	getClientAddress: () => string
+): string | null {
+	try {
+		return getClientAddress();
+	} catch {
+		// Use Cloudflare connecting IP directly. Avoid x-forwarded-for which can be spoofed.
+		return request.headers.get('cf-connecting-ip');
+	}
 }
 
 export const POST: RequestHandler = async ({ request, platform, getClientAddress }) => {
 	// Add basic rate limiting to protect the D1 database
-	let ip: string;
-	try {
-		ip = getClientAddress();
-	} catch {
-		// Use Cloudflare connecting IP directly, fallback to a single bucket if missing.
-		// Avoid x-forwarded-for which can be easily spoofed by the client.
-		ip = request.headers.get('cf-connecting-ip') || 'unknown';
-	}
-
-	if (isRateLimited(ip)) {
-		return json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
+	const ip = resolveClientIp(request, getClientAddress);
+	if (ip) {
+		const rateLimit = checkRateLimit(ip);
+		if (rateLimit.limited) {
+			return json(
+				{ error: 'Too many requests. Please try again later.' },
+				{
+					status: 429,
+					headers: { 'Retry-After': String(rateLimit.retryAfterSecs) }
+				}
+			);
+		}
 	}
 
 	let requestBody: unknown;
