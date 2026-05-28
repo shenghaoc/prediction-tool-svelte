@@ -38,7 +38,91 @@ function roundToTwo(value: number): number {
 	return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
-export const POST: RequestHandler = async ({ request, platform }) => {
+// Simple in-memory rate limiter per-isolate for basic DoS protection
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const MAX_REQUESTS = 50; // Maximum requests per minute
+const WINDOW_MS = 60 * 1000; // 1 minute window
+const MAX_MAP_SIZE = 10000; // Prevent memory leak
+
+type RateLimitResult =
+	| { limited: false }
+	| { limited: true; retryAfterSecs: number };
+
+function evictRateLimitEntries(): void {
+	if (rateLimitMap.size <= MAX_MAP_SIZE) {
+		return;
+	}
+
+	const targetSize = Math.floor(MAX_MAP_SIZE / 2);
+	for (const key of rateLimitMap.keys()) {
+		if (rateLimitMap.size <= targetSize) {
+			break;
+		}
+		rateLimitMap.delete(key);
+	}
+}
+
+function checkRateLimit(ip: string): RateLimitResult {
+	const now = Date.now();
+	evictRateLimitEntries();
+
+	const record = rateLimitMap.get(ip);
+
+	if (!record || now > record.resetTime) {
+		rateLimitMap.delete(ip);
+		rateLimitMap.set(ip, { count: 1, resetTime: now + WINDOW_MS });
+		return { limited: false };
+	}
+
+	// Refresh insertion order so active IPs aren't evicted prematurely
+	rateLimitMap.delete(ip);
+
+	if (record.count >= MAX_REQUESTS) {
+		rateLimitMap.set(ip, record);
+		return {
+			limited: true,
+			retryAfterSecs: Math.max(1, Math.ceil((record.resetTime - now) / 1000))
+		};
+	}
+
+	record.count++;
+	rateLimitMap.set(ip, record);
+	return { limited: false };
+}
+
+function resolveClientIp(
+	request: Request,
+	getClientAddress: unknown
+): string | null {
+	if (typeof getClientAddress === 'function') {
+		try {
+			const ip = getClientAddress();
+			if (ip) return ip;
+		} catch {
+			// Fall through to header-based resolution
+		}
+	}
+	// Use Cloudflare connecting IP directly. Avoid x-forwarded-for which can be spoofed.
+	return request.headers.get('cf-connecting-ip');
+}
+
+export const POST: RequestHandler = async (event) => {
+	const { request, platform } = event;
+	// Add basic rate limiting to protect the D1 database
+	const ip = resolveClientIp(request, () => event.getClientAddress());
+	if (ip) {
+		const rateLimit = checkRateLimit(ip);
+		if (rateLimit.limited) {
+			return json(
+				{ error: 'Too many requests. Please try again later.' },
+				{
+					status: 429,
+					headers: { 'Retry-After': String(rateLimit.retryAfterSecs) }
+				}
+			);
+		}
+	}
+
 	let requestBody: unknown;
 	try {
 		requestBody = await request.json();
