@@ -60,8 +60,11 @@ function evictRateLimitEntries(now: number): void {
 	}
 
 	if (rateLimitMap.size > MAX_MAP_SIZE) {
-		const toDelete = [...rateLimitMap.keys()].slice(0, MAX_MAP_SIZE / 2);
-		for (const key of toDelete) {
+		const targetSize = Math.floor(MAX_MAP_SIZE / 2);
+		for (const key of rateLimitMap.keys()) {
+			if (rateLimitMap.size <= targetSize) {
+				break;
+			}
 			rateLimitMap.delete(key);
 		}
 	}
