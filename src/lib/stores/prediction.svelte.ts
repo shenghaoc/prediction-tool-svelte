@@ -37,13 +37,34 @@ function createSummary(form: FieldType): SummaryValues {
 	};
 }
 
+let persistTimeout: ReturnType<typeof setTimeout> | undefined;
+let latestForm: FieldType | undefined;
+
+if (browser) {
+	window.addEventListener('beforeunload', () => {
+		if (persistTimeout && latestForm) {
+			clearTimeout(persistTimeout);
+			try {
+				localStorage.setItem('form', JSON.stringify(latestForm));
+			} catch {
+				// Ignored before unload
+			}
+		}
+	});
+}
+
 function persistForm(form: FieldType) {
 	if (!browser) return;
-	try {
-		localStorage.setItem('form', JSON.stringify(form));
-	} catch {
-		// Storage unavailable or blocked
-	}
+	latestForm = form;
+	clearTimeout(persistTimeout);
+	persistTimeout = setTimeout(() => {
+		try {
+			localStorage.setItem('form', JSON.stringify(form));
+			persistTimeout = undefined;
+		} catch {
+			// Storage unavailable or blocked
+		}
+	}, 300);
 }
 
 function applyTheme(darkMode: boolean) {
@@ -195,6 +216,10 @@ export class PredictionStore {
 	}
 
 	reset() {
+		clearTimeout(persistTimeout);
+		persistTimeout = undefined;
+		latestForm = undefined;
+
 		if (browser) {
 			try {
 				localStorage.removeItem('form');

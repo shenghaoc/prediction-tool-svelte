@@ -106,11 +106,15 @@
 		})
 	);
 
+	let cachedRect: DOMRect | null = null;
+
 	function setActiveIndexFromPointer(event: PointerEvent) {
 		if (!svg || points.length === 0) return;
 
-		const rect = svg.getBoundingClientRect();
-		const x = ((event.clientX - rect.left) / rect.width) * width;
+		if (!cachedRect) {
+			cachedRect = svg.getBoundingClientRect();
+		}
+		const x = ((event.clientX - cachedRect.left) / cachedRect.width) * width;
 
 		let nearestIndex = 0;
 		let nearestDistance = Number.POSITIVE_INFINITY;
@@ -127,6 +131,7 @@
 	}
 
 	function clearActiveIndex() {
+		cachedRect = null;
 		activeIndex = -1;
 	}
 </script>

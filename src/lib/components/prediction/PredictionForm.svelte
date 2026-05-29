@@ -68,6 +68,10 @@
 		TOWNS.map((town) => ({ value: town, label: i18n.t(`towns.${town}`) }))
 	);
 
+	const mlModelsOptions = $derived(labeledOptions(ML_MODELS, 'ml_models'));
+	const storeyRangesOptions = $derived(labeledOptions(STOREY_RANGES, 'storey_ranges'));
+	const flatModelsOptions = $derived(labeledOptions(FLAT_MODELS, 'flat_models'));
+
 	const leaseYearOptions = Array.from(
 		{ length: MAX_LEASE_COMMENCE_YEAR - MIN_LEASE_COMMENCE_YEAR + 1 },
 		(_, index) => {
@@ -85,7 +89,7 @@
 				<FormSelect
 					id="input-ml_model"
 					value={form.ml_model}
-					options={labeledOptions(ML_MODELS, 'ml_models')}
+					options={mlModelsOptions}
 					placeholder={i18n.t('select_ml_model')}
 					onchange={(value) => handleChange('ml_model', value as FieldType['ml_model'])}
 				/>
@@ -115,7 +119,7 @@
 					<FormSelect
 						id="input-storey_range"
 						value={form.storey_range}
-						options={labeledOptions(STOREY_RANGES, 'storey_ranges')}
+						options={storeyRangesOptions}
 						placeholder={i18n.t('select_storey_range')}
 						onchange={(value) => handleChange('storey_range', value as FieldType['storey_range'])}
 					/>
@@ -129,7 +133,7 @@
 					<FormSelect
 						id="input-flat_model"
 						value={form.flat_model}
-						options={labeledOptions(FLAT_MODELS, 'flat_models')}
+						options={flatModelsOptions}
 						placeholder={i18n.t('select_flat_model')}
 						onchange={(value) => handleChange('flat_model', value as FieldType['flat_model'])}
 					/>
