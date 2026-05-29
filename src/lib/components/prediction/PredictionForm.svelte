@@ -34,12 +34,10 @@
 
 	let isMac = $state(false);
 	onMount(() => {
-		const platform =
-			'userAgentData' in navigator &&
-			navigator.userAgentData &&
-			typeof navigator.userAgentData.platform === 'string'
-				? navigator.userAgentData.platform
-				: navigator.platform;
+		const uaData = 'userAgentData' in navigator
+			? (navigator.userAgentData as { platform?: string } | null | undefined)
+			: undefined;
+		const platform = typeof uaData?.platform === 'string' ? uaData.platform : navigator.platform;
 		isMac = platform.startsWith('Mac');
 	});
 
