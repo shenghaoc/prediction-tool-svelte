@@ -37,13 +37,30 @@ function createSummary(form: FieldType): SummaryValues {
 	};
 }
 
-let persistTimeout: ReturnType<typeof setTimeout>;
+let persistTimeout: ReturnType<typeof setTimeout> | undefined;
+let latestForm: FieldType | undefined;
+
+if (browser) {
+	window.addEventListener('beforeunload', () => {
+		if (persistTimeout && latestForm) {
+			clearTimeout(persistTimeout);
+			try {
+				localStorage.setItem('form', JSON.stringify(latestForm));
+			} catch {
+				// Ignored before unload
+			}
+		}
+	});
+}
+
 function persistForm(form: FieldType) {
 	if (!browser) return;
+	latestForm = form;
 	clearTimeout(persistTimeout);
 	persistTimeout = setTimeout(() => {
 		try {
 			localStorage.setItem('form', JSON.stringify(form));
+			persistTimeout = undefined;
 		} catch {
 			// Storage unavailable or blocked
 		}
@@ -170,19 +187,6 @@ export class PredictionStore {
 
 		this.darkMode = readInitialDarkMode();
 		applyTheme(this.darkMode);
-
-		if (browser) {
-			window.addEventListener('beforeunload', () => {
-				if (persistTimeout) {
-					clearTimeout(persistTimeout);
-					try {
-						localStorage.setItem('form', JSON.stringify(this.form));
-					} catch {
-						// Ignored before unload
-					}
-				}
-			});
-		}
 
 		try {
 			const savedForm = localStorage.getItem('form');

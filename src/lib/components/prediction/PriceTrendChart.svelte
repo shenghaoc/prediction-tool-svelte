@@ -106,12 +106,16 @@
 		})
 	);
 
+	let cachedRect: DOMRect | null = null;
+
 	function setActiveIndexFromPointer(event: PointerEvent) {
 		if (!svg || points.length === 0) return;
 
-		// Use pointer offset to avoid Layout Thrashing from getBoundingClientRect
-		const rectWidth = svg.clientWidth || svg.getBoundingClientRect().width;
-		const x = (event.offsetX / rectWidth) * width;
+		if (!cachedRect) {
+			cachedRect = svg.getBoundingClientRect();
+			svg.addEventListener('pointerleave', () => { cachedRect = null; }, { once: true });
+		}
+		const x = ((event.clientX - cachedRect.left) / cachedRect.width) * width;
 
 		let nearestIndex = 0;
 		let nearestDistance = Number.POSITIVE_INFINITY;
