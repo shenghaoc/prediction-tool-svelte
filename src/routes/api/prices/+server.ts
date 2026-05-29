@@ -51,6 +51,17 @@ function evictRateLimitEntries(): void {
 		return;
 	}
 
+	const now = Date.now();
+	for (const [key, record] of rateLimitMap.entries()) {
+		if (now > record.resetTime) {
+			rateLimitMap.delete(key);
+		}
+	}
+
+	if (rateLimitMap.size <= MAX_MAP_SIZE) {
+		return;
+	}
+
 	const targetSize = Math.floor(MAX_MAP_SIZE / 2);
 	for (const key of rateLimitMap.keys()) {
 		if (rateLimitMap.size <= targetSize) {
