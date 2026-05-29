@@ -113,7 +113,6 @@
 
 		if (!cachedRect) {
 			cachedRect = svg.getBoundingClientRect();
-			svg.addEventListener('pointerleave', () => { cachedRect = null; }, { once: true });
 		}
 		const x = ((event.clientX - cachedRect.left) / cachedRect.width) * width;
 
@@ -132,6 +131,7 @@
 	}
 
 	function clearActiveIndex() {
+		cachedRect = null;
 		activeIndex = -1;
 	}
 </script>

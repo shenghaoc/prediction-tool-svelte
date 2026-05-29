@@ -216,6 +216,10 @@ export class PredictionStore {
 	}
 
 	reset() {
+		clearTimeout(persistTimeout);
+		persistTimeout = undefined;
+		latestForm = undefined;
+
 		if (browser) {
 			try {
 				localStorage.removeItem('form');
