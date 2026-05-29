@@ -19,7 +19,6 @@
 	const uid = $props.id();
 
 	const width = 760;
-	let svg: SVGSVGElement | null = $state(null);
 	let activeIndex = $state(-1);
 	let windowWidth = $state(0);
 
@@ -106,15 +105,14 @@
 		})
 	);
 
-	let cachedRect: DOMRect | null = null;
-
 	function setActiveIndexFromPointer(event: PointerEvent) {
-		if (!svg || points.length === 0) return;
+		if (points.length === 0) return;
 
-		if (!cachedRect) {
-			cachedRect = svg.getBoundingClientRect();
-		}
-		const x = ((event.clientX - cachedRect.left) / cachedRect.width) * width;
+		// ⚡ Bolt Optimization: Use offsetX to avoid layout thrashing and stale scroll
+		// offsets that happen with getBoundingClientRect(). Requires the container
+		// to be the sole pointer-events target.
+		const currentTarget = event.currentTarget as HTMLElement;
+		const x = (event.offsetX / currentTarget.clientWidth) * width;
 
 		let nearestIndex = 0;
 		let nearestDistance = Number.POSITIVE_INFINITY;
@@ -131,23 +129,24 @@
 	}
 
 	function clearActiveIndex() {
-		cachedRect = null;
 		activeIndex = -1;
 	}
 </script>
 
 <svelte:window bind:innerWidth={windowWidth} />
 
-<div class="relative w-full">
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div
+	class="relative w-full"
+	onpointermove={setActiveIndexFromPointer}
+	onpointerleave={clearActiveIndex}
+	style="cursor: crosshair"
+>
 	<svg
-		bind:this={svg}
-		class="block h-auto w-full"
+		class="pointer-events-none block h-auto w-full"
 		viewBox={`0 0 ${width} ${height}`}
 		role="img"
 		aria-label={ariaLabel}
-		onpointermove={setActiveIndexFromPointer}
-		onpointerleave={clearActiveIndex}
-		style="cursor: crosshair"
 	>
 		<defs>
 			<linearGradient id={`prediction-area-gradient-${uid}`} x1="0" y1="0" x2="0" y2="1">
@@ -270,7 +269,7 @@
 	</svg>
 
 	{#if activePoint}
-		<div class="chart-tooltip visible" style={activeTooltipStyle}>
+		<div class="chart-tooltip visible pointer-events-none" style={activeTooltipStyle}>
 			<div class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
 				{activePoint.label}
 			</div>

@@ -73,6 +73,10 @@
 	]);
 
 	const deltaPositive = $derived(chartStats.deltaValue >= 0);
+
+	// ⚡ Bolt Optimization: Hoist static array out of reactive block to prevent
+	// re-allocation on every render.
+	const SKELETON_HEIGHTS = [0.35, 0.55, 0.85, 0.45, 0.7, 0.3];
 </script>
 
 <section aria-labelledby="prediction-results-heading" aria-busy={loading}>
@@ -230,7 +234,7 @@
 						class="flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-border/70 bg-gradient-to-b from-muted/30 to-transparent px-4 py-12 text-center"
 					>
 						<div class="empty-float flex items-end gap-1.5 opacity-40" aria-hidden="true">
-							{#each [0.35, 0.55, 0.85, 0.45, 0.7, 0.3] as height, index (index)}
+							{#each SKELETON_HEIGHTS as height, index (index)}
 								<div
 									class="w-2.5 rounded-sm bg-primary"
 									style={`height: ${height * 48}px; opacity: ${1 - index * 0.08}`}
