@@ -44,11 +44,20 @@ const MAX_REQUESTS = 50; // Maximum requests per minute
 const WINDOW_MS = 60 * 1000; // 1 minute window
 const MAX_MAP_SIZE = 10000; // Prevent memory leak
 
-type RateLimitResult =
-	| { limited: false }
-	| { limited: true; retryAfterSecs: number };
+type RateLimitResult = { limited: false } | { limited: true; retryAfterSecs: number };
 
 function evictRateLimitEntries(): void {
+	if (rateLimitMap.size <= MAX_MAP_SIZE) {
+		return;
+	}
+
+	const now = Date.now();
+	for (const [key, record] of rateLimitMap.entries()) {
+		if (now > record.resetTime) {
+			rateLimitMap.delete(key);
+		}
+	}
+
 	if (rateLimitMap.size <= MAX_MAP_SIZE) {
 		return;
 	}
@@ -90,10 +99,7 @@ function checkRateLimit(ip: string): RateLimitResult {
 	return { limited: false };
 }
 
-function resolveClientIp(
-	request: Request,
-	getClientAddress: unknown
-): string | null {
+function resolveClientIp(request: Request, getClientAddress: unknown): string | null {
 	if (typeof getClientAddress === 'function') {
 		try {
 			const ip = getClientAddress();
@@ -109,18 +115,18 @@ function resolveClientIp(
 export const POST: RequestHandler = async (event) => {
 	const { request, platform } = event;
 	// Add basic rate limiting to protect the D1 database
-	const ip = resolveClientIp(request, () => event.getClientAddress());
-	if (ip) {
-		const rateLimit = checkRateLimit(ip);
-		if (rateLimit.limited) {
-			return json(
-				{ error: 'Too many requests. Please try again later.' },
-				{
-					status: 429,
-					headers: { 'Retry-After': String(rateLimit.retryAfterSecs) }
-				}
-			);
-		}
+	// Fallback to 'unknown' IP to ensure all clients without headers share a limit bucket,
+	// preventing attackers from bypassing limits by stripping headers
+	const ip = resolveClientIp(request, () => event.getClientAddress()) || 'unknown';
+	const rateLimit = checkRateLimit(ip);
+	if (rateLimit.limited) {
+		return json(
+			{ error: 'Too many requests. Please try again later.' },
+			{
+				status: 429,
+				headers: { 'Retry-After': String(rateLimit.retryAfterSecs) }
+			}
+		);
 	}
 
 	let requestBody: unknown;
