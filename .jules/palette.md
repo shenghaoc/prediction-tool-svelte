@@ -7,3 +7,6 @@
 
 **Learning:** This app already implements keyboard shortcuts for submitting the form (`Ctrl/Cmd + Enter`) and resetting the form (`Esc`), but users couldn't see them. Adding small visual hints to the buttons makes these powerful shortcuts discoverable.
 **Action:** When an app implements keyboard shortcuts, ensure they are visually surfaced in the UI (e.g., using `<kbd>` tags inside action buttons) so users know they exist.
+## 2026-05-29 - Missing feedback on destructive forms actions
+**Learning:** Form reset actions can be destructive. While a keyboard shortcut correctly resets the form, failing to trigger a confirmation toast or screen reader announcement for the physical button leaves users without adequate feedback. In addition, allowing a reset action while the form is loading can cause unintended side effects.
+**Action:** Always ensure physical buttons and keyboard shortcuts trigger identical feedback pathways (e.g., both trigger toast notifications and screen reader announcements), and disable destructive action buttons while async tasks are running.

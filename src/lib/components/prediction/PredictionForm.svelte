@@ -34,10 +34,12 @@
 
 	let isMac = $state(false);
 	onMount(() => {
-		const uaData = 'userAgentData' in navigator
-			? (navigator.userAgentData as { platform?: string } | null | undefined)
-			: undefined;
-		const platform = typeof uaData?.platform === 'string' ? uaData.platform : (navigator.platform || '');
+		const uaData =
+			'userAgentData' in navigator
+				? (navigator.userAgentData as { platform?: string } | null | undefined)
+				: undefined;
+		const platform =
+			typeof uaData?.platform === 'string' ? uaData.platform : navigator.platform || '';
 		isMac = platform.startsWith('Mac');
 	});
 
@@ -200,6 +202,7 @@
 				variant="outline"
 				size="lg"
 				class="w-full tracking-normal normal-case transition-all duration-200 hover:bg-muted/80"
+				disabled={loading}
 				onclick={() => onreset?.()}
 			>
 				<span class="flex items-center gap-2">

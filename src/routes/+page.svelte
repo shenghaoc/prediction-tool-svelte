@@ -291,7 +291,11 @@
 								fieldErrors={prediction.fieldErrors}
 								loading={prediction.loading}
 								onsubmit={handleSubmit}
-								onreset={() => prediction.reset()}
+								onreset={() => {
+									prediction.reset();
+									toast.success(i18n.t('form_reset'), { id: 'prediction-reset' });
+									announce(i18n.t('form_reset'));
+								}}
 								onchange={handleFormChange}
 							/>
 							{#if prediction.loading}
