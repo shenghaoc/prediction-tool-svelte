@@ -1,6 +1,10 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
+	import { fade, fly } from 'svelte/transition';
 	import { toast } from 'svelte-sonner';
+	import { superForm } from 'sveltekit-superforms';
+	import { zod4Client } from 'sveltekit-superforms/adapters';
 	import Home from '@lucide/svelte/icons/home';
 	import Layers from '@lucide/svelte/icons/layers';
 	import MapPin from '@lucide/svelte/icons/map-pin';
@@ -11,7 +15,6 @@
 	import { applyDocumentLanguage, type Language } from '$lib/i18n';
 	import { getI18nContext } from '$lib/i18n.svelte';
 	import { FLAT_MODELS, ML_MODELS, TOWNS } from '$lib/lists';
-	import type { FieldType } from '$lib/prediction';
 	import PredictionForm from '$lib/components/prediction/PredictionForm.svelte';
 	import PredictionResults from '$lib/components/prediction/PredictionResults.svelte';
 	import StatTile from '$lib/components/prediction/StatTile.svelte';
@@ -22,15 +25,68 @@
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
 	import { cn } from '$lib/utils.js';
+	import { clearPersistedForm, persistForm, readPersistedForm } from '$lib/form-persist';
+	import { defaultTrendData } from '$lib/prediction';
+	import {
+		predictionDefaults,
+		predictionSchema,
+		type PredictionFormData
+	} from '$lib/prediction-schema';
+	import type { PredictionActionMessage } from '$lib/prediction-action';
+	import type { PageData } from './$types';
+
+	let { data }: { data: PageData } = $props();
 
 	const i18n = getI18nContext();
 	const prediction = getPredictionContext();
+
+	const superform = superForm<PredictionFormData>(data.form, {
+		validators: zod4Client(predictionSchema),
+		resetForm: false,
+		onUpdated({ form }) {
+			const actionMessage = form.message as PredictionActionMessage | undefined;
+			if (!actionMessage) return;
+
+			if (actionMessage.type === 'success') {
+				toast.success(i18n.t('prediction_success'), { id: 'prediction' });
+				const price = `$${Math.round(actionMessage.output).toLocaleString()}`;
+				announce(`${i18n.t('prediction_complete')}${price}`, 'assertive');
+				return;
+			}
+
+			toast.error(resolveActionError(actionMessage.text));
+		}
+	});
+
+	const { form, message, submitting, reset } = superform;
 
 	let mounted = $state(false);
 	let resultsEl: HTMLDivElement | null = $state(null);
 	let liveMessage = $state('');
 	let livePriority = $state<'polite' | 'assertive'>('polite');
 	let announceTimer: ReturnType<typeof setTimeout> | null = null;
+
+	const actionMessage = $derived($message as PredictionActionMessage | undefined);
+	const hasPrediction = $derived(actionMessage?.type === 'success');
+	const trendData = $derived(
+		actionMessage?.type === 'success' ? actionMessage.trendData : defaultTrendData()
+	);
+	const output = $derived(actionMessage?.type === 'success' ? actionMessage.output : 0);
+	const summaryValues = $derived<import('$lib/prediction').SummaryValues>({
+		ml_model: $form.ml_model,
+		town: $form.town,
+		lease_commence_date: $form.lease_commence_date
+	});
+	const errorMessage = $derived(
+		actionMessage?.type === 'error' ? resolveActionError(actionMessage.text) : ''
+	);
+	const loading = $derived($submitting);
+
+	function resolveActionError(text: string) {
+		const translated = i18n.t(text);
+		if (translated !== text) return translated;
+		return text;
+	}
 
 	function announce(message: string, priority: 'polite' | 'assertive' = 'polite') {
 		if (announceTimer) clearTimeout(announceTimer);
@@ -71,8 +127,13 @@
 	});
 
 	$effect(() => {
+		if (!mounted || !browser) return;
+		persistForm($form);
+	});
+
+	$effect(() => {
 		if (!mounted) return;
-		if (prediction.hasPrediction) {
+		if (hasPrediction) {
 			resultsEl?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 			setTimeout(() => {
 				resultsEl?.focus({ preventScroll: true });
@@ -82,6 +143,10 @@
 
 	onMount(() => {
 		prediction.init();
+		const saved = readPersistedForm();
+		if (saved) {
+			$form = saved;
+		}
 		mounted = true;
 		document.documentElement.classList.add('theme-ready');
 
@@ -91,10 +156,9 @@
 	});
 
 	function resetForm() {
-		// Mirror the disabled Reset button: don't reset mid-request, otherwise the
-		// in-flight prediction resolves later and overwrites the cleared form.
-		if (prediction.loading) return;
-		prediction.reset();
+		if (loading) return;
+		reset({ data: { ...predictionDefaults } });
+		clearPersistedForm();
 		toast.success(i18n.t('form_reset'), { id: 'prediction-reset' });
 		announce(i18n.t('form_reset'));
 	}
@@ -102,7 +166,10 @@
 	function handleKeydown(e: KeyboardEvent) {
 		if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
 			e.preventDefault();
-			if (!prediction.loading) handleSubmit();
+			if (!loading) {
+				announce(i18n.t('predicting'), 'assertive');
+				(document.getElementById('prediction-form') as HTMLFormElement | null)?.requestSubmit();
+			}
 		}
 		if (e.key === 'Escape' && document.activeElement?.closest?.('form')) {
 			resetForm();
@@ -112,28 +179,6 @@
 	function toggleLang() {
 		const next: Language = i18n.lang === 'en' ? 'zh' : 'en';
 		i18n.setLanguage(next);
-	}
-
-	function handleFormChange(patch: Partial<FieldType>) {
-		for (const key of Object.keys(patch) as (keyof FieldType)[]) {
-			const value = patch[key];
-			if (value !== undefined) {
-				prediction.updateField(key, value);
-			}
-		}
-	}
-
-	async function handleSubmit() {
-		announce(i18n.t('predicting'), 'assertive');
-		await prediction.submit();
-		if (prediction.hasPrediction && !prediction.errorMessage) {
-			toast.success(i18n.t('prediction_success'), { id: 'prediction' });
-			const price = `$${Math.round(prediction.output).toLocaleString()}`;
-			announce(`${i18n.t('prediction_complete')}${price}`, 'assertive');
-		}
-		if (prediction.errorMessage) {
-			toast.error(prediction.errorMessage);
-		}
 	}
 </script>
 
@@ -156,7 +201,6 @@
 	</main>
 {:else}
 	<main class="min-h-screen px-6 pt-5 pb-12 max-sm:px-3 max-sm:pb-8">
-		<!-- Skip navigation -->
 		<a
 			href="#input-ml_model"
 			class="fixed -left-[9999px] top-auto z-[100] h-px w-px overflow-hidden focus:fixed focus:left-4 focus:top-4 focus:h-auto focus:w-auto focus:overflow-visible focus:rounded-lg focus:bg-primary focus:px-5 focus:py-2.5 focus:text-sm focus:font-bold focus:text-primary-foreground focus:no-underline focus:shadow-lg"
@@ -164,7 +208,6 @@
 			Skip to form
 		</a>
 
-		<!-- Live region for screen reader announcements -->
 		<div
 			role="status"
 			aria-live={livePriority}
@@ -286,29 +329,24 @@
 							</Card.Title>
 						</Card.Header>
 						<Card.Content class="px-6">
-							{#if prediction.errorMessage && !prediction.loading}
+							{#if errorMessage && !loading}
 								<div
 									class="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive"
 									role="alert"
+									transition:fade={{ duration: 200 }}
 								>
-									{prediction.errorMessage}
+									{errorMessage}
 								</div>
 							{/if}
-							<PredictionForm
-								form={prediction.form}
-								fieldErrors={prediction.fieldErrors}
-								loading={prediction.loading}
-								onsubmit={handleSubmit}
-								onreset={resetForm}
-								onchange={handleFormChange}
-							/>
-							{#if prediction.loading}
+							<PredictionForm {superform} {loading} onreset={resetForm} />
+							{#if loading}
 								<div
 									class="progress-track mt-4"
 									role="progressbar"
 									aria-label={i18n.t('predicting')}
 									aria-valuemin={0}
 									aria-valuemax={100}
+									transition:fade
 								>
 									<div class="progress-bar" style="width: 60%"></div>
 								</div>
@@ -324,13 +362,15 @@
 					class="outline-none"
 					aria-label={i18n.t('predicted_price')}
 				>
-					<PredictionResults
-						output={prediction.output}
-						hasPrediction={prediction.hasPrediction}
-						summaryValues={prediction.summaryValues}
-						trendData={prediction.trendData}
-						loading={prediction.loading}
-					/>
+					{#if hasPrediction}
+						<div in:fly={{ y: 16, duration: 320 }}>
+							<PredictionResults {output} {hasPrediction} {summaryValues} {trendData} {loading} />
+						</div>
+					{:else}
+						<div in:fade={{ duration: 200 }}>
+							<PredictionResults {output} {hasPrediction} {summaryValues} {trendData} {loading} />
+						</div>
+					{/if}
 				</div>
 			</div>
 		</div>

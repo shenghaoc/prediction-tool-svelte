@@ -13,7 +13,7 @@
 		options: readonly FormSelectOption<T>[];
 		placeholder?: string;
 		disabled?: boolean;
-		onchange?: (value: T) => void;
+		onchange?: (_value: T) => void;
 	};
 
 	let { id, value, options, placeholder = '', disabled = false, onchange }: Props = $props();

@@ -8,8 +8,8 @@
 
 	let { children } = $props();
 
-	const i18n = setI18nContext(new I18n(browser ? getStoredLanguage() : 'en'));
-	const prediction = setPredictionContext(new PredictionStore(i18n));
+	setI18nContext(new I18n(browser ? getStoredLanguage() : 'en'));
+	const prediction = setPredictionContext(new PredictionStore());
 
 	const toasterTheme = $derived(prediction.darkMode ? 'dark' : 'light');
 </script>

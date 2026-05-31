@@ -54,6 +54,22 @@ export default [
 			parserOptions: {
 				parser: tsParser
 			}
+		},
+		rules: {
+			'no-unused-vars': [
+				'error',
+				{
+					argsIgnorePattern: '^_',
+					varsIgnorePattern: '^_',
+					caughtErrorsIgnorePattern: '^_'
+				}
+			]
+		}
+	},
+	{
+		files: ['src/lib/components/ui/button/button.svelte'],
+		rules: {
+			'svelte/no-navigation-without-resolve': 'off'
 		}
 	},
 	...svelte.configs['flat/prettier']

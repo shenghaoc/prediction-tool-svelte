@@ -64,6 +64,7 @@ const en = {
 	enter_floor_area: 'Enter floor area',
 	lease_commence_date: 'Lease Commence Date',
 	missing_lease_commence_date: 'Missing Lease Commence Date!',
+	lease_year_range: 'Lease year must be between 1960 and 2022',
 	select_year: 'Select year',
 	get_prediction: 'Get prediction',
 	predicting: 'Predicting…',
@@ -197,6 +198,7 @@ const zh = {
 	enter_floor_area: '输入面积',
 	lease_commence_date: '租约开始年份',
 	missing_lease_commence_date: '请选择租约开始年份！',
+	lease_year_range: '租约年份必须在1960到2022之间',
 	select_year: '选择年份',
 	get_prediction: '获取预测',
 	predicting: '预测中…',
@@ -299,18 +301,18 @@ const zh = {
 const flatDictionaries: Record<Language, Record<string, string>> = { en: {}, zh: {} };
 
 function flattenDictionary(
-	obj: Record<string, any>,
+	obj: Record<string, unknown>,
 	prefix: string,
 	target: Record<string, string>
 ) {
 	for (const key of Object.keys(obj)) {
-		const value = obj[key];
+		const value = obj[key] as unknown;
 		const newKey = prefix ? `${prefix}.${key}` : key;
 
 		if (typeof value === 'string') {
 			target[newKey] = value;
 		} else if (value && typeof value === 'object') {
-			flattenDictionary(value, newKey, target);
+			flattenDictionary(value as Record<string, unknown>, newKey, target);
 		}
 	}
 }

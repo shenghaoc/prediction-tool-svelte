@@ -13,7 +13,7 @@
 		id: string;
 		options: ComboboxOption[];
 		value: string;
-		onchange: (value: string) => void;
+		onchange: (_value: string) => void;
 		placeholder?: string;
 		ariaLabel: string;
 		class?: string;
