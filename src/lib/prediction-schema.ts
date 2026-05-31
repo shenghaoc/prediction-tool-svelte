@@ -10,7 +10,8 @@ export const MAX_LEASE_COMMENCE_YEAR = 2022;
 function coercedIntegerField(missingKey: string, min: number, max: number, rangeKey: string) {
 	return z.preprocess(
 		(val) => {
-			if (val === '' || val === null || val === undefined) return undefined;
+			if (typeof val !== 'string' && typeof val !== 'number') return val;
+			if (val === '') return undefined;
 			const num = Number(val);
 			return Number.isNaN(num) ? undefined : num;
 		},

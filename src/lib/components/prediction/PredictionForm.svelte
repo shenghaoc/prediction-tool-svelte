@@ -74,6 +74,7 @@
 </script>
 
 <form method="POST" action="?/predict" use:enhance>
+	{#if !browser}
 	<noscript>
 		<Field.Group class="gap-4">
 			<label>
@@ -131,6 +132,7 @@
 			</label>
 		</Field.Group>
 	</noscript>
+	{/if}
 
 	{#if browser}
 		<input type="hidden" name="ml_model" value={$form.ml_model} />
