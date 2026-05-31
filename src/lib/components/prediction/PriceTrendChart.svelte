@@ -21,6 +21,7 @@
 	const width = 760;
 	let activeIndex = $state(-1);
 	let windowWidth = $state(0);
+	let containerWidth = $state(0);
 
 	const isMobile = $derived(windowWidth > 0 && windowWidth < 900);
 	const height = $derived(isMobile ? 280 : 360);
@@ -91,7 +92,9 @@
 
 	const activePoint = $derived(activeIndex >= 0 ? points[activeIndex] : null);
 	const activeTooltipStyle = $derived(
-		activePoint ? `left:${((activePoint.x / width) * 100).toFixed(2)}%;top:${activePoint.y}px;` : ''
+		activePoint
+			? `left:${((activePoint.x / width) * 100).toFixed(2)}%;top:${((activePoint.y / height) * 100).toFixed(2)}%;`
+			: ''
 	);
 
 	const peakIdx = $derived(values.indexOf(maxValue));
@@ -109,10 +112,10 @@
 		if (points.length === 0) return;
 
 		// ⚡ Bolt Optimization: Use offsetX to avoid layout thrashing and stale scroll
-		// offsets that happen with getBoundingClientRect(). Requires the container
-		// to be the sole pointer-events target.
-		const currentTarget = event.currentTarget as HTMLElement;
-		const x = (event.offsetX / currentTarget.clientWidth) * width;
+		// offsets that happen with getBoundingClientRect(). The container width is
+		// tracked reactively via bind:clientWidth (ResizeObserver), so we never read
+		// the DOM synchronously during this high-frequency pointer handler.
+		const x = (event.offsetX / (containerWidth || 1)) * width;
 
 		let nearestIndex = 0;
 		let nearestDistance = Number.POSITIVE_INFINITY;
@@ -138,6 +141,7 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
 	class="relative w-full"
+	bind:clientWidth={containerWidth}
 	onpointermove={setActiveIndexFromPointer}
 	onpointerleave={clearActiveIndex}
 	style="cursor: crosshair"
