@@ -6,6 +6,7 @@ import { predictionDefaults } from '$lib/prediction-schema';
 const STORAGE_KEY = 'form';
 
 let persistTimeout: ReturnType<typeof setTimeout> | undefined;
+let latestForm: PredictionFormData | undefined;
 
 export function readPersistedForm(): PredictionFormData | null {
 	if (!browser) return null;
@@ -36,10 +37,12 @@ export function readPersistedForm(): PredictionFormData | null {
 export function persistForm(form: PredictionFormData) {
 	if (!browser) return;
 
+	latestForm = form;
 	clearTimeout(persistTimeout);
 	persistTimeout = setTimeout(() => {
 		try {
 			localStorage.setItem(STORAGE_KEY, JSON.stringify(form));
+			persistTimeout = undefined;
 		} catch {
 			// Storage unavailable or blocked
 		}
@@ -49,6 +52,8 @@ export function persistForm(form: PredictionFormData) {
 export function clearPersistedForm() {
 	if (!browser) return;
 	clearTimeout(persistTimeout);
+	persistTimeout = undefined;
+	latestForm = undefined;
 	try {
 		localStorage.removeItem(STORAGE_KEY);
 	} catch {
@@ -58,8 +63,13 @@ export function clearPersistedForm() {
 
 if (browser) {
 	window.addEventListener('beforeunload', () => {
-		if (persistTimeout) {
-			clearTimeout(persistTimeout);
+		if (!persistTimeout || !latestForm) return;
+		clearTimeout(persistTimeout);
+		persistTimeout = undefined;
+		try {
+			localStorage.setItem(STORAGE_KEY, JSON.stringify(latestForm));
+		} catch {
+			// Storage unavailable or blocked
 		}
 	});
 }

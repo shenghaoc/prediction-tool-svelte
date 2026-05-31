@@ -13,6 +13,7 @@ const REQUIRED_FIELD_KEYS: Partial<Record<FieldName, string>> = {
 
 const KNOWN_MESSAGE_KEYS = new Set([
 	'floor_area_range',
+	'lease_year_range',
 	'missing_floor_area',
 	'missing_lease_commence_date',
 	'choose_ml_model',

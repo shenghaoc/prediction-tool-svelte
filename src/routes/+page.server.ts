@@ -35,6 +35,7 @@ export const actions: Actions = {
 				}
 				return message(form, e2eMessage);
 			}
+			console.warn('Unrecognized prediction mock mode; falling through to D1', { e2eMode });
 		}
 
 		const db = platform?.env?.DB;

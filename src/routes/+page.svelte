@@ -66,28 +66,19 @@
 	let livePriority = $state<'polite' | 'assertive'>('polite');
 	let announceTimer: ReturnType<typeof setTimeout> | null = null;
 
-	const hasPrediction = $derived(
-		($message as PredictionActionMessage | undefined)?.type === 'success'
-	);
+	const actionMessage = $derived($message as PredictionActionMessage | undefined);
+	const hasPrediction = $derived(actionMessage?.type === 'success');
 	const trendData = $derived(
-		($message as PredictionActionMessage | undefined)?.type === 'success'
-			? ($message as PredictionActionMessage & { type: 'success' }).trendData
-			: defaultTrendData()
+		actionMessage?.type === 'success' ? actionMessage.trendData : defaultTrendData()
 	);
-	const output = $derived(
-		($message as PredictionActionMessage | undefined)?.type === 'success'
-			? ($message as PredictionActionMessage & { type: 'success' }).output
-			: 0
-	);
+	const output = $derived(actionMessage?.type === 'success' ? actionMessage.output : 0);
 	const summaryValues = $derived<import('$lib/prediction').SummaryValues>({
 		ml_model: $form.ml_model,
 		town: $form.town,
 		lease_commence_date: $form.lease_commence_date
 	});
 	const errorMessage = $derived(
-		($message as PredictionActionMessage | undefined)?.type === 'error'
-			? resolveActionError(($message as PredictionActionMessage & { type: 'error' }).text)
-			: ''
+		actionMessage?.type === 'error' ? resolveActionError(actionMessage.text) : ''
 	);
 	const loading = $derived($submitting);
 

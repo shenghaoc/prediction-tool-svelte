@@ -37,7 +37,7 @@ export const predictionSchema = z.object({
 		'missing_lease_commence_date',
 		MIN_LEASE_COMMENCE_YEAR,
 		MAX_LEASE_COMMENCE_YEAR,
-		'missing_lease_commence_date'
+		'lease_year_range'
 	)
 });
 

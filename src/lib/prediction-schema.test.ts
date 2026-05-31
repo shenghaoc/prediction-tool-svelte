@@ -35,6 +35,20 @@ describe('predictionSchema', () => {
 		}
 	});
 
+	it('reports lease year range for out-of-bound years', () => {
+		const result = predictionSchema.safeParse({
+			...predictionDefaults,
+			lease_commence_date: 1950
+		});
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const leaseIssue = result.error.issues.find(
+				(issue) => issue.path[0] === 'lease_commence_date'
+			);
+			expect(leaseIssue?.message).toBe('lease_year_range');
+		}
+	});
+
 	it('coerces string numerics from form posts', () => {
 		const result = predictionSchema.safeParse({
 			...predictionDefaults,
