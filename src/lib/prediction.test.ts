@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	defaultTrendData,
 	formatCurrencyTick,
+	formatMonthLabel,
 	normalizePrice,
 	normalizeTrendData
 } from '$lib/prediction';
@@ -34,6 +35,19 @@ describe('prediction helpers', () => {
 			{ label: '2022-01', value: 101_235 },
 			{ label: '2022-02', value: 0 }
 		]);
+	});
+
+	it('formats raw YYYY-MM labels into localized month names', () => {
+		expect(formatMonthLabel('2025-03', 'en-SG')).toBe('Mar 2025');
+		expect(formatMonthLabel('2022-02', 'en-SG')).toBe('Feb 2022');
+		// zh-SG localizes the month name (year年month月).
+		expect(formatMonthLabel('2025-03', 'zh-SG')).toContain('2025');
+		expect(formatMonthLabel('2025-03', 'zh-SG')).toContain('3月');
+	});
+
+	it('returns unparseable labels verbatim', () => {
+		expect(formatMonthLabel('not-a-month')).toBe('not-a-month');
+		expect(formatMonthLabel('2025-13')).toBe('2025-13');
 	});
 
 	it('formats chart ticks compactly', () => {

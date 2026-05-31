@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { formatCurrency } from '$lib/format';
-	import { formatCurrencyTick, type TrendPoint } from '$lib/prediction';
+	import { formatCurrencyTick, formatMonthLabel, type TrendPoint } from '$lib/prediction';
 	import type { Language } from '$lib/i18n';
+	import { Tween } from 'svelte/motion';
+	import { cubicOut } from 'svelte/easing';
+	import { draw, fade } from 'svelte/transition';
+	import { untrack } from 'svelte';
 
 	type Props = {
 		data: TrendPoint[];
@@ -18,6 +22,23 @@
 	// hydration, so it avoids hydration mismatches.
 	const uid = $props.id();
 
+	// `prefers-reduced-motion` gate (Gap 5). Defaults to `false` so SSR renders
+	// the animated path; the real preference is read on mount and kept in sync.
+	let reduceMotion = $state(
+		typeof window !== 'undefined' &&
+			typeof window.matchMedia === 'function' &&
+			window.matchMedia('(prefers-reduced-motion: reduce)').matches
+	);
+	$effect(() => {
+		const query = window.matchMedia('(prefers-reduced-motion: reduce)');
+		reduceMotion = query.matches;
+		const onChange = (event: MediaQueryListEvent) => {
+			reduceMotion = event.matches;
+		};
+		query.addEventListener('change', onChange);
+		return () => query.removeEventListener('change', onChange);
+	});
+
 	const width = 760;
 	let activeIndex = $state(-1);
 	let windowWidth = $state(0);
@@ -33,10 +54,39 @@
 	});
 	const innerWidth = $derived(width - margin.left - margin.right);
 	const innerHeight = $derived(height - margin.top - margin.bottom);
+
+	// Raw target values straight from the data contract.
 	const values = $derived(data.map((entry) => entry.value));
-	const maxValue = $derived(Math.max(...values, 0));
+
+	// Tween the numeric values so a re-submit morphs the line/area/grid/dots
+	// smoothly from the old prediction to the new one (Gap 2). The very first
+	// render initializes `current` to the incoming values (no morph) — the
+	// entry transition (Gap 1) handles that reveal instead.
+	// `untrack` makes the deliberate "initialize from the current values once"
+	// intent explicit — later updates flow through the effect below, not here.
+	const tweenedValues = new Tween(
+		untrack(() => values),
+		{ duration: 600, easing: cubicOut }
+	);
+
+	// Track the array length without subscribing to `tweenedValues.current`,
+	// so the effect below doesn't re-run on every animation frame.
+	let lastLength = untrack(() => values.length);
+	$effect(() => {
+		const target = values;
+		// Snap instantly when reduced motion is requested, or when the point
+		// count changes (interpolating arrays of different lengths is invalid).
+		const instant = reduceMotion || target.length !== lastLength;
+		lastLength = target.length;
+		tweenedValues.set(target, { duration: instant ? 0 : 600 });
+	});
+
+	// All geometry derives from the animating values so everything moves together.
+	const displayValues = $derived(tweenedValues.current);
+
+	const maxValue = $derived(Math.max(...displayValues, 0));
 	const minPositiveValue = $derived(
-		values.reduce(
+		displayValues.reduce(
 			(lowest, value) => (value > 0 ? Math.min(lowest, value) : lowest),
 			Number.POSITIVE_INFINITY
 		)
@@ -58,11 +108,14 @@
 
 	const points = $derived(
 		data.map((entry, index) => {
+			const value = displayValues[index] ?? entry.value;
 			const x =
 				margin.left +
 				(data.length === 1 ? innerWidth / 2 : (innerWidth * index) / (data.length - 1));
-			const y = margin.top + innerHeight - ((entry.value - minValue) / range) * innerHeight;
-			return { ...entry, x, y };
+			const y = margin.top + innerHeight - ((value - minValue) / range) * innerHeight;
+			// `value` is the (animating) plotted value; `rawValue` is the exact
+			// target used for tooltips and accessible labels.
+			return { label: entry.label, value, rawValue: entry.value, x, y };
 		})
 	);
 
@@ -97,7 +150,10 @@
 			: ''
 	);
 
-	const peakIdx = $derived(values.indexOf(maxValue));
+	// Peak/latest indices come from the raw values so the markers stay anchored
+	// to the true data points instead of drifting during the morph animation.
+	const peakValue = $derived(Math.max(...values, 0));
+	const peakIdx = $derived(values.indexOf(peakValue));
 	const lastIdx = $derived(values.length - 1);
 
 	const visibleXAxisLabels = $derived(
@@ -107,6 +163,16 @@
 			return isMobile ? index % 3 === 0 : index % 2 === 0;
 		})
 	);
+
+	// Screen-reader summary placed in <desc> (Gap 4). Uses localized month names
+	// and currency so it reads naturally in both en-SG and zh-SG.
+	const chartDescription = $derived.by(() => {
+		if (points.length === 0) return ariaLabel;
+		const first = formatMonthLabel(points[0].label, currencyLocale);
+		const last = formatMonthLabel(points[points.length - 1].label, currencyLocale);
+		const latest = formatCurrency(points[lastIdx].rawValue, currencyLocale);
+		return `${points.length}-month price trend from ${first} to ${last}. Predicted price ${latest}.`;
+	});
 
 	function setActiveIndexFromPointer(event: PointerEvent) {
 		// containerWidth is 0 until the ResizeObserver behind bind:clientWidth fires.
@@ -154,6 +220,9 @@
 		role="img"
 		aria-label={ariaLabel}
 	>
+		<title>{ariaLabel}</title>
+		<desc>{chartDescription}</desc>
+
 		<defs>
 			<linearGradient id={`prediction-area-gradient-${uid}`} x1="0" y1="0" x2="0" y2="1">
 				<stop offset="0%" stop-color="var(--chart-fill)" stop-opacity="0.42" />
@@ -166,7 +235,7 @@
 			</linearGradient>
 		</defs>
 
-		{#each yTicks as tick, i (tick.value)}
+		{#each yTicks as tick, i (i)}
 			<line
 				x1={margin.left}
 				y1={tick.y}
@@ -189,7 +258,14 @@
 		{/each}
 
 		{#if areaPath}
-			<path d={areaPath} fill={`url(#prediction-area-gradient-${uid})`} />
+			<!-- Area fades in first, then the line draws over it for a layered
+			     reveal (Gap 1). Both collapse to an instant render when the user
+			     prefers reduced motion (Gap 5). -->
+			<path
+				d={areaPath}
+				fill={`url(#prediction-area-gradient-${uid})`}
+				transition:fade={{ duration: reduceMotion ? 0 : 400 }}
+			/>
 			<path
 				d={linePath}
 				fill="none"
@@ -197,6 +273,7 @@
 				stroke-width="2.5"
 				stroke-linecap="round"
 				stroke-linejoin="round"
+				transition:draw={{ duration: reduceMotion ? 0 : 900, easing: cubicOut }}
 			/>
 		{/if}
 
@@ -261,8 +338,29 @@
 				font-family="var(--font-sans)"
 				font-weight="600"
 			>
-				{point.label}
+				{formatMonthLabel(point.label, currencyLocale)}
 			</text>
+		{/each}
+
+		<!-- Keyboard-navigable, screen-reader-announced data points (Gap 4).
+		     Visually subtle until focused; each carries its own value label so
+		     keyboard users can Tab through individual months. -->
+		{#each points as point, index (point.label)}
+			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+			<!-- Intentionally focusable: keyboard/screen-reader users can Tab
+			     through each month's value (Gap 4) — this is the whole point of
+			     hand-rolling the SVG instead of using a <canvas> chart library. -->
+			<circle
+				class="data-point"
+				cx={point.x}
+				cy={point.y}
+				r="9"
+				role="img"
+				tabindex="0"
+				aria-label={`${formatMonthLabel(point.label, currencyLocale)}: ${formatCurrency(point.rawValue, currencyLocale)}`}
+				onfocus={() => (activeIndex = index)}
+				onblur={clearActiveIndex}
+			/>
 		{/each}
 
 		<rect
@@ -277,11 +375,30 @@
 	{#if activePoint}
 		<div class="chart-tooltip visible pointer-events-none" style={activeTooltipStyle}>
 			<div class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
-				{activePoint.label}
+				{formatMonthLabel(activePoint.label, currencyLocale)}
 			</div>
 			<div class="text-sm font-semibold text-foreground tabular-nums">
-				{formatCurrency(activePoint.value, currencyLocale)}
+				{formatCurrency(activePoint.rawValue, currencyLocale)}
 			</div>
 		</div>
 	{/if}
 </div>
+
+<style>
+	/* Subtle, focus-discoverable data points: invisible until a keyboard user
+	   Tabs to one, at which point a clear focus ring appears. */
+	.data-point {
+		fill: transparent;
+		stroke: transparent;
+		cursor: pointer;
+		transition: fill-opacity 150ms ease;
+	}
+
+	.data-point:focus-visible {
+		outline: none;
+		fill: var(--primary);
+		fill-opacity: 0.9;
+		stroke: var(--card);
+		stroke-width: 2;
+	}
+</style>
