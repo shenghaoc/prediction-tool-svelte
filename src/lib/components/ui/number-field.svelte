@@ -7,7 +7,7 @@
 	type Props = {
 		id: string;
 		value: number | '';
-		onchange: (value: number | '') => void;
+		onchange: (_value: number | '') => void;
 		min?: number;
 		max?: number;
 		step?: number;

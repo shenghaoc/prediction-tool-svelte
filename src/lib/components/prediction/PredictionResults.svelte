@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { fade, fly } from 'svelte/transition';
 	import Home from '@lucide/svelte/icons/home';
 	import Layers from '@lucide/svelte/icons/layers';
 	import MapPin from '@lucide/svelte/icons/map-pin';
@@ -158,7 +159,7 @@
 
 				{#if hasPrediction}
 					<Separator />
-					<div class="animate-fade-in">
+					<div class="animate-fade-in" in:fly={{ y: 12, duration: 280 }}>
 						<Card.Description class="mb-1 tracking-wider uppercase">
 							{i18n.t('predicted_trends')}
 						</Card.Description>
@@ -220,11 +221,13 @@
 							{#if loading}
 								<Skeleton class="animate-shimmer min-h-[260px] w-full rounded-xl" />
 							{:else}
-								<PriceTrendChart
-									data={trendData}
-									ariaLabel={`${i18n.t('predicted_trends')}: ${i18n.t('chart_story_title')}`}
-									locale={i18n.lang}
-								/>
+								<div in:fade={{ duration: 240 }}>
+									<PriceTrendChart
+										data={trendData}
+										ariaLabel={`${i18n.t('predicted_trends')}: ${i18n.t('chart_story_title')}`}
+										locale={i18n.lang}
+									/>
+								</div>
 							{/if}
 						</div>
 					</div>

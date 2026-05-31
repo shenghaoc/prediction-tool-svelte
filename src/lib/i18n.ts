@@ -299,18 +299,18 @@ const zh = {
 const flatDictionaries: Record<Language, Record<string, string>> = { en: {}, zh: {} };
 
 function flattenDictionary(
-	obj: Record<string, any>,
+	obj: Record<string, unknown>,
 	prefix: string,
 	target: Record<string, string>
 ) {
 	for (const key of Object.keys(obj)) {
-		const value = obj[key];
+		const value = obj[key] as unknown;
 		const newKey = prefix ? `${prefix}.${key}` : key;
 
 		if (typeof value === 'string') {
 			target[newKey] = value;
 		} else if (value && typeof value === 'object') {
-			flattenDictionary(value, newKey, target);
+			flattenDictionary(value as Record<string, unknown>, newKey, target);
 		}
 	}
 }
