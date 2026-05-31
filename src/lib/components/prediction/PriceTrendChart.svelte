@@ -109,13 +109,15 @@
 	);
 
 	function setActiveIndexFromPointer(event: PointerEvent) {
-		if (points.length === 0) return;
+		// containerWidth is 0 until the ResizeObserver behind bind:clientWidth fires.
+		// Bail until then so we never compute a hit-test against a zero/stale width.
+		if (points.length === 0 || !containerWidth) return;
 
 		// ⚡ Bolt Optimization: Use offsetX to avoid layout thrashing and stale scroll
 		// offsets that happen with getBoundingClientRect(). The container width is
 		// tracked reactively via bind:clientWidth (ResizeObserver), so we never read
 		// the DOM synchronously during this high-frequency pointer handler.
-		const x = (event.offsetX / (containerWidth || 1)) * width;
+		const x = (event.offsetX / containerWidth) * width;
 
 		let nearestIndex = 0;
 		let nearestDistance = Number.POSITIVE_INFINITY;
