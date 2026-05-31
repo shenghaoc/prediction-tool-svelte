@@ -23,6 +23,18 @@ describe('predictionSchema', () => {
 		expect(result.success).toBe(false);
 	});
 
+	it('reports missing floor area for empty input', () => {
+		const result = predictionSchema.safeParse({
+			...predictionDefaults,
+			floor_area_sqm: ''
+		});
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			const floorIssue = result.error.issues.find((issue) => issue.path[0] === 'floor_area_sqm');
+			expect(floorIssue?.message).toBe('missing_floor_area');
+		}
+	});
+
 	it('coerces string numerics from form posts', () => {
 		const result = predictionSchema.safeParse({
 			...predictionDefaults,

@@ -26,7 +26,7 @@ export const actions: Actions = {
 			return fail(400, { form });
 		}
 
-		const e2eMode = request.headers.get('x-e2e-mock') ?? process.env.MOCK_PREDICTIONS;
+		const e2eMode = request.headers.get('x-e2e-mock') ?? platform?.env?.MOCK_PREDICTIONS;
 		if (e2eMode) {
 			const e2eMessage = e2ePredictionMessage(e2eMode);
 			if (e2eMessage) {

@@ -14,13 +14,18 @@ export function readPersistedForm(): PredictionFormData | null {
 		const savedForm = localStorage.getItem(STORAGE_KEY);
 		if (!savedForm) return null;
 
-		const parsed = JSON.parse(savedForm) as Partial<PredictionFormData>;
+		const parsed: unknown = JSON.parse(savedForm);
+		if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+			return null;
+		}
+
+		const record = parsed as Partial<PredictionFormData>;
 		return {
 			...predictionDefaults,
-			...parsed,
-			floor_area_sqm: Number(parsed.floor_area_sqm ?? predictionDefaults.floor_area_sqm),
+			...record,
+			floor_area_sqm: Number(record.floor_area_sqm ?? predictionDefaults.floor_area_sqm),
 			lease_commence_date: Number(
-				parsed.lease_commence_date ?? predictionDefaults.lease_commence_date
+				record.lease_commence_date ?? predictionDefaults.lease_commence_date
 			)
 		};
 	} catch {

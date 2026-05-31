@@ -5,6 +5,7 @@ declare global {
 		interface Platform {
 			env?: {
 				DB?: D1Database;
+				MOCK_PREDICTIONS?: string;
 			};
 		}
 	}

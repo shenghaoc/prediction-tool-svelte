@@ -7,21 +7,38 @@ export const MAX_FLOOR_AREA_SQM = 300;
 export const MIN_LEASE_COMMENCE_YEAR = 1960;
 export const MAX_LEASE_COMMENCE_YEAR = 2022;
 
+function coercedIntegerField(missingKey: string, min: number, max: number, rangeKey: string) {
+	return z.preprocess(
+		(val) => {
+			if (val === '' || val === null || val === undefined) return undefined;
+			const num = Number(val);
+			return Number.isNaN(num) ? undefined : num;
+		},
+		z
+			.number({ error: missingKey })
+			.int()
+			.min(min, { error: rangeKey })
+			.max(max, { error: rangeKey })
+	);
+}
+
 export const predictionSchema = z.object({
 	ml_model: z.enum(ML_MODELS),
 	town: z.enum(TOWNS),
 	storey_range: z.enum(STOREY_RANGES),
 	flat_model: z.enum(FLAT_MODELS),
-	floor_area_sqm: z.coerce
-		.number({ error: 'missing_floor_area' })
-		.int()
-		.min(MIN_FLOOR_AREA_SQM, { error: 'floor_area_range' })
-		.max(MAX_FLOOR_AREA_SQM, { error: 'floor_area_range' }),
-	lease_commence_date: z.coerce
-		.number({ error: 'missing_lease_commence_date' })
-		.int()
-		.min(MIN_LEASE_COMMENCE_YEAR, { error: 'missing_lease_commence_date' })
-		.max(MAX_LEASE_COMMENCE_YEAR, { error: 'missing_lease_commence_date' })
+	floor_area_sqm: coercedIntegerField(
+		'missing_floor_area',
+		MIN_FLOOR_AREA_SQM,
+		MAX_FLOOR_AREA_SQM,
+		'floor_area_range'
+	),
+	lease_commence_date: coercedIntegerField(
+		'missing_lease_commence_date',
+		MIN_LEASE_COMMENCE_YEAR,
+		MAX_LEASE_COMMENCE_YEAR,
+		'missing_lease_commence_date'
+	)
 });
 
 export type PredictionFormData = z.infer<typeof predictionSchema>;
