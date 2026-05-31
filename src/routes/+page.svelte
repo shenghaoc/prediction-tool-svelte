@@ -90,14 +90,22 @@
 		};
 	});
 
+	function resetForm() {
+		// Mirror the disabled Reset button: don't reset mid-request, otherwise the
+		// in-flight prediction resolves later and overwrites the cleared form.
+		if (prediction.loading) return;
+		prediction.reset();
+		toast.success(i18n.t('form_reset'), { id: 'prediction-reset' });
+		announce(i18n.t('form_reset'));
+	}
+
 	function handleKeydown(e: KeyboardEvent) {
 		if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
 			e.preventDefault();
 			if (!prediction.loading) handleSubmit();
 		}
 		if (e.key === 'Escape' && document.activeElement?.closest?.('form')) {
-			prediction.reset();
-			announce(i18n.t('form_reset'));
+			resetForm();
 		}
 	}
 
@@ -291,11 +299,7 @@
 								fieldErrors={prediction.fieldErrors}
 								loading={prediction.loading}
 								onsubmit={handleSubmit}
-								onreset={() => {
-									prediction.reset();
-									toast.success(i18n.t('form_reset'), { id: 'prediction-reset' });
-									announce(i18n.t('form_reset'));
-								}}
+								onreset={resetForm}
 								onchange={handleFormChange}
 							/>
 							{#if prediction.loading}
