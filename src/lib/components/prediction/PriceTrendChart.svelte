@@ -19,9 +19,9 @@
 	const uid = $props.id();
 
 	const width = 760;
-	let svg: SVGSVGElement | null = $state(null);
 	let activeIndex = $state(-1);
 	let windowWidth = $state(0);
+	let containerWidth = $state(0);
 
 	const isMobile = $derived(windowWidth > 0 && windowWidth < 900);
 	const height = $derived(isMobile ? 280 : 360);
@@ -92,7 +92,9 @@
 
 	const activePoint = $derived(activeIndex >= 0 ? points[activeIndex] : null);
 	const activeTooltipStyle = $derived(
-		activePoint ? `left:${((activePoint.x / width) * 100).toFixed(2)}%;top:${activePoint.y}px;` : ''
+		activePoint
+			? `left:${((activePoint.x / width) * 100).toFixed(2)}%;top:${((activePoint.y / height) * 100).toFixed(2)}%;`
+			: ''
 	);
 
 	const peakIdx = $derived(values.indexOf(maxValue));
@@ -106,15 +108,16 @@
 		})
 	);
 
-	let cachedRect: DOMRect | null = null;
-
 	function setActiveIndexFromPointer(event: PointerEvent) {
-		if (!svg || points.length === 0) return;
+		// containerWidth is 0 until the ResizeObserver behind bind:clientWidth fires.
+		// Bail until then so we never compute a hit-test against a zero/stale width.
+		if (points.length === 0 || !containerWidth) return;
 
-		if (!cachedRect) {
-			cachedRect = svg.getBoundingClientRect();
-		}
-		const x = ((event.clientX - cachedRect.left) / cachedRect.width) * width;
+		// ⚡ Bolt Optimization: Use offsetX to avoid layout thrashing and stale scroll
+		// offsets that happen with getBoundingClientRect(). The container width is
+		// tracked reactively via bind:clientWidth (ResizeObserver), so we never read
+		// the DOM synchronously during this high-frequency pointer handler.
+		const x = (event.offsetX / containerWidth) * width;
 
 		let nearestIndex = 0;
 		let nearestDistance = Number.POSITIVE_INFINITY;
@@ -131,23 +134,25 @@
 	}
 
 	function clearActiveIndex() {
-		cachedRect = null;
 		activeIndex = -1;
 	}
 </script>
 
 <svelte:window bind:innerWidth={windowWidth} />
 
-<div class="relative w-full">
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div
+	class="relative w-full"
+	bind:clientWidth={containerWidth}
+	onpointermove={setActiveIndexFromPointer}
+	onpointerleave={clearActiveIndex}
+	style="cursor: crosshair"
+>
 	<svg
-		bind:this={svg}
-		class="block h-auto w-full"
+		class="pointer-events-none block h-auto w-full"
 		viewBox={`0 0 ${width} ${height}`}
 		role="img"
 		aria-label={ariaLabel}
-		onpointermove={setActiveIndexFromPointer}
-		onpointerleave={clearActiveIndex}
-		style="cursor: crosshair"
 	>
 		<defs>
 			<linearGradient id={`prediction-area-gradient-${uid}`} x1="0" y1="0" x2="0" y2="1">
@@ -270,7 +275,7 @@
 	</svg>
 
 	{#if activePoint}
-		<div class="chart-tooltip visible" style={activeTooltipStyle}>
+		<div class="chart-tooltip visible pointer-events-none" style={activeTooltipStyle}>
 			<div class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
 				{activePoint.label}
 			</div>
