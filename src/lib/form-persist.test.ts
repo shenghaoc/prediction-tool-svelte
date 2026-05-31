@@ -47,7 +47,7 @@ describe('form-persist', () => {
 
 	it('returns null for non-object persisted JSON', async () => {
 		const { readPersistedForm } = await import('$lib/form-persist');
-		localStorage.setItem('form', JSON.stringify(['not', 'an', 'object']));
+		localStorage.setItem('prediction-form', JSON.stringify(['not', 'an', 'object']));
 		expect(readPersistedForm()).toBeNull();
 	});
 
@@ -55,17 +55,17 @@ describe('form-persist', () => {
 		const { persistForm } = await import('$lib/form-persist');
 		const custom = { ...predictionDefaults, floor_area_sqm: 42 };
 		persistForm(custom);
-		expect(localStorage.getItem('form')).toBeNull();
+		expect(localStorage.getItem('prediction-form')).toBeNull();
 		await vi.advanceTimersByTimeAsync(300);
-		expect(JSON.parse(localStorage.getItem('form') ?? '')).toMatchObject({ floor_area_sqm: 42 });
+		expect(JSON.parse(localStorage.getItem('prediction-form') ?? '')).toMatchObject({ floor_area_sqm: 42 });
 	});
 
 	it('flushes a pending write on beforeunload', async () => {
 		const { persistForm } = await import('$lib/form-persist');
-		const custom = { ...predictionDefaults, town: 'BEDOK' };
+		const custom = { ...predictionDefaults, town: 'BEDOK' as const };
 		persistForm(custom);
 		window.dispatchEvent(new Event('beforeunload'));
-		expect(JSON.parse(localStorage.getItem('form') ?? '')).toMatchObject({ town: 'BEDOK' });
+		expect(JSON.parse(localStorage.getItem('prediction-form') ?? '')).toMatchObject({ town: 'BEDOK' });
 	});
 
 	it('clears persisted form data', async () => {
@@ -73,6 +73,6 @@ describe('form-persist', () => {
 		persistForm(predictionDefaults);
 		await vi.advanceTimersByTimeAsync(300);
 		clearPersistedForm();
-		expect(localStorage.getItem('form')).toBeNull();
+		expect(localStorage.getItem('prediction-form')).toBeNull();
 	});
 });

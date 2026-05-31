@@ -1,9 +1,9 @@
 import { browser } from '$app/environment';
 
 import type { PredictionFormData } from '$lib/prediction-schema';
-import { predictionDefaults } from '$lib/prediction-schema';
+import { predictionSchema } from '$lib/prediction-schema';
 
-const STORAGE_KEY = 'form';
+const STORAGE_KEY = 'prediction-form';
 
 let persistTimeout: ReturnType<typeof setTimeout> | undefined;
 let latestForm: PredictionFormData | undefined;
@@ -16,19 +16,8 @@ export function readPersistedForm(): PredictionFormData | null {
 		if (!savedForm) return null;
 
 		const parsed: unknown = JSON.parse(savedForm);
-		if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-			return null;
-		}
-
-		const record = parsed as Partial<PredictionFormData>;
-		return {
-			...predictionDefaults,
-			...record,
-			floor_area_sqm: Number(record.floor_area_sqm ?? predictionDefaults.floor_area_sqm),
-			lease_commence_date: Number(
-				record.lease_commence_date ?? predictionDefaults.lease_commence_date
-			)
-		};
+		const result = predictionSchema.safeParse(parsed);
+		return result.success ? result.data : null;
 	} catch {
 		return null;
 	}

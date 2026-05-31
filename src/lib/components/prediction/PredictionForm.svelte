@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
 	import Loader2 from '@lucide/svelte/icons/loader-2';
 	import type { SuperForm } from 'sveltekit-superforms';
@@ -30,12 +29,14 @@
 	const i18n = getI18nContext();
 
 	let isMac = $state(false);
+	let mounted = $state(false);
 
 	const { form, errors, enhance } = superform;
 
 	const fieldErrors = $derived(fieldErrorsFromSuperforms($errors, (key) => i18n.t(key)));
 
 	onMount(() => {
+		mounted = true;
 		const uaData =
 			'userAgentData' in navigator
 				? (navigator.userAgentData as { platform?: string } | null | undefined)
@@ -74,7 +75,7 @@
 </script>
 
 <form id="prediction-form" method="POST" action="?/predict" use:enhance>
-	{#if !browser}
+	{#if !mounted}
 	<noscript>
 		<Field.Group class="gap-4">
 			<label>
@@ -134,7 +135,7 @@
 	</noscript>
 	{/if}
 
-	{#if browser}
+	{#if mounted}
 		<input type="hidden" name="ml_model" value={$form.ml_model} />
 		<input type="hidden" name="town" value={$form.town} />
 		<input type="hidden" name="storey_range" value={$form.storey_range} />
@@ -144,7 +145,7 @@
 	{/if}
 
 	<Field.Group class="gap-6">
-		{#if browser}
+		{#if mounted}
 			<Field.Field>
 				<Field.Label for="input-ml_model">{i18n.t('ml_model')}</Field.Label>
 				<Field.Content>
@@ -262,7 +263,7 @@
 				{:else}
 					<span class="flex items-center gap-2">
 						{i18n.t('get_prediction')}
-						{#if browser}
+						{#if mounted}
 							<kbd
 								class="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border border-primary-foreground/20 bg-primary-foreground/10 px-1.5 font-sans text-[10px] font-medium opacity-80 sm:flex"
 								aria-hidden="true">{isMac ? '⌘' : 'Ctrl'} ↵</kbd
@@ -281,7 +282,7 @@
 			>
 				<span class="flex items-center gap-2">
 					{i18n.t('reset_form')}
-					{#if browser}
+					{#if mounted}
 						<kbd
 							class="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border border-border bg-muted/50 px-1.5 font-sans text-[10px] font-medium text-muted-foreground sm:flex"
 							aria-hidden="true">Esc</kbd
