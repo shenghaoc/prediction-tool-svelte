@@ -168,7 +168,7 @@
 			e.preventDefault();
 			if (!loading) {
 				announce(i18n.t('predicting'), 'assertive');
-				(document.querySelector('form[method="POST"]') as HTMLFormElement | null)?.requestSubmit();
+				(document.getElementById('prediction-form') as HTMLFormElement | null)?.requestSubmit();
 			}
 		}
 		if (e.key === 'Escape' && document.activeElement?.closest?.('form')) {

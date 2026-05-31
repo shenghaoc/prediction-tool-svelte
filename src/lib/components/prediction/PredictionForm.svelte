@@ -73,7 +73,7 @@
 	);
 </script>
 
-<form method="POST" action="?/predict" use:enhance>
+<form id="prediction-form" method="POST" action="?/predict" use:enhance>
 	{#if !browser}
 	<noscript>
 		<Field.Group class="gap-4">
