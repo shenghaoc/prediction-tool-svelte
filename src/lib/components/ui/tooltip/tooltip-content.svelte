@@ -22,10 +22,14 @@
 
 	$effect(() => {
 		if (!tipState || !hidden) return;
-		// Re-run on children change by referencing the snippet identity.
-		void children;
-		const text = hidden.textContent?.trim() ?? '';
-		if (tipState.text !== text) tipState.text = text;
+		const update = () => {
+			const text = hidden!.textContent?.trim() ?? '';
+			if (tipState.text !== text) tipState.text = text;
+		};
+		update();
+		const observer = new MutationObserver(update);
+		observer.observe(hidden, { childList: true, characterData: true, subtree: true });
+		return () => observer.disconnect();
 	});
 </script>
 

@@ -99,7 +99,7 @@
 			</div>
 			<div
 				class={cn(
-					'relative min-w-[200px] overflow-hidden rounded-xl border px-5 py-4 transition-all duration-500 max-sm:w-full',
+					'stats relative min-w-[200px] overflow-hidden rounded-xl border transition-all duration-500 max-sm:w-full',
 					hasPrediction
 						? 'animate-glow border-primary/25 bg-gradient-to-br from-primary/12 via-accent/60 to-base-100'
 						: 'border-base-300/60 bg-gradient-to-br from-secondary/40 to-base-100',
@@ -111,22 +111,26 @@
 					class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,color-mix(in_oklab,var(--color-primary)_18%,transparent),transparent_55%)]"
 					aria-hidden="true"
 				></div>
-				<p class="relative text-[10px] font-bold tracking-wider text-base-content/70 uppercase">
-					{i18n.t('prediction')}
-				</p>
-				{#if showSkeleton}
-					<Skeleton class="animate-shimmer relative mt-2 h-9 w-36 rounded-lg" />
-				{:else}
-					<p
-						class={cn(
-							'relative mt-1 font-heading text-3xl font-extrabold tracking-tight tabular-nums transition-all duration-500',
-							!hasPrediction && 'text-base font-semibold text-base-content/70',
-							hasPrediction && 'animate-settle text-primary'
-						)}
+				<div class="stat relative bg-transparent">
+					<div
+						class="stat-title text-[10px] font-bold tracking-wider text-base-content/70 uppercase"
 					>
-						{hasPrediction ? fmt(Math.round(output)) : i18n.t('awaiting')}
-					</p>
-				{/if}
+						{i18n.t('prediction')}
+					</div>
+					{#if showSkeleton}
+						<Skeleton class="animate-shimmer relative mt-2 h-9 w-36 rounded-lg" />
+					{:else}
+						<div
+							class={cn(
+								'stat-value font-heading text-3xl font-extrabold tracking-tight tabular-nums transition-all duration-500',
+								!hasPrediction && 'text-base font-semibold text-base-content/70',
+								hasPrediction && 'animate-settle text-primary'
+							)}
+						>
+							{hasPrediction ? fmt(Math.round(output)) : i18n.t('awaiting')}
+						</div>
+					{/if}
+				</div>
 			</div>
 		</Card.Header>
 

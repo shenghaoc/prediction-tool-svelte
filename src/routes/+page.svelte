@@ -243,22 +243,23 @@
 						<Tooltip.Root>
 							<Tooltip.Trigger>
 								{#snippet child({ props })}
-									<Button
+									<label
 										{...props}
-										type="button"
-										variant="outline"
-										size="icon-sm"
+										class="swap swap-rotate btn btn-outline btn-sm btn-square"
 										aria-label={prediction.darkMode
 											? i18n.t('switch_to_light_mode')
 											: i18n.t('switch_to_dark_mode')}
-										onclick={() => prediction.toggleTheme()}
 									>
-										{#if prediction.darkMode}
-											<Sun class="size-4" />
-										{:else}
-											<Moon class="size-4" />
-										{/if}
-									</Button>
+										<input
+											type="checkbox"
+											class="theme-controller"
+											value="dark"
+											checked={prediction.darkMode}
+											onchange={() => prediction.toggleTheme()}
+										/>
+										<Sun class="swap-on size-4" />
+										<Moon class="swap-off size-4" />
+									</label>
 								{/snippet}
 							</Tooltip.Trigger>
 							<Tooltip.Content side="bottom" class="text-xs">
