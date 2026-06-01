@@ -9,55 +9,71 @@
 	default: true;
 	color-scheme: light;
 	--color-base-100: #ffffff;
-	--color-base-200: #f4f5fa;
-	--color-base-300: #e2e8f0;
-	--color-base-content: #0f172a;
+	--color-base-200: #f6f7fb;
+	--color-base-300: #e4e7ef;
+	--color-base-content: #1e1b4b;
 	--color-primary: #4f46e5;
 	--color-primary-content: #ffffff;
-	--color-secondary: #f4f5fa;
-	--color-secondary-content: #475569;
-	--color-accent: #6366f1;
+	--color-secondary: #ec4899;
+	--color-secondary-content: #ffffff;
+	--color-accent: #0ea5e9;
 	--color-accent-content: #ffffff;
-	--color-neutral: #64748b;
-	--color-neutral-content: #ffffff;
-	--color-info: #38bdf8;
-	--color-success: #10b981;
-	--color-warning: #f59e0b;
+	--color-neutral: #1e293b;
+	--color-neutral-content: #f8fafc;
+	--color-info: #0284c7;
+	--color-info-content: #ffffff;
+	--color-success: #059669;
+	--color-success-content: #ffffff;
+	--color-warning: #d97706;
+	--color-warning-content: #ffffff;
 	--color-error: #dc2626;
 	--color-error-content: #ffffff;
 	--radius-selector: 0.5rem;
-	--radius-field: 0.5rem;
-	--radius-box: 0.625rem;
+	--radius-field: 0.625rem;
+	--radius-box: 1rem;
+	--size-selector: 0.25rem;
+	--size-field: 0.25rem;
+	--border: 1px;
+	--depth: 1;
+	--noise: 0;
 }
 @plugin "daisyui/theme" {
 	name: 'dark';
 	prefersdark: true;
 	color-scheme: dark;
-	--color-base-100: #0c0f1d;
-	--color-base-200: #111427;
-	--color-base-300: #161929;
-	--color-base-content: #f1f5f9;
+	--color-base-100: #0f1729;
+	--color-base-200: #1a2238;
+	--color-base-300: #232c45;
+	--color-base-content: #e2e8f0;
 	--color-primary: #818cf8;
-	--color-primary-content: #0f172a;
-	--color-secondary: #111427;
-	--color-secondary-content: #94a3b8;
-	--color-accent: #a5b4fc;
-	--color-accent-content: #0f172a;
-	--color-neutral: #94a3b8;
+	--color-primary-content: #0c0a1f;
+	--color-secondary: #f472b6;
+	--color-secondary-content: #260b1b;
+	--color-accent: #38bdf8;
+	--color-accent-content: #042130;
+	--color-neutral: #cbd5e1;
 	--color-neutral-content: #0f172a;
 	--color-info: #38bdf8;
-	--color-success: #4ade80;
+	--color-info-content: #042130;
+	--color-success: #34d399;
+	--color-success-content: #022c1f;
 	--color-warning: #fbbf24;
+	--color-warning-content: #2a1700;
 	--color-error: #f87171;
 	--color-error-content: #2a0c0c;
+	--radius-selector: 0.5rem;
+	--radius-field: 0.625rem;
+	--radius-box: 1rem;
+	--size-selector: 0.25rem;
+	--size-field: 0.25rem;
+	--border: 1px;
+	--depth: 1;
+	--noise: 0;
 }
 
 @theme {
 	--font-sans:
 		'DM Sans', 'Avenir Next', 'SF Pro Text', 'Helvetica Neue', 'Segoe UI', Arial, sans-serif;
-	--font-heading: 'Lora', 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
-	--font-serif: var(--font-heading);
-	--font-cjk: 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
 }
 
 @layer base {
@@ -67,27 +83,8 @@
 
 	html,
 	body {
-		@apply min-h-screen font-sans antialiased;
-		background-color: var(--color-base-100);
+		@apply min-h-screen bg-base-200 font-sans antialiased;
 		color: var(--color-base-content);
-		background-image:
-			radial-gradient(
-				ellipse 80% 50% at 50% -20%,
-				color-mix(in oklab, var(--color-primary) 12%, transparent),
-				transparent
-			),
-			radial-gradient(
-				circle,
-				color-mix(in oklab, var(--color-primary) 10%, transparent) 1px,
-				transparent 1px
-			);
-		background-size:
-			100% 480px,
-			22px 22px;
-		background-position:
-			center top,
-			center center;
-		background-repeat: no-repeat, repeat;
 	}
 
 	button,

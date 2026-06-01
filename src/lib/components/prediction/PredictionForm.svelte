@@ -257,41 +257,35 @@
 		{/if}
 
 		<div class="grid grid-cols-2 gap-3 max-[520px]:grid-cols-1">
-			<Button
-				type="submit"
-				size="lg"
-				class="w-full tracking-normal normal-case shadow-md shadow-primary/20 transition-all duration-200 hover:shadow-lg hover:shadow-primary/25 hover:brightness-110"
-				disabled={loading}
-			>
+			<Button type="submit" size="lg" class="w-full" disabled={loading}>
 				{#if loading}
 					<span class="loading loading-spinner loading-sm" aria-hidden="true"></span>
 					{i18n.t('predicting')}
 				{:else}
-					<span class="flex items-center gap-2">
-						{i18n.t('get_prediction')}
-						{#if mounted}
-							<kbd class="kbd kbd-sm pointer-events-none hidden sm:flex" aria-hidden="true"
-								>{isMac ? '⌘' : 'Ctrl'} ↵</kbd
-							>
-						{/if}
-					</span>
+					{i18n.t('get_prediction')}
 				{/if}
 			</Button>
 			<Button
 				type="button"
 				variant="outline"
 				size="lg"
-				class="w-full tracking-normal normal-case transition-all duration-200 hover:bg-base-200/80"
+				class="w-full"
 				disabled={loading}
 				onclick={() => onreset?.()}
 			>
-				<span class="flex items-center gap-2">
-					{i18n.t('reset_form')}
-					{#if mounted}
-						<kbd class="kbd kbd-sm pointer-events-none hidden sm:flex" aria-hidden="true">Esc</kbd>
-					{/if}
-				</span>
+				{i18n.t('reset_form')}
 			</Button>
 		</div>
+
+		{#if mounted}
+			<p class="mt-2 text-center text-xs text-base-content/60 max-sm:text-left">
+				<kbd class="kbd kbd-xs">{isMac ? '⌘' : 'Ctrl'}</kbd>
+				<kbd class="kbd kbd-xs">↵</kbd>
+				{i18n.t('to_predict')}
+				<span class="mx-1.5 text-base-content/30">·</span>
+				<kbd class="kbd kbd-xs">Esc</kbd>
+				{i18n.t('to_reset')}
+			</p>
+		{/if}
 	</Field.Group>
 </form>

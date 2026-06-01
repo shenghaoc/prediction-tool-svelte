@@ -5,26 +5,16 @@
 	import { toast } from 'svelte-sonner';
 	import { superForm } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
-	import Home from '@lucide/svelte/icons/home';
-	import Layers from '@lucide/svelte/icons/layers';
-	import MapPin from '@lucide/svelte/icons/map-pin';
 	import Moon from '@lucide/svelte/icons/moon';
 	import Sparkles from '@lucide/svelte/icons/sparkles';
 	import Sun from '@lucide/svelte/icons/sun';
 
 	import { applyDocumentLanguage, type Language } from '$lib/i18n';
 	import { getI18nContext } from '$lib/i18n.svelte';
-	import { FLAT_MODELS, ML_MODELS, TOWNS } from '$lib/lists';
 	import PredictionForm from '$lib/components/prediction/PredictionForm.svelte';
 	import PredictionResults from '$lib/components/prediction/PredictionResults.svelte';
-	import StatTile from '$lib/components/prediction/StatTile.svelte';
 	import { getPredictionContext } from '$lib/stores/prediction.svelte';
-	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
-	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
-	import { cn } from '$lib/utils.js';
 	import { clearPersistedForm, persistForm, readPersistedForm } from '$lib/form-persist';
 	import { defaultTrendData } from '$lib/prediction';
 	import {
@@ -101,30 +91,6 @@
 		}, 50);
 	}
 
-	const panelCard =
-		'relative overflow-hidden border-base-300/60 shadow-sm ring-1 ring-base-content/5 transition-all duration-300 hover:shadow-md hover:shadow-primary/5';
-
-	const figures = $derived([
-		{
-			label: i18n.t('stat_models'),
-			value: ML_MODELS.length.toString().padStart(2, '0'),
-			icon: Layers,
-			hint: i18n.t('stat_models_hint')
-		},
-		{
-			label: i18n.t('stat_towns'),
-			value: TOWNS.length.toString().padStart(2, '0'),
-			icon: MapPin,
-			hint: i18n.t('stat_towns_hint')
-		},
-		{
-			label: i18n.t('stat_types'),
-			value: FLAT_MODELS.length.toString().padStart(2, '0'),
-			icon: Home,
-			hint: i18n.t('stat_types_hint')
-		}
-	]);
-
 	$effect(() => {
 		applyDocumentLanguage(i18n.lang);
 	});
@@ -151,7 +117,6 @@
 			$form = saved;
 		}
 		mounted = true;
-		document.documentElement.classList.add('theme-ready');
 
 		return () => {
 			if (announceTimer) clearTimeout(announceTimer);
@@ -195,15 +160,15 @@
 {#if !mounted}
 	<main class="min-h-screen px-6 pt-5 pb-12" aria-busy="true">
 		<div class="mx-auto max-w-7xl space-y-5">
-			<Skeleton class="animate-shimmer h-10 w-full max-w-md rounded-xl" />
+			<div class="skeleton h-10 w-full max-w-md"></div>
 			<div class="grid grid-cols-2 gap-5 max-[860px]:grid-cols-1">
-				<Skeleton class="animate-shimmer h-64 rounded-xl" />
-				<Skeleton class="animate-shimmer h-96 rounded-xl" />
+				<div class="skeleton h-64"></div>
+				<div class="skeleton h-96"></div>
 			</div>
 		</div>
 	</main>
 {:else}
-	<main class="min-h-screen px-6 pt-5 pb-12 max-sm:px-3 max-sm:pb-8">
+	<main class="min-h-screen pb-12 max-sm:pb-8">
 		<a
 			href="#input-ml_model"
 			class="fixed -left-[9999px] top-auto z-[100] h-px w-px overflow-hidden focus:fixed focus:left-4 focus:top-4 focus:h-auto focus:w-auto focus:overflow-visible focus:rounded-lg focus:bg-primary focus:px-5 focus:py-2.5 focus:text-sm focus:font-bold focus:text-primary-content focus:no-underline focus:shadow-lg"
@@ -220,35 +185,28 @@
 			{liveMessage}
 		</div>
 
-		<div class="mx-auto max-w-7xl">
-			<header
-				class="animate-fade-in-deep sticky top-0 z-20 -mx-6 mb-6 flex items-center justify-between gap-4 border-b border-base-300/50 bg-base-100/85 px-6 py-4 backdrop-blur-md max-sm:relative max-sm:mx-0 max-sm:flex-col max-sm:items-start max-sm:px-0"
+		<div class="navbar bg-base-100 shadow-sm sticky top-0 z-20">
+			<div
+				class="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 max-sm:flex-col max-sm:items-start"
 			>
-				<div class="flex items-center gap-2.5">
-					<span class="font-heading text-base font-bold tracking-tight">{i18n.t('brand')}</span>
-					<Badge variant="secondary" class="gap-1">
+				<div class="flex items-center gap-2">
+					<span class="text-base font-bold tracking-tight">{i18n.t('brand')}</span>
+					<span class="badge badge-secondary badge-sm gap-1">
 						<Sparkles class="size-3" aria-hidden="true" />
 						{i18n.t('badge')}
-					</Badge>
+					</span>
 				</div>
-
 				<div class="flex items-center gap-2 max-sm:w-full max-sm:[&>*]:flex-1">
-					<Button
-						type="button"
-						variant="outline"
-						size="sm"
-						class="tracking-normal normal-case max-sm:flex-1"
-						onclick={toggleLang}
-					>
+					<button type="button" class="btn btn-ghost btn-sm" onclick={toggleLang}>
 						{i18n.t('switch_language')}
-					</Button>
+					</button>
 					<Tooltip.Provider>
 						<Tooltip.Root>
 							<Tooltip.Trigger>
 								{#snippet child({ props })}
 									<label
 										{...props}
-										class="swap swap-rotate btn btn-outline btn-sm btn-square"
+										class="swap swap-rotate btn btn-ghost btn-sm btn-square"
 										aria-label={prediction.darkMode
 											? i18n.t('switch_to_light_mode')
 											: i18n.t('switch_to_dark_mode')}
@@ -273,70 +231,34 @@
 						</Tooltip.Root>
 					</Tooltip.Provider>
 				</div>
-			</header>
+			</div>
+		</div>
 
+		<div class="mx-auto max-w-7xl px-6 pt-6 max-sm:px-3">
 			<div
 				class="grid grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] items-start gap-5 max-[860px]:grid-cols-1"
 			>
 				<div class="flex flex-col gap-5">
-					<Card.Root
-						size="sm"
-						class={cn(panelCard, 'animate-fade-in-deep border-l-4 border-l-primary/70 py-6')}
-					>
-						<div
-							class="pointer-events-none absolute -top-16 -right-20 size-56 rounded-full bg-primary/15 blur-3xl"
-							aria-hidden="true"
-						></div>
-						<div
-							class="pointer-events-none absolute -bottom-20 -left-16 size-48 rounded-full bg-accent/15 blur-3xl"
-							aria-hidden="true"
-						></div>
-						<Card.Header class="relative px-6 pb-0">
-							<Card.Title
-								class={cn(
-									'font-heading text-[clamp(2rem,5vw,3rem)] font-bold tracking-tight whitespace-pre-line normal-case',
-									i18n.lang === 'zh' && 'font-cjk font-extrabold'
-								)}
+					<div class="card bg-base-100 shadow-xl">
+						<div class="card-body">
+							<h1
+								class="card-title text-3xl tracking-tight whitespace-pre-line"
+								class:font-serif={i18n.lang === 'zh'}
 							>
-								<h1>{i18n.t('price_prediction')}</h1>
-							</Card.Title>
-							<Card.Description class="max-w-prose text-base leading-relaxed">
-								{i18n.t('intro_blurb')}
-							</Card.Description>
-						</Card.Header>
-						<Card.Content class="relative px-6 pt-4">
-							<Tooltip.Provider>
-								<div class="animate-stagger grid grid-cols-3 gap-2.5 max-sm:grid-cols-1">
-									{#each figures as figure (figure.label)}
-										<StatTile
-											icon={figure.icon}
-											label={figure.label}
-											value={figure.value}
-											hint={figure.hint}
-										/>
-									{/each}
-								</div>
-							</Tooltip.Provider>
-							<p class="mt-3.5 text-[0.82rem] leading-relaxed text-base-content/70">
-								{i18n.t('intro_caption')}
-							</p>
-						</Card.Content>
-					</Card.Root>
+								{i18n.t('price_prediction')}
+							</h1>
+							<p class="text-base-content/70">{i18n.t('intro_blurb')}</p>
+							<p class="text-sm text-base-content/60">{i18n.t('intro_caption')}</p>
+						</div>
+					</div>
 
-					<Card.Root
-						size="sm"
-						class={cn(panelCard, 'animate-fade-in-deep border-l-4 border-l-primary/70 py-6')}
-					>
-						<Card.Header class="px-6 pb-2">
-							<Card.Title class="text-primary normal-case">
-								<h2>{i18n.t('prediction_form')}</h2>
-							</Card.Title>
-						</Card.Header>
-						<Card.Content class="px-6">
+					<div class="card bg-base-100 shadow-xl">
+						<div class="card-body">
+							<h2 class="card-title">{i18n.t('prediction_form')}</h2>
 							{#if errorMessage && !loading}
 								<div
 									role="alert"
-									class="alert alert-error alert-soft mb-4"
+									class="alert alert-error alert-soft"
 									transition:fade={{ duration: 200 }}
 								>
 									{errorMessage}
@@ -345,13 +267,13 @@
 							<PredictionForm {superform} {loading} onreset={resetForm} />
 							{#if loading}
 								<progress
-									class="progress progress-primary mt-4 w-full"
+									class="progress progress-primary w-full"
 									aria-label={i18n.t('predicting')}
 									transition:fade
 								></progress>
 							{/if}
-						</Card.Content>
-					</Card.Root>
+						</div>
+					</div>
 				</div>
 
 				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
