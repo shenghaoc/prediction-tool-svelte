@@ -62,10 +62,14 @@
 					{#if showSkeleton}
 						<div class="skeleton h-10 w-40 mt-1"></div>
 					{:else if hasPrediction}
-						<div class="stat-value text-primary tabular-nums">{fmt(Math.round(output))}</div>
+						<div class="stat-value text-primary text-2xl tabular-nums sm:text-3xl lg:text-4xl">
+							{fmt(Math.round(output))}
+						</div>
 						<div class="stat-desc">{i18n.t(`ml_models.${summaryValues.ml_model}`)}</div>
 					{:else}
-						<div class="stat-value text-2xl text-base-content/40">{i18n.t('awaiting')}</div>
+						<div class="stat-value text-xl text-base-content/40 sm:text-2xl">
+							{i18n.t('awaiting')}
+						</div>
 					{/if}
 				</div>
 			</div>

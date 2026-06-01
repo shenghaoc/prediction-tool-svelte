@@ -185,20 +185,26 @@
 			{liveMessage}
 		</div>
 
-		<div class="navbar bg-base-100 shadow-sm sticky top-0 z-20">
-			<div
-				class="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 px-4 max-sm:flex-col max-sm:items-start"
-			>
-				<div class="flex items-center gap-2">
-					<span class="text-base font-bold tracking-tight">{i18n.t('brand')}</span>
-					<span class="badge badge-secondary badge-sm gap-1">
+		<div class="navbar bg-base-100 shadow-sm sticky top-0 z-20 min-h-0 px-2 sm:px-4">
+			<div class="mx-auto flex w-full max-w-7xl items-center justify-between gap-2">
+				<div class="flex min-w-0 items-center gap-2">
+					<span class="truncate text-sm font-bold tracking-tight sm:text-base">
+						{i18n.t('brand')}
+					</span>
+					<span class="badge badge-secondary badge-sm gap-1 max-[420px]:hidden">
 						<Sparkles class="size-3" aria-hidden="true" />
 						{i18n.t('badge')}
 					</span>
 				</div>
-				<div class="flex items-center gap-2 max-sm:w-full max-sm:[&>*]:flex-1">
-					<button type="button" class="btn btn-ghost btn-sm" onclick={toggleLang}>
-						{i18n.t('switch_language')}
+				<div class="flex shrink-0 items-center gap-1">
+					<button
+						type="button"
+						class="btn btn-ghost btn-sm max-sm:btn-xs normal-case"
+						onclick={toggleLang}
+						aria-label={i18n.t('switch_language')}
+					>
+						<span class="max-sm:hidden">{i18n.t('switch_language')}</span>
+						<span class="sm:hidden">{i18n.lang === 'en' ? '中' : 'EN'}</span>
 					</button>
 					<Tooltip.Provider>
 						<Tooltip.Root>
@@ -206,7 +212,7 @@
 								{#snippet child({ props })}
 									<label
 										{...props}
-										class="swap swap-rotate btn btn-ghost btn-sm btn-square"
+										class="swap swap-rotate btn btn-ghost btn-sm max-sm:btn-xs btn-square"
 										aria-label={prediction.darkMode
 											? i18n.t('switch_to_light_mode')
 											: i18n.t('switch_to_dark_mode')}
@@ -234,7 +240,7 @@
 			</div>
 		</div>
 
-		<div class="mx-auto max-w-7xl px-6 pt-6 max-sm:px-3">
+		<div class="mx-auto max-w-7xl px-3 pt-4 sm:px-6 sm:pt-6">
 			<div
 				class="grid grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] items-start gap-5 max-[860px]:grid-cols-1"
 			>
@@ -242,7 +248,7 @@
 					<div class="card bg-base-100 shadow-xl">
 						<div class="card-body">
 							<h1
-								class="card-title text-3xl tracking-tight whitespace-pre-line"
+								class="card-title text-2xl tracking-tight whitespace-pre-line sm:text-3xl"
 								class:font-serif={i18n.lang === 'zh'}
 							>
 								{i18n.t('price_prediction')}
