@@ -225,13 +225,13 @@
 
 		<defs>
 			<linearGradient id={`prediction-area-gradient-${uid}`} x1="0" y1="0" x2="0" y2="1">
-				<stop offset="0%" stop-color="var(--chart-fill)" stop-opacity="0.42" />
-				<stop offset="55%" stop-color="var(--chart-fill)" stop-opacity="0.14" />
-				<stop offset="100%" stop-color="var(--chart-fill)" stop-opacity="0" />
+				<stop offset="0%" stop-color="var(--color-primary)" stop-opacity="0.42" />
+				<stop offset="55%" stop-color="var(--color-primary)" stop-opacity="0.14" />
+				<stop offset="100%" stop-color="var(--color-primary)" stop-opacity="0" />
 			</linearGradient>
 			<linearGradient id={`prediction-line-gradient-${uid}`} x1="0" y1="0" x2="1" y2="0">
-				<stop offset="0%" stop-color="var(--chart-fill)" />
-				<stop offset="100%" stop-color="var(--chart-2, var(--chart-fill))" />
+				<stop offset="0%" stop-color="var(--color-primary)" />
+				<stop offset="100%" stop-color="var(--color-accent)" />
 			</linearGradient>
 		</defs>
 
@@ -241,14 +241,14 @@
 				y1={tick.y}
 				x2={width - margin.right}
 				y2={tick.y}
-				stroke="color-mix(in oklab, var(--border) 70%, transparent)"
+				stroke="color-mix(in oklab, var(--color-base-300) 70%, transparent)"
 				stroke-dasharray={i === 0 ? 'none' : '3 4'}
 			/>
 			<text
 				x={margin.left - 12}
 				y={tick.y + 4}
 				text-anchor="end"
-				fill="var(--muted-foreground)"
+				fill="color-mix(in oklab, var(--color-base-content) 70%, transparent)"
 				font-size="11"
 				font-family="var(--font-sans)"
 				font-weight="600"
@@ -283,7 +283,7 @@
 				cx={points[lastIdx].x}
 				cy={points[lastIdx].y}
 				r="7"
-				fill="var(--primary)"
+				fill="var(--color-primary)"
 				fill-opacity="0.15"
 				stroke="none"
 			/>
@@ -291,8 +291,8 @@
 				cx={points[lastIdx].x}
 				cy={points[lastIdx].y}
 				r="5"
-				fill="var(--primary)"
-				stroke="var(--card)"
+				fill="var(--color-primary)"
+				stroke="var(--color-base-100)"
 				stroke-width="2.5"
 			/>
 			<!-- Peak dot on top -->
@@ -301,8 +301,8 @@
 					cx={points[peakIdx].x}
 					cy={points[peakIdx].y}
 					r="4"
-					fill="var(--chart-2, var(--primary))"
-					stroke="var(--card)"
+					fill="var(--color-accent)"
+					stroke="var(--color-base-100)"
 					stroke-width="2"
 				/>
 			{/if}
@@ -314,7 +314,7 @@
 				y1={margin.top}
 				x2={activePoint.x}
 				y2={margin.top + innerHeight}
-				stroke="var(--primary)"
+				stroke="var(--color-primary)"
 				stroke-opacity="0.22"
 				stroke-dasharray="4 8"
 			/>
@@ -322,8 +322,8 @@
 				cx={activePoint.x}
 				cy={activePoint.y}
 				r="5"
-				fill="var(--card)"
-				stroke="var(--primary)"
+				fill="var(--color-base-100)"
+				stroke="var(--color-primary)"
 				stroke-width="2"
 			/>
 		{/if}
@@ -333,7 +333,7 @@
 				x={point.x}
 				y={height - 8}
 				text-anchor="middle"
-				fill="var(--muted-foreground)"
+				fill="color-mix(in oklab, var(--color-base-content) 70%, transparent)"
 				font-size="11"
 				font-family="var(--font-sans)"
 				font-weight="600"
@@ -374,10 +374,10 @@
 
 	{#if activePoint}
 		<div class="chart-tooltip visible pointer-events-none" style={activeTooltipStyle}>
-			<div class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+			<div class="text-[10px] font-bold tracking-wider text-base-content/70 uppercase">
 				{formatMonthLabel(activePoint.label, currencyLocale)}
 			</div>
-			<div class="text-sm font-semibold text-foreground tabular-nums">
+			<div class="text-sm font-semibold text-base-content tabular-nums">
 				{formatCurrency(activePoint.rawValue, currencyLocale)}
 			</div>
 		</div>
@@ -396,9 +396,9 @@
 
 	.data-point:focus-visible {
 		outline: none;
-		fill: var(--primary);
+		fill: var(--color-primary);
 		fill-opacity: 0.9;
-		stroke: var(--card);
+		stroke: var(--color-base-100);
 		stroke-width: 2;
 	}
 </style>

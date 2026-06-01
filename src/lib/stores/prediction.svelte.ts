@@ -8,8 +8,7 @@ function applyTheme(darkMode: boolean) {
 	} catch {
 		// Storage unavailable or blocked
 	}
-	document.documentElement.classList.toggle('dark', darkMode);
-	document.body.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+	document.documentElement.dataset.theme = darkMode ? 'dark' : 'light';
 }
 
 function readInitialDarkMode(): boolean {

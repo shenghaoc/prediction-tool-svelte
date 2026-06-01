@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import Loader2 from '@lucide/svelte/icons/loader-2';
 	import type { SuperForm } from 'sveltekit-superforms';
 
 	import { getI18nContext } from '$lib/i18n.svelte';
@@ -31,7 +30,9 @@
 	let isMac = $state(false);
 	let mounted = $state(false);
 
-	const { form, errors, enhance } = superform;
+	const form = $derived(superform.form);
+	const errors = $derived(superform.errors);
+	const enhance = $derived(superform.enhance);
 
 	const fieldErrors = $derived(fieldErrorsFromSuperforms($errors, (key) => i18n.t(key)));
 
@@ -76,63 +77,68 @@
 
 <form id="prediction-form" method="POST" action="?/predict" use:enhance>
 	{#if !mounted}
-	<noscript>
-		<Field.Group class="gap-4">
-			<label>
-				{i18n.t('ml_model')}
-				<select name="ml_model" class="mt-1 w-full rounded-lg border px-3 py-2">
-					{#each ML_MODELS as model (model)}
-						<option value={model} selected={$form.ml_model === model}>{model}</option>
-					{/each}
-				</select>
-			</label>
-			<label>
-				{i18n.t('town')}
-				<select name="town" class="mt-1 w-full rounded-lg border px-3 py-2">
-					{#each TOWNS as town (town)}
-						<option value={town} selected={$form.town === town}>{town}</option>
-					{/each}
-				</select>
-			</label>
-			<label>
-				{i18n.t('storey_range')}
-				<select name="storey_range" class="mt-1 w-full rounded-lg border px-3 py-2">
-					{#each STOREY_RANGES as range (range)}
-						<option value={range} selected={$form.storey_range === range}>{range}</option>
-					{/each}
-				</select>
-			</label>
-			<label>
-				{i18n.t('flat_model')}
-				<select name="flat_model" class="mt-1 w-full rounded-lg border px-3 py-2">
-					{#each FLAT_MODELS as flatModel (flatModel)}
-						<option value={flatModel} selected={$form.flat_model === flatModel}>{flatModel}</option>
-					{/each}
-				</select>
-			</label>
-			<label>
-				{i18n.t('floor_area')}
-				<input
-					name="floor_area_sqm"
-					type="number"
-					min={MIN_FLOOR_AREA_SQM}
-					max={MAX_FLOOR_AREA_SQM}
-					value={$form.floor_area_sqm}
-					class="mt-1 w-full rounded-lg border px-3 py-2"
-				/>
-			</label>
-			<label>
-				{i18n.t('lease_commence_date')}
-				<select name="lease_commence_date" class="mt-1 w-full rounded-lg border px-3 py-2">
-					{#each leaseYearOptions as year (year.value)}
-						<option value={year.value} selected={String($form.lease_commence_date) === year.value}>
-							{year.label}
-						</option>
-					{/each}
-				</select>
-			</label>
-		</Field.Group>
-	</noscript>
+		<noscript>
+			<Field.Group class="gap-4">
+				<label>
+					{i18n.t('ml_model')}
+					<select name="ml_model" class="mt-1 w-full rounded-lg border px-3 py-2">
+						{#each ML_MODELS as model (model)}
+							<option value={model} selected={$form.ml_model === model}>{model}</option>
+						{/each}
+					</select>
+				</label>
+				<label>
+					{i18n.t('town')}
+					<select name="town" class="mt-1 w-full rounded-lg border px-3 py-2">
+						{#each TOWNS as town (town)}
+							<option value={town} selected={$form.town === town}>{town}</option>
+						{/each}
+					</select>
+				</label>
+				<label>
+					{i18n.t('storey_range')}
+					<select name="storey_range" class="mt-1 w-full rounded-lg border px-3 py-2">
+						{#each STOREY_RANGES as range (range)}
+							<option value={range} selected={$form.storey_range === range}>{range}</option>
+						{/each}
+					</select>
+				</label>
+				<label>
+					{i18n.t('flat_model')}
+					<select name="flat_model" class="mt-1 w-full rounded-lg border px-3 py-2">
+						{#each FLAT_MODELS as flatModel (flatModel)}
+							<option value={flatModel} selected={$form.flat_model === flatModel}
+								>{flatModel}</option
+							>
+						{/each}
+					</select>
+				</label>
+				<label>
+					{i18n.t('floor_area')}
+					<input
+						name="floor_area_sqm"
+						type="number"
+						min={MIN_FLOOR_AREA_SQM}
+						max={MAX_FLOOR_AREA_SQM}
+						value={$form.floor_area_sqm}
+						class="mt-1 w-full rounded-lg border px-3 py-2"
+					/>
+				</label>
+				<label>
+					{i18n.t('lease_commence_date')}
+					<select name="lease_commence_date" class="mt-1 w-full rounded-lg border px-3 py-2">
+						{#each leaseYearOptions as year (year.value)}
+							<option
+								value={year.value}
+								selected={String($form.lease_commence_date) === year.value}
+							>
+								{year.label}
+							</option>
+						{/each}
+					</select>
+				</label>
+			</Field.Group>
+		</noscript>
 	{/if}
 
 	{#if mounted}
@@ -251,45 +257,35 @@
 		{/if}
 
 		<div class="grid grid-cols-2 gap-3 max-[520px]:grid-cols-1">
-			<Button
-				type="submit"
-				size="lg"
-				class="w-full tracking-normal normal-case shadow-md shadow-primary/20 transition-all duration-200 hover:shadow-lg hover:shadow-primary/25 hover:brightness-110"
-				disabled={loading}
-			>
+			<Button type="submit" size="lg" class="w-full" disabled={loading}>
 				{#if loading}
-					<Loader2 class="size-4 animate-spin" aria-hidden="true" />
+					<span class="loading loading-spinner loading-sm" aria-hidden="true"></span>
 					{i18n.t('predicting')}
 				{:else}
-					<span class="flex items-center gap-2">
-						{i18n.t('get_prediction')}
-						{#if mounted}
-							<kbd
-								class="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border border-primary-foreground/20 bg-primary-foreground/10 px-1.5 font-sans text-[10px] font-medium opacity-80 sm:flex"
-								aria-hidden="true">{isMac ? '⌘' : 'Ctrl'} ↵</kbd
-							>
-						{/if}
-					</span>
+					{i18n.t('get_prediction')}
 				{/if}
 			</Button>
 			<Button
 				type="button"
 				variant="outline"
 				size="lg"
-				class="w-full tracking-normal normal-case transition-all duration-200 hover:bg-muted/80"
+				class="w-full"
 				disabled={loading}
 				onclick={() => onreset?.()}
 			>
-				<span class="flex items-center gap-2">
-					{i18n.t('reset_form')}
-					{#if mounted}
-						<kbd
-							class="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border border-border bg-muted/50 px-1.5 font-sans text-[10px] font-medium text-muted-foreground sm:flex"
-							aria-hidden="true">Esc</kbd
-						>
-					{/if}
-				</span>
+				{i18n.t('reset_form')}
 			</Button>
 		</div>
+
+		{#if mounted}
+			<p class="mt-2 text-center text-xs text-base-content/60 max-sm:text-left">
+				<kbd class="kbd kbd-xs">{isMac ? '⌘' : 'Ctrl'}</kbd>
+				<kbd class="kbd kbd-xs">↵</kbd>
+				{i18n.t('to_predict')}
+				<span class="mx-1.5 text-base-content/30">·</span>
+				<kbd class="kbd kbd-xs">Esc</kbd>
+				{i18n.t('to_reset')}
+			</p>
+		{/if}
 	</Field.Group>
 </form>

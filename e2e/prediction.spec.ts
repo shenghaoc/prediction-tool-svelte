@@ -26,7 +26,7 @@ test.describe('happy path', () => {
 
 	test('renders the prediction flow and updates the chart summary', async ({ page }) => {
 		await page.goto('/');
-		await page.waitForSelector('body[data-theme]');
+		await page.waitForSelector('html[data-theme]');
 
 		await expect(page.getByRole('heading', { level: 1, name: /Price\s*Prediction/i })).toBeVisible({
 			timeout: 15_000
@@ -39,7 +39,7 @@ test.describe('happy path', () => {
 
 	test('switches the page copy to chinese', async ({ page }) => {
 		await page.goto('/');
-		await page.waitForSelector('body[data-theme]');
+		await page.waitForSelector('html[data-theme]');
 		await expect(page.getByRole('button', { name: 'Get prediction' })).toBeVisible({
 			timeout: 15_000
 		});
@@ -60,7 +60,7 @@ test.describe('error handling', () => {
 	test('shows error message when server returns 500', async ({ page }) => {
 		await routeE2eMock(page, 'error_500');
 		await page.goto('/');
-		await page.waitForSelector('body[data-theme]');
+		await page.waitForSelector('html[data-theme]');
 		await page.getByRole('button', { name: 'Get prediction' }).click();
 
 		await expect(page.getByRole('alert')).toBeVisible({ timeout: 15_000 });
@@ -69,7 +69,7 @@ test.describe('error handling', () => {
 	test('shows error when server returns malformed JSON', async ({ page }) => {
 		await routeE2eMock(page, 'error_invalid');
 		await page.goto('/');
-		await page.waitForSelector('body[data-theme]');
+		await page.waitForSelector('html[data-theme]');
 		await page.getByRole('button', { name: 'Get prediction' }).click();
 
 		await expect(page.getByRole('alert')).toBeVisible({ timeout: 15_000 });
@@ -78,7 +78,7 @@ test.describe('error handling', () => {
 	test('shows error when request fails with non-JSON body', async ({ page }) => {
 		await routeE2eMock(page, 'error_text');
 		await page.goto('/');
-		await page.waitForSelector('body[data-theme]');
+		await page.waitForSelector('html[data-theme]');
 		await page.getByRole('button', { name: 'Get prediction' }).click();
 
 		await expect(page.getByRole('alert')).toBeVisible({ timeout: 15_000 });
