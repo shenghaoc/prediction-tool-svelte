@@ -1,7 +1,23 @@
 <script lang="ts">
-	import { Tooltip as TooltipPrimitive } from 'bits-ui';
+	import type { Snippet } from 'svelte';
 
-	let { ref = $bindable(null), ...restProps }: TooltipPrimitive.TriggerProps = $props();
+	type TriggerProps = {
+		'data-slot'?: string;
+		'aria-describedby'?: string;
+	};
+
+	type Props = {
+		children?: Snippet;
+		child?: Snippet<[{ props: TriggerProps }]>;
+	};
+
+	let { children, child }: Props = $props();
+
+	const triggerProps: TriggerProps = { 'data-slot': 'tooltip-trigger' };
 </script>
 
-<TooltipPrimitive.Trigger bind:ref data-slot="tooltip-trigger" {...restProps} />
+{#if child}
+	{@render child({ props: triggerProps })}
+{:else}
+	{@render children?.()}
+{/if}

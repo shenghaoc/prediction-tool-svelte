@@ -76,63 +76,68 @@
 
 <form id="prediction-form" method="POST" action="?/predict" use:enhance>
 	{#if !mounted}
-	<noscript>
-		<Field.Group class="gap-4">
-			<label>
-				{i18n.t('ml_model')}
-				<select name="ml_model" class="mt-1 w-full rounded-lg border px-3 py-2">
-					{#each ML_MODELS as model (model)}
-						<option value={model} selected={$form.ml_model === model}>{model}</option>
-					{/each}
-				</select>
-			</label>
-			<label>
-				{i18n.t('town')}
-				<select name="town" class="mt-1 w-full rounded-lg border px-3 py-2">
-					{#each TOWNS as town (town)}
-						<option value={town} selected={$form.town === town}>{town}</option>
-					{/each}
-				</select>
-			</label>
-			<label>
-				{i18n.t('storey_range')}
-				<select name="storey_range" class="mt-1 w-full rounded-lg border px-3 py-2">
-					{#each STOREY_RANGES as range (range)}
-						<option value={range} selected={$form.storey_range === range}>{range}</option>
-					{/each}
-				</select>
-			</label>
-			<label>
-				{i18n.t('flat_model')}
-				<select name="flat_model" class="mt-1 w-full rounded-lg border px-3 py-2">
-					{#each FLAT_MODELS as flatModel (flatModel)}
-						<option value={flatModel} selected={$form.flat_model === flatModel}>{flatModel}</option>
-					{/each}
-				</select>
-			</label>
-			<label>
-				{i18n.t('floor_area')}
-				<input
-					name="floor_area_sqm"
-					type="number"
-					min={MIN_FLOOR_AREA_SQM}
-					max={MAX_FLOOR_AREA_SQM}
-					value={$form.floor_area_sqm}
-					class="mt-1 w-full rounded-lg border px-3 py-2"
-				/>
-			</label>
-			<label>
-				{i18n.t('lease_commence_date')}
-				<select name="lease_commence_date" class="mt-1 w-full rounded-lg border px-3 py-2">
-					{#each leaseYearOptions as year (year.value)}
-						<option value={year.value} selected={String($form.lease_commence_date) === year.value}>
-							{year.label}
-						</option>
-					{/each}
-				</select>
-			</label>
-		</Field.Group>
-	</noscript>
+		<noscript>
+			<Field.Group class="gap-4">
+				<label>
+					{i18n.t('ml_model')}
+					<select name="ml_model" class="mt-1 w-full rounded-lg border px-3 py-2">
+						{#each ML_MODELS as model (model)}
+							<option value={model} selected={$form.ml_model === model}>{model}</option>
+						{/each}
+					</select>
+				</label>
+				<label>
+					{i18n.t('town')}
+					<select name="town" class="mt-1 w-full rounded-lg border px-3 py-2">
+						{#each TOWNS as town (town)}
+							<option value={town} selected={$form.town === town}>{town}</option>
+						{/each}
+					</select>
+				</label>
+				<label>
+					{i18n.t('storey_range')}
+					<select name="storey_range" class="mt-1 w-full rounded-lg border px-3 py-2">
+						{#each STOREY_RANGES as range (range)}
+							<option value={range} selected={$form.storey_range === range}>{range}</option>
+						{/each}
+					</select>
+				</label>
+				<label>
+					{i18n.t('flat_model')}
+					<select name="flat_model" class="mt-1 w-full rounded-lg border px-3 py-2">
+						{#each FLAT_MODELS as flatModel (flatModel)}
+							<option value={flatModel} selected={$form.flat_model === flatModel}
+								>{flatModel}</option
+							>
+						{/each}
+					</select>
+				</label>
+				<label>
+					{i18n.t('floor_area')}
+					<input
+						name="floor_area_sqm"
+						type="number"
+						min={MIN_FLOOR_AREA_SQM}
+						max={MAX_FLOOR_AREA_SQM}
+						value={$form.floor_area_sqm}
+						class="mt-1 w-full rounded-lg border px-3 py-2"
+					/>
+				</label>
+				<label>
+					{i18n.t('lease_commence_date')}
+					<select name="lease_commence_date" class="mt-1 w-full rounded-lg border px-3 py-2">
+						{#each leaseYearOptions as year (year.value)}
+							<option
+								value={year.value}
+								selected={String($form.lease_commence_date) === year.value}
+							>
+								{year.label}
+							</option>
+						{/each}
+					</select>
+				</label>
+			</Field.Group>
+		</noscript>
 	{/if}
 
 	{#if mounted}
