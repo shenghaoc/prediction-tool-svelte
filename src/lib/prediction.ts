@@ -65,6 +65,48 @@ export function normalizeTrendData(data: unknown): TrendPoint[] {
 	}));
 }
 
+// Intl.DateTimeFormat is just as expensive to construct as Intl.NumberFormat,
+// so reuse one formatter per locale (mirrors the cache in $lib/format).
+const monthFormatCache = new Map<string, Intl.DateTimeFormat>();
+
+/**
+ * Format a raw `"YYYY-MM"` trend label into a localized, human-readable month
+ * (e.g. `"2025-03"` → `"Mar 2025"` in en-SG, `"2025年3月"` in zh-SG).
+ *
+ * This is a display-only transform: it never mutates the `TrendPoint.label`
+ * data contract. Unparseable labels are returned verbatim so the chart still
+ * renders something sensible.
+ */
+export function formatMonthLabel(label: string, locale: string = 'en-SG') {
+	const match = /^(\d{4})-(\d{2})$/.exec(label);
+	if (!match) {
+		return label;
+	}
+
+	const year = Number(match[1]);
+	const month = Number(match[2]);
+	if (month < 1 || month > 12) {
+		return label;
+	}
+
+	try {
+		const cacheKey = locale.toLowerCase();
+		let formatter = monthFormatCache.get(cacheKey);
+		if (!formatter) {
+			formatter = new Intl.DateTimeFormat(locale, {
+				month: 'short',
+				year: 'numeric',
+				timeZone: 'UTC'
+			});
+			monthFormatCache.set(cacheKey, formatter);
+		}
+		// Day 1 at UTC avoids any timezone rollover into an adjacent month.
+		return formatter.format(new Date(Date.UTC(year, month - 1, 1)));
+	} catch {
+		return label;
+	}
+}
+
 export function formatCurrencyTick(value: number) {
 	if (value >= 1_000_000) {
 		return `$${(value / 1_000_000).toFixed(1)}M`;
