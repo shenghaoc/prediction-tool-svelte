@@ -206,36 +206,32 @@
 						<span class="max-sm:hidden">{i18n.t('switch_language')}</span>
 						<span class="sm:hidden">{i18n.lang === 'en' ? '中' : 'EN'}</span>
 					</button>
-					<Tooltip.Provider>
-						<Tooltip.Root>
-							<Tooltip.Trigger>
-								{#snippet child({ props })}
-									<label
-										{...props}
-										class="swap swap-rotate btn btn-ghost btn-sm max-sm:btn-xs btn-square"
-										aria-label={prediction.darkMode
-											? i18n.t('switch_to_light_mode')
-											: i18n.t('switch_to_dark_mode')}
-									>
-										<input
-											type="checkbox"
-											class="theme-controller"
-											value="dark"
-											checked={prediction.darkMode}
-											onchange={() => prediction.toggleTheme()}
-										/>
-										<Sun class="swap-on size-4" />
-										<Moon class="swap-off size-4" />
-									</label>
-								{/snippet}
-							</Tooltip.Trigger>
-							<Tooltip.Content side="bottom" class="text-xs">
-								{prediction.darkMode
-									? i18n.t('switch_to_light_mode')
-									: i18n.t('switch_to_dark_mode')}
-							</Tooltip.Content>
-						</Tooltip.Root>
-					</Tooltip.Provider>
+					<Tooltip.Root>
+						<Tooltip.Trigger>
+							{#snippet child({ props })}
+								<label
+									{...props}
+									class="swap swap-rotate btn btn-ghost btn-sm max-sm:btn-xs btn-square"
+									aria-label={prediction.darkMode
+										? i18n.t('switch_to_light_mode')
+										: i18n.t('switch_to_dark_mode')}
+								>
+									<input
+										type="checkbox"
+										class="theme-controller"
+										value="dark"
+										checked={prediction.darkMode}
+										onchange={() => prediction.toggleTheme()}
+									/>
+									<Sun class="swap-on size-4" />
+									<Moon class="swap-off size-4" />
+								</label>
+							{/snippet}
+						</Tooltip.Trigger>
+						<Tooltip.Content side="bottom" class="text-xs">
+							{prediction.darkMode ? i18n.t('switch_to_light_mode') : i18n.t('switch_to_dark_mode')}
+						</Tooltip.Content>
+					</Tooltip.Root>
 				</div>
 			</div>
 		</div>
