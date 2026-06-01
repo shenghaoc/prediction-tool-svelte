@@ -53,7 +53,7 @@
 	}
 
 	const panelCard =
-		'relative overflow-hidden border-border/60 shadow-sm ring-1 ring-foreground/5 transition-all duration-300 hover:shadow-md hover:shadow-primary/5';
+		'relative overflow-hidden border-base-300/60 shadow-sm ring-1 ring-base-content/5 transition-all duration-300 hover:shadow-md hover:shadow-primary/5';
 
 	const summaryItems = $derived([
 		{
@@ -101,17 +101,17 @@
 				class={cn(
 					'relative min-w-[200px] overflow-hidden rounded-xl border px-5 py-4 transition-all duration-500 max-sm:w-full',
 					hasPrediction
-						? 'animate-glow border-primary/25 bg-gradient-to-br from-primary/12 via-accent/60 to-card'
-						: 'border-border/60 bg-gradient-to-br from-secondary/40 to-card',
-					'shadow-[inset_0_1px_0_0_color-mix(in_oklab,var(--primary-foreground)_12%,transparent)]'
+						? 'animate-glow border-primary/25 bg-gradient-to-br from-primary/12 via-accent/60 to-base-100'
+						: 'border-base-300/60 bg-gradient-to-br from-secondary/40 to-base-100',
+					'shadow-[inset_0_1px_0_0_color-mix(in_oklab,var(--color-primary-content)_12%,transparent)]'
 				)}
 				aria-live="polite"
 			>
 				<div
-					class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,color-mix(in_oklab,var(--primary)_18%,transparent),transparent_55%)]"
+					class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,color-mix(in_oklab,var(--color-primary)_18%,transparent),transparent_55%)]"
 					aria-hidden="true"
 				></div>
-				<p class="relative text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+				<p class="relative text-[10px] font-bold tracking-wider text-base-content/70 uppercase">
 					{i18n.t('prediction')}
 				</p>
 				{#if showSkeleton}
@@ -120,7 +120,7 @@
 					<p
 						class={cn(
 							'relative mt-1 font-heading text-3xl font-extrabold tracking-tight tabular-nums transition-all duration-500',
-							!hasPrediction && 'text-base font-semibold text-muted-foreground',
+							!hasPrediction && 'text-base font-semibold text-base-content/70',
 							hasPrediction && 'animate-settle text-primary'
 						)}
 					>
@@ -138,7 +138,7 @@
 					{#each summaryItems as item, index (item.label)}
 						{@const Icon = item.icon}
 						<div
-							class="animate-fade-in flex items-center gap-3 rounded-xl border border-border/60 bg-secondary/40 p-3 backdrop-blur-sm transition-all duration-300 hover:border-primary/20 hover:bg-secondary/60 hover:shadow-sm"
+							class="animate-fade-in flex items-center gap-3 rounded-xl border border-base-300/60 bg-secondary/40 p-3 backdrop-blur-sm transition-all duration-300 hover:border-primary/20 hover:bg-secondary/60 hover:shadow-sm"
 							style={`animation-delay: ${index * 0.08}s; animation-fill-mode: both`}
 						>
 							<div
@@ -148,10 +148,10 @@
 								<Icon class="size-4 text-primary" />
 							</div>
 							<div class="min-w-0">
-								<p class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+								<p class="text-[10px] font-bold tracking-wider text-base-content/70 uppercase">
 									{item.label}
 								</p>
-								<p class="truncate text-sm font-semibold text-foreground">{item.value}</p>
+								<p class="truncate text-sm font-semibold text-base-content">{item.value}</p>
 							</div>
 						</div>
 					{/each}
@@ -168,9 +168,9 @@
 						</h3>
 						<div class="mb-4 grid grid-cols-3 gap-2.5 max-sm:grid-cols-1">
 							<div
-								class="rounded-xl border border-border/60 bg-secondary/40 px-3 py-2.5 backdrop-blur-sm"
+								class="rounded-xl border border-base-300/60 bg-secondary/40 px-3 py-2.5 backdrop-blur-sm"
 							>
-								<p class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+								<p class="text-[10px] font-bold tracking-wider text-base-content/70 uppercase">
 									{i18n.t('chart_latest')}
 								</p>
 								<p class="mt-1 text-sm font-semibold tabular-nums">
@@ -178,9 +178,9 @@
 								</p>
 							</div>
 							<div
-								class="rounded-xl border border-border/60 bg-secondary/40 px-3 py-2.5 backdrop-blur-sm"
+								class="rounded-xl border border-base-300/60 bg-secondary/40 px-3 py-2.5 backdrop-blur-sm"
 							>
-								<p class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+								<p class="text-[10px] font-bold tracking-wider text-base-content/70 uppercase">
 									{i18n.t('chart_range')}
 								</p>
 								<p class="mt-1 text-sm font-semibold tabular-nums">
@@ -188,17 +188,15 @@
 								</p>
 							</div>
 							<div
-								class="rounded-xl border border-border/60 bg-secondary/40 px-3 py-2.5 backdrop-blur-sm"
+								class="rounded-xl border border-base-300/60 bg-secondary/40 px-3 py-2.5 backdrop-blur-sm"
 							>
-								<p class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+								<p class="text-[10px] font-bold tracking-wider text-base-content/70 uppercase">
 									{i18n.t('chart_delta')}
 								</p>
 								<p
 									class={cn(
 										'mt-1 flex items-center gap-1 text-sm font-semibold tabular-nums',
-										deltaPositive
-											? 'text-emerald-600 dark:text-emerald-400'
-											: 'text-amber-700 dark:text-amber-400'
+										deltaPositive ? 'text-success' : 'text-warning'
 									)}
 								>
 									{#if deltaPositive}
@@ -209,14 +207,14 @@
 									{deltaPositive ? '+' : '-'}{fmt(Math.abs(chartStats.deltaValue))}
 								</p>
 								<p
-									class="mt-0.5 text-[9px] font-bold tracking-wider text-muted-foreground uppercase"
+									class="mt-0.5 text-[9px] font-bold tracking-wider text-base-content/70 uppercase"
 								>
 									{i18n.t('vs_12m_ago')}
 								</p>
 							</div>
 						</div>
 						<div
-							class="relative min-h-[260px] overflow-hidden rounded-xl border border-border/40 bg-gradient-to-br from-secondary/20 to-secondary/5 p-2"
+							class="relative min-h-[260px] overflow-hidden rounded-xl border border-base-300/40 bg-gradient-to-br from-secondary/20 to-secondary/5 p-2"
 						>
 							{#if loading}
 								<Skeleton class="animate-shimmer min-h-[260px] w-full rounded-xl" />
@@ -233,7 +231,7 @@
 					</div>
 				{:else}
 					<div
-						class="flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-border/70 bg-gradient-to-b from-muted/30 to-transparent px-4 py-12 text-center"
+						class="flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-base-300/70 bg-gradient-to-b from-base-200/30 to-transparent px-4 py-12 text-center"
 					>
 						<div class="empty-float flex items-end gap-1.5 opacity-40" aria-hidden="true">
 							{#each skeletonHeights as height, index (index)}
@@ -243,11 +241,11 @@
 								></div>
 							{/each}
 						</div>
-						<h3 class="animate-fade-in font-heading text-base font-semibold text-foreground">
+						<h3 class="animate-fade-in font-heading text-base font-semibold text-base-content">
 							{i18n.t('placeholder_title')}
 						</h3>
 						<p
-							class="animate-fade-in mx-auto max-w-[32ch] text-sm leading-relaxed text-muted-foreground"
+							class="animate-fade-in mx-auto max-w-[32ch] text-sm leading-relaxed text-base-content/70"
 							style="animation-delay: 0.08s; animation-fill-mode: both"
 						>
 							{i18n.t('placeholder_body')}

@@ -12,7 +12,7 @@
 	export function fieldVariants({
 		orientation = 'vertical'
 	}: { orientation?: FieldOrientation } = {}) {
-		return `data-[invalid=true]:text-destructive gap-2 group/field flex w-full ${ORIENTATION_CLASS[orientation] ?? ORIENTATION_CLASS.vertical}`;
+		return `data-[invalid=true]:text-error gap-2 group/field flex w-full ${ORIENTATION_CLASS[orientation] ?? ORIENTATION_CLASS.vertical}`;
 	}
 </script>
 

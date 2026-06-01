@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import Loader2 from '@lucide/svelte/icons/loader-2';
 	import type { SuperForm } from 'sveltekit-superforms';
 
 	import { getI18nContext } from '$lib/i18n.svelte';
@@ -263,15 +262,14 @@
 				disabled={loading}
 			>
 				{#if loading}
-					<Loader2 class="size-4 animate-spin" aria-hidden="true" />
+					<span class="loading loading-spinner loading-sm" aria-hidden="true"></span>
 					{i18n.t('predicting')}
 				{:else}
 					<span class="flex items-center gap-2">
 						{i18n.t('get_prediction')}
 						{#if mounted}
-							<kbd
-								class="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border border-primary-foreground/20 bg-primary-foreground/10 px-1.5 font-sans text-[10px] font-medium opacity-80 sm:flex"
-								aria-hidden="true">{isMac ? '⌘' : 'Ctrl'} ↵</kbd
+							<kbd class="kbd kbd-sm pointer-events-none hidden sm:flex" aria-hidden="true"
+								>{isMac ? '⌘' : 'Ctrl'} ↵</kbd
 							>
 						{/if}
 					</span>
@@ -281,17 +279,14 @@
 				type="button"
 				variant="outline"
 				size="lg"
-				class="w-full tracking-normal normal-case transition-all duration-200 hover:bg-muted/80"
+				class="w-full tracking-normal normal-case transition-all duration-200 hover:bg-base-200/80"
 				disabled={loading}
 				onclick={() => onreset?.()}
 			>
 				<span class="flex items-center gap-2">
 					{i18n.t('reset_form')}
 					{#if mounted}
-						<kbd
-							class="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border border-border bg-muted/50 px-1.5 font-sans text-[10px] font-medium text-muted-foreground sm:flex"
-							aria-hidden="true">Esc</kbd
-						>
+						<kbd class="kbd kbd-sm pointer-events-none hidden sm:flex" aria-hidden="true">Esc</kbd>
 					{/if}
 				</span>
 			</Button>

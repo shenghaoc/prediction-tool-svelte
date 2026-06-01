@@ -128,8 +128,8 @@
 	role="group"
 	aria-label={ariaLabel}
 	class={cn(
-		'join grid overflow-hidden rounded-lg border border-border bg-card transition-all duration-200',
-		focused && 'border-primary/50 ring-2 ring-ring/18',
+		'join grid overflow-hidden rounded-lg border border-base-300 bg-base-100 transition-all duration-200',
+		focused && 'border-primary/50 ring-2 ring-primary/18',
 		gridCols,
 		className
 	)}
@@ -149,7 +149,7 @@
 		onpointerleave={stopHold}
 		onpointercancel={stopHold}
 		class={cn(
-			'join-item flex items-center justify-center border-none bg-secondary/60 text-secondary-foreground transition-colors duration-150 hover:bg-primary/10 hover:text-primary',
+			'join-item flex items-center justify-center border-none bg-secondary/60 text-secondary-content transition-colors duration-150 hover:bg-primary/10 hover:text-primary',
 			atMin && 'cursor-not-allowed opacity-35'
 		)}
 	>
@@ -174,12 +174,12 @@
 		onblur={handleBlur}
 		autocomplete="off"
 		data-no-spinner="true"
-		class="join-item h-10 w-full border-x border-border/40 bg-card px-3 text-center text-sm font-medium text-foreground tabular-nums outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+		class="join-item h-10 w-full border-x border-base-300/40 bg-base-100 px-3 text-center text-sm font-medium text-base-content tabular-nums outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
 	/>
 
 	{#if unit}
 		<span
-			class="join-item flex items-center border-l border-border/40 bg-secondary/60 px-3.5 text-xs font-bold whitespace-nowrap text-muted-foreground"
+			class="join-item flex items-center border-l border-base-300/40 bg-secondary/60 px-3.5 text-xs font-bold whitespace-nowrap text-base-content/70"
 			aria-hidden="true"
 		>
 			{unit}
@@ -201,7 +201,7 @@
 		onpointerleave={stopHold}
 		onpointercancel={stopHold}
 		class={cn(
-			'join-item flex items-center justify-center border-none bg-secondary/60 text-secondary-foreground transition-colors duration-150 hover:bg-primary/10 hover:text-primary',
+			'join-item flex items-center justify-center border-none bg-secondary/60 text-secondary-content transition-colors duration-150 hover:bg-primary/10 hover:text-primary',
 			atMax && 'cursor-not-allowed opacity-35'
 		)}
 	>

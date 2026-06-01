@@ -15,7 +15,7 @@
 
 	const tileClass = $derived(
 		cn(
-			'group/tile flex items-center gap-3 rounded-xl border border-border/60 bg-card/90 p-4 shadow-sm transition-all duration-300',
+			'group/tile flex items-center gap-3 rounded-xl border border-base-300/60 bg-base-100/90 p-4 shadow-sm transition-all duration-300',
 			'hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-md hover:shadow-primary/5',
 			hint && 'cursor-help',
 			className
@@ -32,7 +32,7 @@
 			<Icon class="size-5 text-primary" />
 		</div>
 		<div class="flex min-w-0 flex-col gap-0.5">
-			<span class="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+			<span class="text-[10px] font-bold tracking-wider text-base-content/70 uppercase">
 				{label}
 			</span>
 			<strong class="font-heading text-xl font-extrabold tracking-tight text-primary tabular-nums">

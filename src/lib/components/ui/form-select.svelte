@@ -25,7 +25,7 @@
 	}
 
 	const baseClass = cn(
-		'select w-full bg-card border border-border/60 shadow-sm transition-all duration-200',
+		'select w-full bg-base-100 border border-base-300/60 shadow-sm transition-all duration-200',
 		'hover:border-primary/30 hover:shadow-md hover:shadow-primary/5',
 		'focus-visible:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/15'
 	);

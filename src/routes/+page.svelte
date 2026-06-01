@@ -99,7 +99,7 @@
 	}
 
 	const panelCard =
-		'relative overflow-hidden border-border/60 shadow-sm ring-1 ring-foreground/5 transition-all duration-300 hover:shadow-md hover:shadow-primary/5';
+		'relative overflow-hidden border-base-300/60 shadow-sm ring-1 ring-base-content/5 transition-all duration-300 hover:shadow-md hover:shadow-primary/5';
 
 	const figures = $derived([
 		{
@@ -203,7 +203,7 @@
 	<main class="min-h-screen px-6 pt-5 pb-12 max-sm:px-3 max-sm:pb-8">
 		<a
 			href="#input-ml_model"
-			class="fixed -left-[9999px] top-auto z-[100] h-px w-px overflow-hidden focus:fixed focus:left-4 focus:top-4 focus:h-auto focus:w-auto focus:overflow-visible focus:rounded-lg focus:bg-primary focus:px-5 focus:py-2.5 focus:text-sm focus:font-bold focus:text-primary-foreground focus:no-underline focus:shadow-lg"
+			class="fixed -left-[9999px] top-auto z-[100] h-px w-px overflow-hidden focus:fixed focus:left-4 focus:top-4 focus:h-auto focus:w-auto focus:overflow-visible focus:rounded-lg focus:bg-primary focus:px-5 focus:py-2.5 focus:text-sm focus:font-bold focus:text-primary-content focus:no-underline focus:shadow-lg"
 		>
 			Skip to form
 		</a>
@@ -219,7 +219,7 @@
 
 		<div class="mx-auto max-w-7xl">
 			<header
-				class="animate-fade-in-deep sticky top-0 z-20 -mx-6 mb-6 flex items-center justify-between gap-4 border-b border-border/50 bg-background/85 px-6 py-4 backdrop-blur-md max-sm:relative max-sm:mx-0 max-sm:flex-col max-sm:items-start max-sm:px-0"
+				class="animate-fade-in-deep sticky top-0 z-20 -mx-6 mb-6 flex items-center justify-between gap-4 border-b border-base-300/50 bg-base-100/85 px-6 py-4 backdrop-blur-md max-sm:relative max-sm:mx-0 max-sm:flex-col max-sm:items-start max-sm:px-0"
 			>
 				<div class="flex items-center gap-2.5">
 					<span class="font-heading text-base font-bold tracking-tight">{i18n.t('brand')}</span>
@@ -284,7 +284,7 @@
 							aria-hidden="true"
 						></div>
 						<div
-							class="pointer-events-none absolute -bottom-20 -left-16 size-48 rounded-full bg-chart-2/15 blur-3xl"
+							class="pointer-events-none absolute -bottom-20 -left-16 size-48 rounded-full bg-accent/15 blur-3xl"
 							aria-hidden="true"
 						></div>
 						<Card.Header class="relative px-6 pb-0">
@@ -313,7 +313,7 @@
 									{/each}
 								</div>
 							</Tooltip.Provider>
-							<p class="mt-3.5 text-[0.82rem] leading-relaxed text-muted-foreground">
+							<p class="mt-3.5 text-[0.82rem] leading-relaxed text-base-content/70">
 								{i18n.t('intro_caption')}
 							</p>
 						</Card.Content>
@@ -331,8 +331,8 @@
 						<Card.Content class="px-6">
 							{#if errorMessage && !loading}
 								<div
-									class="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive"
 									role="alert"
+									class="alert alert-error alert-soft mb-4"
 									transition:fade={{ duration: 200 }}
 								>
 									{errorMessage}
@@ -340,16 +340,11 @@
 							{/if}
 							<PredictionForm {superform} {loading} onreset={resetForm} />
 							{#if loading}
-								<div
-									class="progress-track mt-4"
-									role="progressbar"
+								<progress
+									class="progress progress-primary mt-4 w-full"
 									aria-label={i18n.t('predicting')}
-									aria-valuemin={0}
-									aria-valuemax={100}
 									transition:fade
-								>
-									<div class="progress-bar" style="width: 60%"></div>
-								</div>
+								></progress>
 							{/if}
 						</Card.Content>
 					</Card.Root>
