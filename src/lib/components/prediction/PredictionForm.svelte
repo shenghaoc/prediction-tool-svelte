@@ -30,7 +30,9 @@
 	let isMac = $state(false);
 	let mounted = $state(false);
 
-	const { form, errors, enhance } = superform;
+	const form = $derived(superform.form);
+	const errors = $derived(superform.errors);
+	const enhance = $derived(superform.enhance);
 
 	const fieldErrors = $derived(fieldErrorsFromSuperforms($errors, (key) => i18n.t(key)));
 

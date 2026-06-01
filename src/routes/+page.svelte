@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 	import { toast } from 'svelte-sonner';
 	import { superForm } from 'sveltekit-superforms';
@@ -40,23 +40,26 @@
 	const i18n = getI18nContext();
 	const prediction = getPredictionContext();
 
-	const superform = superForm<PredictionFormData>(data.form, {
-		validators: zod4Client(predictionSchema),
-		resetForm: false,
-		onUpdated({ form }) {
-			const actionMessage = form.message as PredictionActionMessage | undefined;
-			if (!actionMessage) return;
+	const superform = superForm<PredictionFormData>(
+		untrack(() => data.form),
+		{
+			validators: zod4Client(predictionSchema),
+			resetForm: false,
+			onUpdated({ form }) {
+				const actionMessage = form.message as PredictionActionMessage | undefined;
+				if (!actionMessage) return;
 
-			if (actionMessage.type === 'success') {
-				toast.success(i18n.t('prediction_success'), { id: 'prediction' });
-				const price = `$${Math.round(actionMessage.output).toLocaleString()}`;
-				announce(`${i18n.t('prediction_complete')}${price}`, 'assertive');
-				return;
+				if (actionMessage.type === 'success') {
+					toast.success(i18n.t('prediction_success'), { id: 'prediction' });
+					const price = `$${Math.round(actionMessage.output).toLocaleString()}`;
+					announce(`${i18n.t('prediction_complete')}${price}`, 'assertive');
+					return;
+				}
+
+				toast.error(resolveActionError(actionMessage.text));
 			}
-
-			toast.error(resolveActionError(actionMessage.text));
 		}
-	});
+	);
 
 	const { form, message, submitting, reset } = superform;
 
