@@ -77,13 +77,13 @@
 			<div class="stats stats-vertical sm:stats-horizontal bg-base-200 shadow w-full">
 				<div class="stat">
 					<div class="stat-title">{i18n.t('ml_model')}</div>
-					<div class="stat-value text-sm font-semibold">
+					<div class="stat-value break-words text-sm font-semibold">
 						{i18n.t(`ml_models.${summaryValues.ml_model}`)}
 					</div>
 				</div>
 				<div class="stat">
 					<div class="stat-title">{i18n.t('town')}</div>
-					<div class="stat-value text-sm font-semibold">
+					<div class="stat-value break-words text-sm font-semibold">
 						{i18n.t(`towns.${summaryValues.town}`)}
 					</div>
 				</div>
@@ -109,8 +109,10 @@
 						</div>
 						<div class="stat">
 							<div class="stat-title">{i18n.t('chart_range')}</div>
-							<div class="stat-value text-base tabular-nums">
-								{fmt(Math.round(chartStats.lowValue))} – {fmt(Math.round(chartStats.peakValue))}
+							<div class="stat-value flex flex-col gap-0.5 text-base tabular-nums">
+								<span>{fmt(Math.round(chartStats.lowValue))}</span>
+								<span class="text-base-content/50">–</span>
+								<span>{fmt(Math.round(chartStats.peakValue))}</span>
 							</div>
 						</div>
 						<div class="stat">

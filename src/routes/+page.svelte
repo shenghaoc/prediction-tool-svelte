@@ -159,9 +159,9 @@
 
 {#if !mounted}
 	<main class="min-h-screen px-6 pt-5 pb-12" aria-busy="true">
-		<div class="mx-auto max-w-7xl space-y-5">
+		<div class="mx-auto max-w-7xl space-y-5 px-3 sm:px-6">
 			<div class="skeleton h-10 w-full max-w-md"></div>
-			<div class="grid grid-cols-2 gap-5 max-[860px]:grid-cols-1">
+			<div class="grid grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] gap-5 max-[860px]:grid-cols-1">
 				<div class="skeleton h-64"></div>
 				<div class="skeleton h-96"></div>
 			</div>
@@ -199,7 +199,7 @@
 				<div class="flex shrink-0 items-center gap-1">
 					<button
 						type="button"
-						class="btn btn-ghost btn-sm max-sm:btn-xs normal-case"
+						class="btn btn-ghost btn-sm normal-case"
 						onclick={toggleLang}
 						aria-label={i18n.t('switch_language')}
 					>
@@ -211,7 +211,7 @@
 							{#snippet child({ props })}
 								<label
 									{...props}
-									class="swap swap-rotate btn btn-ghost btn-sm max-sm:btn-xs btn-square"
+									class="swap swap-rotate btn btn-ghost btn-sm btn-square"
 									aria-label={prediction.darkMode
 										? i18n.t('switch_to_light_mode')
 										: i18n.t('switch_to_dark_mode')}
