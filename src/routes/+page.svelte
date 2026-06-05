@@ -158,7 +158,7 @@
 <svelte:document onkeydown={handleKeydown} />
 
 {#if !mounted}
-	<main class="min-h-screen px-6 pt-5 pb-12" aria-busy="true">
+	<main class="min-h-screen pt-5 pb-12" aria-busy="true">
 		<div class="mx-auto max-w-7xl space-y-5 px-3 sm:px-6">
 			<div class="skeleton h-10 w-full max-w-md"></div>
 			<div class="grid grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] gap-5 max-[860px]:grid-cols-1">
