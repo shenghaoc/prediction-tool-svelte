@@ -146,7 +146,7 @@
 	const activePoint = $derived(activeIndex >= 0 ? points[activeIndex] : null);
 	const activeTooltipStyle = $derived(
 		activePoint
-			? `left:${((activePoint.x / width) * 100).toFixed(2)}%;top:${((activePoint.y / height) * 100).toFixed(2)}%;`
+			? `left:clamp(4rem, ${((activePoint.x / width) * 100).toFixed(2)}%, 100% - 4rem);top:${((activePoint.y / height) * 100).toFixed(2)}%;`
 			: ''
 	);
 
