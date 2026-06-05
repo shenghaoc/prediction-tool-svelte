@@ -146,19 +146,7 @@
 	const activePoint = $derived(activeIndex >= 0 ? points[activeIndex] : null);
 	const activeTooltipStyle = $derived(
 		activePoint
-			? (() => {
-					// Clamp the tooltip horizontally so it never overflows the chart edges.
-					// The tooltip CSS centres itself via translate(-50%), so we need the
-					// clamped *centre* to stay at least half a tooltip-width from each edge.
-					const HALF_TOOLTIP_PX = 64; // half of min-width: 8rem
-					const rawLeftPx = (activePoint.x / width) * containerWidth;
-					const leftPx = Math.max(
-						HALF_TOOLTIP_PX,
-						Math.min(containerWidth - HALF_TOOLTIP_PX, rawLeftPx)
-					);
-					const topPct = ((activePoint.y / height) * 100).toFixed(2);
-					return `left:${leftPx.toFixed(1)}px;top:${topPct}%;`;
-				})()
+			? `left:clamp(4rem, ${((activePoint.x / width) * 100).toFixed(2)}%, 100% - 4rem);top:${((activePoint.y / height) * 100).toFixed(2)}%;`
 			: ''
 	);
 
