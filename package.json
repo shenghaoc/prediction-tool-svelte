@@ -18,7 +18,7 @@
 		"test:e2e": "playwright test"
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20260531.1",
+		"@cloudflare/workers-types": "^4.20260701.1",
 		"@eslint/js": "^10.0.1",
 		"@lucide/svelte": "^1.22.0",
 		"@playwright/test": "^1.59.1",
@@ -43,7 +43,7 @@
 		"typescript": "^6.0.3",
 		"vite": "^8.1.2",
 		"vitest": "^4.1.9",
-		"wrangler": "^4.95.0"
+		"wrangler": "^4.106.0"
 	},
 	"dependencies": {
 		"@js-temporal/polyfill": "^0.5.1",
