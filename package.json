@@ -27,7 +27,7 @@
 		"@sveltejs/vite-plugin-svelte": "^7.1.2",
 		"@tailwindcss/vite": "^4.3.2",
 		"@types/eslint": "9.6.1",
-		"@types/node": "^25.9.1",
+		"@types/node": "^26.1.0",
 		"@typescript-eslint/eslint-plugin": "^8.62.1",
 		"@typescript-eslint/parser": "^8.58.2",
 		"daisyui": "^5.5.20",
